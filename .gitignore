@@ -1,0 +1,92 @@
+# ======================
+# Общие настройки
+# ======================
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.swp
+*.bak
+*.tmp
+*.log
+
+# ======================
+# Rider (JetBrains)
+# ======================
+.idea/
+*.sln.iml
+
+# ======================
+# Visual Studio
+# ======================
+.vs/
+*.vc.db
+*.VC.db
+*.vsp
+*.ncb
+*.dbmdl
+
+# ======================
+# Build результаты
+# ======================
+bin/
+obj/
+out/
+Generated_Code/
+
+# ======================
+# Пакеты
+# ======================
+*.nupkg
+*.snupkg
+packages/
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+
+# ======================
+# Конфигурация запуска
+# ======================
+*.vscode/
+launchSettings.json
+
+# ======================
+# Резервные и временные файлы
+# ======================
+*.orig
+*.rej
+*.cache
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ======================
+# .NET-specific
+# ======================
+*.dll
+*.exe
+*.pdb
+*.mdb
+*.xml
+*.config
+*.deps.json
+*.runtimeconfig.json
+*.runtimeconfig.dev.json
+*.appsettings.*
+*.db
+
+# ======================
+# Секреты
+# ======================
+secrets.json
+*.key
+*.pem
+*.crt
+
+# ======================
+# OS-specific
+# ======================
+.DS_Store
+Thumbs.db
+desktop.ini
