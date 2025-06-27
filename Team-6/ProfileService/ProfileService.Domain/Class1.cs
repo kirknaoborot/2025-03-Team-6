@@ -1,4 +1,4 @@
-﻿namespace ProfileService.Services
+﻿namespace ProfileService.Domain
 {
     public class Class1
     {

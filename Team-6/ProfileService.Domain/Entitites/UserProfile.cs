@@ -1,6 +1,6 @@
-﻿namespace ProfileService.Infrastructure.Entities
+﻿namespace ProfileService.Domain.Entities
 {
-    public class WorkerProfile
+    public class UserProfile
     {
         /// <summary>
         /// Идентификатор записи
@@ -8,7 +8,7 @@
         public Guid Id { get; set; }
 
         /// <summary>
-        /// Идентификатор пользователя в формате Guid
+        /// Идентификатор пользователя
         /// </summary>
         public Guid UserId { get; set; }
 
@@ -18,7 +18,7 @@
         public string FirstName { get; set; }
 
         /// <summary>
-        /// Фамилия 
+        /// Фамилия
         /// </summary>
         public string LastName { get; set; }
 
@@ -26,5 +26,13 @@
         /// Отчество
         /// </summary>
         public string MiddleName { get; set; }
+
+
+        /// <summary>
+        /// Дата изменения
+        /// </summary>
+        public DateTime EditDate { get; set; } = DateTime.Now;
+
+        public virtual User User { get; set; }
     }
 }
