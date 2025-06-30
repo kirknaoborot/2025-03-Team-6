@@ -7,29 +7,33 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Shared", "In
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProfileService", "ProfileService", "{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileService.Api", "ProfileService.Api\ProfileService.Api.csproj", "{44D5BD72-842E-48F9-BD8D-4D2055721956}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProfileService.Api", "ProfileService.Api\ProfileService.Api.csproj", "{44D5BD72-842E-48F9-BD8D-4D2055721956}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileService.Infrastructure", "ProfileService.Infrastructure\ProfileService.Infrastructure.csproj", "{06BE8F33-F41D-445E-B325-1C20CD2FCF98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProfileService.Infrastructure", "ProfileService.Infrastructure\ProfileService.Infrastructure.csproj", "{06BE8F33-F41D-445E-B325-1C20CD2FCF98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileService.Domain", "ProfileService.Domain\ProfileService.Domain.csproj", "{D122000D-A685-4652-98C8-C9C4E435806D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProfileService.Domain", "ProfileService.Domain\ProfileService.Domain.csproj", "{D122000D-A685-4652-98C8-C9C4E435806D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileService.Application", "ProfileService.Application\ProfileService.Application.csproj", "{DA460EED-FF15-45B1-81EE-35DEF3DBABF5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProfileService.Application", "ProfileService.Application\ProfileService.Application.csproj", "{DA460EED-FF15-45B1-81EE-35DEF3DBABF5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api.Gateway", "Api.Gateway", "{F33AA52B-F59D-4E16-8838-165A23159A8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{22F2A9BD-8B2E-4470-BBA5-A26FA1C3033F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{22F2A9BD-8B2E-4470-BBA5-A26FA1C3033F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AuthService", "AuthService", "{E2CDCE3C-9F08-4EF1-989B-2A8866D15885}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authorization.Api", "AuthService\Authorization.Api.csproj", "{DD1CE952-EF48-E0CE-FA90-9CD0BFB635BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Authorization.Api", "AuthService\Authorization.Api.csproj", "{DD1CE952-EF48-E0CE-FA90-9CD0BFB635BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Domain", "Auth.Domain\Auth.Domain.csproj", "{4A1F96DA-7137-E1D9-E205-237CC6DF173C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth.Domain", "Auth.Domain\Auth.Domain.csproj", "{4A1F96DA-7137-E1D9-E205-237CC6DF173C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.DataAccess", "Auth.DataAccess\Auth.DataAccess.csproj", "{46173B5C-5856-4FC9-F53A-831DF3F3F374}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth.DataAccess", "Auth.DataAccess\Auth.DataAccess.csproj", "{46173B5C-5856-4FC9-F53A-831DF3F3F374}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Core", "Auth.Core\Auth.Core.csproj", "{1905E0D5-D13B-50F7-D35B-B2F490C5C3D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth.Core", "Auth.Core\Auth.Core.csproj", "{1905E0D5-D13B-50F7-D35B-B2F490C5C3D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Application", "Auth.Application\Auth.Application.csproj", "{9E0E8150-9E3B-EA87-5C9F-68055BC6148B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth.Application", "Auth.Application\Auth.Application.csproj", "{9E0E8150-9E3B-EA87-5C9F-68055BC6148B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHubService.Domain", "MessageHubService.Domain\MessageHubService.Domain.csproj", "{40227E08-15DA-4D1D-9743-CD9ECDA35B14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHubService.Application", "MessageHubService.Application\MessageHubService.Application.csproj", "{0236AF3E-AD78-4B3F-A894-40D796BD94FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +85,14 @@ Global
 		{9E0E8150-9E3B-EA87-5C9F-68055BC6148B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E0E8150-9E3B-EA87-5C9F-68055BC6148B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E0E8150-9E3B-EA87-5C9F-68055BC6148B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40227E08-15DA-4D1D-9743-CD9ECDA35B14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40227E08-15DA-4D1D-9743-CD9ECDA35B14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40227E08-15DA-4D1D-9743-CD9ECDA35B14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40227E08-15DA-4D1D-9743-CD9ECDA35B14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0236AF3E-AD78-4B3F-A894-40D796BD94FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0236AF3E-AD78-4B3F-A894-40D796BD94FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0236AF3E-AD78-4B3F-A894-40D796BD94FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0236AF3E-AD78-4B3F-A894-40D796BD94FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
