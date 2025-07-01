@@ -55,7 +55,9 @@ namespace MessageHubService.Application.Services
         async Task OnMessage(Message msg, UpdateType type)
         {
             if (msg.Text is not { } text)
+            {
                 Console.WriteLine($"Received a message of type {msg.Type}");
+            }  
             else if (text.StartsWith('/'))
             {
                 var space = text.IndexOf(' ');
