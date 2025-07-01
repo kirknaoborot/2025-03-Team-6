@@ -1,4 +1,8 @@
-﻿using MessageHubService.Domain.Entities;
+﻿using MassTransit;
+using MessageHubService.Domain.Entities;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace MessageHubService.Application.Services
 {
@@ -26,7 +30,7 @@ namespace MessageHubService.Application.Services
             {
                 foreach (var bot in bots)
                 {
-                    var telegramBot = new TelegramBot(bot.Token, bot.Name);
+                    var telegramBot = new TelegramBotService(bot.Token, bot.Name);
 
                     telegramBot.OnIncomingMessage += OnIncomingMessage;
 

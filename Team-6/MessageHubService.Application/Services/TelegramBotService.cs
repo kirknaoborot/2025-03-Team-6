@@ -1,5 +1,9 @@
 ﻿using MessageHubService.Application.Interfaces;
 using MessageHubService.Domain.Entities;
+using Telegram.Bot;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace MessageHubService.Application.Services
 {
