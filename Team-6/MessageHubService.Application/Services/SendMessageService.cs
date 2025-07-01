@@ -6,14 +6,14 @@ using Microsoft.Extensions.Logging;
 
 namespace MessageHubService.Application.Services
 {
-    public class SendMesssageService : BackgroundService
+    public class SendMessageService : BackgroundService
     {
         private readonly List<TelegramBotService> _telegramBots = [];
-        private readonly ILogger<SendMesssageService> _logger;
+        private readonly ILogger<SendMessageService> _logger;
         private readonly IConfiguration _configuration;
         private readonly IBus _bus;
 
-        public SendMesssageService(ILogger<SendMesssageService> logger, IConfiguration configuration, IBus bus)
+        public SendMessageService(ILogger<SendMessageService> logger, IConfiguration configuration, IBus bus)
         {
             _logger = logger;
             _configuration = configuration;
@@ -22,7 +22,7 @@ namespace MessageHubService.Application.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation($"{nameof(SendMesssageService)}.{nameof(ExecuteAsync)}() -> Background service is starting.");
+            _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(ExecuteAsync)}() -> Background service is starting.");
 
             var bots = _configuration.GetSection(nameof(TelegramBotOptionsList)).Get<List<TelegramBotOptions>>();
 
@@ -34,7 +34,7 @@ namespace MessageHubService.Application.Services
 
                     telegramBot.OnIncomingMessage += OnIncomingMessage;
 
-                    _logger.LogInformation($"{nameof(SendMesssageService)}.{nameof(ExecuteAsync)}() -> Start bot: name '{telegramBot.Name}'.");
+                    _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(ExecuteAsync)}() -> Start bot: name '{telegramBot.Name}'.");
 
                     _telegramBots.Add(telegramBot);
                     await telegramBot.Start();
@@ -48,7 +48,7 @@ namespace MessageHubService.Application.Services
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"{nameof(SendMesssageService)}.{nameof(ExecuteAsync)}() -> Background service is stopping.");
+            _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(ExecuteAsync)}() -> Background service is stopping.");
 
             foreach (var bot in _telegramBots)
             {
@@ -58,7 +58,7 @@ namespace MessageHubService.Application.Services
 
         private async void OnIncomingMessage(object sender, MessageEventArgs e)
         {
-            _logger.LogInformation($"{nameof(SendMesssageService)}.{nameof(OnIncomingMessage)}() -> Received text '{e.Text}', message id '{e.Id}', send data '{e.SendData}'");
+            _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(OnIncomingMessage)}() -> Received text '{e.Text}', message id '{e.Id}', send data '{e.SendData}'");
 
             var newInMEssage = new ClientMessage(e.Id, e.Text, e.SendData, "high");
 
