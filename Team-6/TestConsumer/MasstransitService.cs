@@ -22,7 +22,6 @@ namespace TestConsumer
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            {
                 await _busControl.StopAsync(cancellationToken);
         }
     }

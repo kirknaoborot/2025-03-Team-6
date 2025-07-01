@@ -3,7 +3,7 @@ using MessageHubService.Domain.Entities;
 
 namespace TestConsumer
 {
-    class EventConsumer : IConsumer<ClientMessage>
+    public class EventConsumer : IConsumer<ClientMessage>
     {
         public async Task Consume(ConsumeContext<ClientMessage> context)
         {

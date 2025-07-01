@@ -14,7 +14,6 @@
     <ProjectReference Include="..\Auth.Core\Auth.Core.csproj" />
     <ProjectReference Include="..\Auth.DataAccess\Auth.DataAccess.csproj" />
     <ProjectReference Include="..\Auth.Domain\Auth.Domain.csproj" />
-    <ProjectReference Include="..\CitizenRequest.DataAccess\CitizenRequest.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

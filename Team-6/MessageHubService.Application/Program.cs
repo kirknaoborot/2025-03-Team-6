@@ -1,4 +1,10 @@
-﻿var host = CreateHostBuilder(args).Build();
+﻿using MassTransit;
+using MessageHubService.Domain.Entities;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using TestConsumer;
+
+var host = CreateHostBuilder(args).Build();
 host.Run();
 
 static IHostBuilder CreateHostBuilder(string[] args) =>
