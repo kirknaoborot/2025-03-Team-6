@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ConversationService.Application\ConversationService.Application.csproj" />
+      <ProjectReference Include="..\ConversationService.Domain\ConversationService.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
