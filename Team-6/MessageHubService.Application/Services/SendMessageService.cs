@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using Infrastructure.Shared;
+using MassTransit;
 using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

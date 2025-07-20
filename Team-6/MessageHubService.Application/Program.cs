@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using Infrastructure.Shared;
+using MassTransit;
 using MessageHubService.Application.Services;
 using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -13,23 +14,19 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
             .ConfigureServices((hostContext, services) =>
             {
                 var rabbitConfig = hostContext.Configuration
-                .GetSection(nameof(RabbitMqOptions))
-                .Get<RabbitMqOptions>() ?? throw new ArgumentException("Missing RabbitMq configuration section");
+                    .GetSection(nameof(RabbitMqOptions))
+                    .Get<RabbitMqOptions>() ?? throw new ArgumentException("Missing RabbitMq configuration section");
 
-                var recEndp = hostContext.Configuration
-                 .GetSection(nameof(ReceiveEndpointOptions))
-                 .Get<ReceiveEndpointOptions>() ?? throw new ArgumentException("Missing ReceiveEndpointOptions configuration section");
 
                 services.AddMassTransit(x =>
                 {
-                    x.SetSnakeCaseEndpointNameFormatter();
-                    x.UsingRabbitMq((IBusRegistrationContext context, IRabbitMqBusFactoryConfigurator cfg) =>
+                    x.UsingRabbitMq((context, cfg) =>
                     {
                         cfg.Host(rabbitConfig.Host, "/", h => {
                             h.Username(rabbitConfig.Username);
                             h.Password(rabbitConfig.Password);
                         });
-                        cfg.Message<ClientMessage>(m => m.SetEntityName(recEndp.ExchangeName));
+                        cfg.Message<ClientMessage>(m => m.SetEntityName("ClientMessage"));
                         cfg.Send<ClientMessage>(s =>
                         {
                             s.UseRoutingKeyFormatter(m => m.Message.Priority);

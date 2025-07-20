@@ -1,4 +1,4 @@
-﻿namespace MessageHubService.Domain.Entities
+﻿namespace Infrastructure.Shared
 {
     public class RabbitMqOptions
     {

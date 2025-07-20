@@ -1,10 +1,9 @@
 ﻿using Infrastructure.Shared;
 using MassTransit;
-using MessageHubService.Domain.Entities;
 
-namespace TestConsumer
+namespace OrchestratService.Application
 {
-    public class EventConsumer : IConsumer<ClientMessage>
+    public class ClientMessageEventConsumer : IConsumer<ClientMessage>
     {
         public async Task Consume(ConsumeContext<ClientMessage> context)
         {

@@ -49,6 +49,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConversationService.Domain"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConversationService.Infrastructure", "ConversationService.Infrastructure\ConversationService.Infrastructure.csproj", "{06D8CD8E-6239-47A2-9990-8BF130EC9D65}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrchestratService", "OrchestratService", "{EABFD18F-2AF0-4472-A20E-C81D15DFE575}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrchestratService.Application", "OrchestratService.Application\OrchestratService.Application.csproj", "{AAF4FA07-EF52-4FDF-903E-EAA32CDB7D03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +131,10 @@ Global
 		{06D8CD8E-6239-47A2-9990-8BF130EC9D65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06D8CD8E-6239-47A2-9990-8BF130EC9D65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06D8CD8E-6239-47A2-9990-8BF130EC9D65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAF4FA07-EF52-4FDF-903E-EAA32CDB7D03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAF4FA07-EF52-4FDF-903E-EAA32CDB7D03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAF4FA07-EF52-4FDF-903E-EAA32CDB7D03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAF4FA07-EF52-4FDF-903E-EAA32CDB7D03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -149,6 +157,7 @@ Global
 		{D51D4004-17DE-4451-A41D-15FBBA319E72} = {512721CB-BE28-4083-8AFE-B29460AFEE5E}
 		{8DFF7C49-9068-4F0C-B452-8D75E9384799} = {512721CB-BE28-4083-8AFE-B29460AFEE5E}
 		{06D8CD8E-6239-47A2-9990-8BF130EC9D65} = {512721CB-BE28-4083-8AFE-B29460AFEE5E}
+		{AAF4FA07-EF52-4FDF-903E-EAA32CDB7D03} = {EABFD18F-2AF0-4472-A20E-C81D15DFE575}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {290C0D19-5A46-4060-83F8-20810C11AE63}
