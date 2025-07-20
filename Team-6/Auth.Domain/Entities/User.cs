@@ -4,33 +4,33 @@ namespace Authorization.Models
     public class User
     {
         public const int max_name_lenght = 250;
-        public User(string full_name, string login, string password_hash, string is_active, string status, DateTime? last_seen, string role)
+        public User(string fullName, string login, string PasswordHash, string isActive, string status, DateTime? lastSeen, string role)
         {
-            Full_name= full_name;
+            FullName= fullName;
             Login = login;
-            Password_hash = password_hash;
-            Is_active = is_active;
+            PasswordsHash  = PasswordHash;
+            IsActive = isActive;
             Status = status;
-            Last_seen = last_seen;
+            LastSeen = lastSeen;
             Role = role;
         }
 
-        public string Full_name { get; set; }
+        public string FullName { get; set; }
         public string Login { get; set; }
-        public string Password_hash { get; set; }
-        public string Is_active { get; set; }
+        public string PasswordsHash { get; set; }
+        public string IsActive { get; set; }
         public string Status { get; set; }
-        public DateTime? Last_seen { get; set; }
+        public DateTime? LastSeen { get; set; }
         public string Role { get; set; }
 
-        public static (User user, string error) Create(string full_name, string login, string password_hash, string is_active, string status, DateTime? last_seen, string role)
+        public static (User user, string error) Create(string FullName, string Login, string PasswordsHash, string IsActive, string Status, DateTime? LastSeen, string Role)
         {
             var error = string.Empty;
-            if (string.IsNullOrEmpty(full_name) || full_name.Length > max_name_lenght)
+            if (string.IsNullOrEmpty(FullName) || FullName.Length > max_name_lenght)
             {
                 error = "ФИО не может быть пустым или содержать более 250 символов";
             }
-            var user = new User( full_name,  login,  password_hash,  is_active,  status,  last_seen,  role);
+            var user = new User( FullName,  Login,  PasswordsHash,  IsActive,  Status,  LastSeen,  Role);
             return (user, error); 
         }
     }

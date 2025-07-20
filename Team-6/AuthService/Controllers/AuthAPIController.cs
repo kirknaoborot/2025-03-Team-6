@@ -1,13 +1,16 @@
 ﻿using Auth.Core.Dto;
 using Auth.Core.IServices;
+using Auth.Core.Services;
+using Auth.DataAccess;
+using Auth.Domain.Entities;
 using AuthService.Contracts;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Controllers
 {
     [Route("api/auth")]
-    [Authorize]
     [ApiController]
     public class AuthAPIController : ControllerBase
     {
@@ -15,15 +18,21 @@ namespace AuthService.Controllers
         private readonly IConfiguration _configuration;
         protected ResponseDto _response;
 
+        private readonly IJwtTokenGenerator _tokenGenerator;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContexts _context;
 
-        public AuthAPIController(IUserService authService, IConfiguration configuration)
+
+        public AuthAPIController(IUserService authService, IConfiguration configuration, IJwtTokenGenerator tokenGenerator, UserManager<ApplicationUser> userManager, ApplicationDbContexts context)
         {
             _authService = authService;
             _configuration = configuration;
             _response = new();
+            _tokenGenerator = tokenGenerator;
+            _userManager = userManager; 
+            _context = context;
         }
 
-        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterationRequestDto model)
         {
@@ -38,20 +47,23 @@ namespace AuthService.Controllers
             return Ok(_response);
         }
 
-        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
-            var loginResponse = await _authService.Login(model);
-            if (loginResponse.User == null)
+            try
+            {
+                var authResponse = await _authService.Login(model);
+                _response.Result = authResponse;
+                return Ok(_response);
+            }
+            catch (UnauthorizedAccessException)
             {
                 _response.IsSuccess = false;
                 _response.Message = "Логин или пароль неверны";
                 return BadRequest(_response);
             }
-            _response.Result = loginResponse;
-            return Ok(_response);
         }
+
 
         [HttpGet]
         public async Task<ActionResult<List<AuthResponse>>> Get()
@@ -60,13 +72,97 @@ namespace AuthService.Controllers
             var response = from c1 in author
                            select new
                            {
-                               Full_name = c1.Full_name,
-                               Is_active = c1.Is_active,
+                               FullName = c1.FullName,
+                               IsActive = c1.IsActive,
                                Status = c1.Status,
-                               Last_seen = c1.Last_seen,
+                               LastSeen = c1.LastSeen,
                                Role = c1.Role,
                            };
             return Ok(response);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
+        {
+            if (request is null || string.IsNullOrWhiteSpace(request.RefreshToken))
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Invalid refresh token";
+                return BadRequest(_response);
+            }
+
+            // 1. Извлекаем access token из заголовка
+            var accessToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Отсутствует токен доступа";
+                return BadRequest(_response);
+            }
+
+            // 2. Валидируем access token и получаем claims
+            var principal = _tokenGenerator.GetPrincipalFromToken(accessToken);
+            if (principal == null)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Неверный токен доступа";
+                return BadRequest(_response);
+            }
+
+            var userId = principal.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Неверный ID пользователя в токене";
+                return BadRequest(_response);
+            }
+
+            // 3. Находим refresh token в БД
+            var storedToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == request.RefreshToken);
+
+            if (storedToken == null || storedToken.IsRevoked || storedToken.IsUsed)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Недействительный или отозванный токен Refresh";
+                return BadRequest(_response);
+            }
+
+            if (storedToken.Expires < DateTime.UtcNow)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Refresh token истёк";
+                return BadRequest(_response);
+            }
+
+            // 4. Проверяем, что UserId из access token совпадает с тем, кто владеет refresh token
+            if (storedToken.UserId != userId)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Refresh token не соответствует пользователю";
+                return BadRequest(_response);
+            }
+
+            // 5. Получаем пользователя
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Пользователь не найден";
+                return BadRequest(_response);
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // 6. Генерируем новые токены
+            var newAuthTokens = await _tokenGenerator.GenerateAuthTokens(user, roles);
+
+            // 7. Отмечаем старый refresh token как использованный
+            storedToken.IsUsed = true;
+            await _context.SaveChangesAsync();
+
+            _response.Result = newAuthTokens;
+            return Ok(_response);
         }
     }
 }

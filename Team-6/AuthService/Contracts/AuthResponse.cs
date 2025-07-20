@@ -1,4 +1,4 @@
 ﻿namespace AuthService.Contracts
 {
-    public record AuthResponse(string Full_name, string Is_active, string Status, DateTime? Last_seen, string Role);
+    public record AuthResponse(string FullName, string IsActive, string Status, DateTime? LastSeen, string Role);
 }

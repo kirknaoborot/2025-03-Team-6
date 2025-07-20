@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
+
 namespace Auth.Application.HubSignalR
 {
     public class AuthErrorDescriber : IdentityErrorDescriber

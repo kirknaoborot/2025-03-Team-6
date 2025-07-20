@@ -7,7 +7,7 @@ namespace Auth.Core.IServices
     {
         Task<bool> AssignRole(string email, string roleName);
         Task<List<User>> GetUser();
-        Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
+        Task<AuthResponseDto> Login(LoginRequestDto loginRequestDto);
         Task<string> Register(RegisterationRequestDto registrationRequestDto);
     }
 }

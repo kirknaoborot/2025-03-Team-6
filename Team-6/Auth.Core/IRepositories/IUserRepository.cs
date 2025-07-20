@@ -1,6 +1,6 @@
 ﻿using Authorization.Models;
 
-namespace CitizenRequest.Core.IRepositories
+namespace Auth.Core.IRepositories
 {
     public interface IUserRepository
     {

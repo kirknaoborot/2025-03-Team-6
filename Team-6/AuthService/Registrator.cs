@@ -1,10 +1,11 @@
 ﻿using Auth.Application.HubSignalR;
 using Auth.Application.Services;
+using Auth.Core.IRepositories;
 using Auth.Core.IServices;
 using Auth.DataAccess;
+using Auth.DataAccess.Repositories;
 using AuthService.Settings;
-using CitizenRequest.Core.IRepositories;
-using CitizenRequest.DataAccess.Repositories;
+
 
 namespace AuthService
 {

@@ -3,9 +3,11 @@ using Auth.Core.Dto;
 using Auth.Core.IServices;
 using Auth.DataAccess;
 using Authorization.Models;
-using CitizenRequest.Core.IRepositories;
-using CitizenRequest.Domain.Entities;
+using Auth.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Auth.Core.Services;
+using Auth.Core.IRepositories;
+
 
 namespace Auth.Application.Services
 {
@@ -43,63 +45,87 @@ namespace Auth.Application.Services
             return false;
         }
 
-        public async Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto)
+        public async Task<AuthResponseDto> Login(LoginRequestDto loginRequestDto)
         {
             var user = _db.ApplicationUsers.FirstOrDefault(u => u.Login.ToLower() == loginRequestDto.Login.ToLower());
-
             bool isValid = await _userManager.CheckPasswordAsync(user, loginRequestDto.Password_hash);
 
-            if (user == null || isValid == false)
+            if (user == null || !isValid)
             {
-                return new LoginResponseDto() { User = null, Token = "" };
+                throw new UnauthorizedAccessException("Логин или пароль неверны");
             }
 
-            //if user was found , Generate JWT Token
             var roles = await _userManager.GetRolesAsync(user);
-            var token = _jwtTokenGenerator.GenerateToken(user, roles);
+            var authTokens = await _jwtTokenGenerator.GenerateAuthTokens(user, roles);
 
             UserDto userDTO = new()
             {
                 Login = user.Login,
                 ID = user.Id,
-                Full_name = user.Full_name,
-                Is_active = user.Is_active,
+                FullName = user.FullName,
+                IsActive = user.IsActive,
                 Status = user.Status,
-                Last_seen = user.Last_seen,
+                LastSeen = user.LastSeen,
                 Role = user.Role,
             };
 
-            LoginResponseDto loginResponseDto = new LoginResponseDto()
-            {
-                User = userDTO,
-                Token = token
-            };
+            authTokens.User = userDTO;
 
-            return loginResponseDto;
+            return authTokens;
         }
+
+        //public async Task<string> Register(RegisterationRequestDto registrationRequestDto)
+        //{
+        //    var user = new ApplicationUser
+        //    {
+        //        UserName = registrationRequestDto.Login,
+        //        Email = registrationRequestDto.Login,
+        //        FullName = registrationRequestDto.FullName,
+        //        IsActive = registrationRequestDto.IsActive,
+        //        Status = registrationRequestDto.Status,
+        //        LastSeen = registrationRequestDto.LastSeen,
+        //        Role = registrationRequestDto.Role
+        //    };
+
+        //    var result = await _userManager.CreateAsync(user, registrationRequestDto.Password_hash);
+
+        //    if (result.Succeeded)
+        //    {
+        //        if (!await _roleManager.RoleExistsAsync(registrationRequestDto.Role))
+        //        {
+        //            await _roleManager.CreateAsync(new IdentityRole(registrationRequestDto.Role));
+        //        }
+
+        //        await _userManager.AddToRoleAsync(user, registrationRequestDto.Role);
+
+        //        return "";
+        //    }
+
+        //    return result.Errors.FirstOrDefault()?.Description;
+        //}
 
         public async Task<string> Register(RegisterationRequestDto registrationRequestDto)
         {
             ApplicationUser user = new()
             {
-                UserName = registrationRequestDto.Full_name,
+                UserName = registrationRequestDto.FullName,
                 Email = registrationRequestDto.Login,
-                Full_name = registrationRequestDto.Full_name,
+                FullName = registrationRequestDto.FullName,
                 Login = registrationRequestDto.Login,
-                Is_active = registrationRequestDto.Is_active,
+                IsActive = registrationRequestDto.IsActive,
                 Status = registrationRequestDto.Status,
-                Last_seen = registrationRequestDto.Last_seen,
+                LastSeen = registrationRequestDto.LastSeen,
                 Role = registrationRequestDto.Role
             };
 
             try
             {
-                var result = await _userManager.CreateAsync(user, registrationRequestDto.Password_hash);
+                var result = await _userManager.CreateAsync(user, registrationRequestDto.PasswordHash);
                 var errorDescriber = _userManager.ErrorDescriber as AuthErrorDescriber;
 
                 if (result.Succeeded)
                 {
-                    var userToReturn = _db.ApplicationUsers.First(u => u.Full_name == registrationRequestDto.Full_name);
+                    var userToReturn = _db.ApplicationUsers.First(u => u.FullName == registrationRequestDto.FullName);
 
 
                     if (!_roleManager.RoleExistsAsync(registrationRequestDto.Role).GetAwaiter().GetResult())
@@ -115,17 +141,15 @@ namespace Auth.Application.Services
                     {
                         Login = userToReturn.Login,
                         ID = userToReturn.Id,
-                        Full_name = userToReturn.Full_name,
-                        Is_active = userToReturn.Is_active,
+                        FullName = userToReturn.FullName,
+                        IsActive = userToReturn.IsActive,
                         Status = userToReturn.Status,
-                        Last_seen = userToReturn.Last_seen,
+                        LastSeen = userToReturn.LastSeen,
                         Role = userToReturn.Role
                     };
 
                     return "";
-
                 }
-
                 else
                 {
                     return result.Errors.FirstOrDefault().Description;

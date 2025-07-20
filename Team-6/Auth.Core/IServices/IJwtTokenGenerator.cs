@@ -1,9 +1,15 @@
-﻿using CitizenRequest.Domain.Entities;
+﻿using Auth.Core.Dto;
+using Auth.Domain.Entities;
+using System.Security.Claims;
 
-namespace Auth.Core.IServices
+namespace Auth.Core.Services
 {
     public interface IJwtTokenGenerator
     {
-        string GenerateToken(ApplicationUser applicationUser, IEnumerable<string> roles);
+        string GenerateAccessToken(ApplicationUser applicationUser, IEnumerable<string> roles);
+        Task<AuthResponseDto> GenerateAuthTokens(ApplicationUser user, IEnumerable<string> roles);
+        string GenerateRefreshToken();
+        ClaimsPrincipal GetPrincipalFromToken(string token);
+        DateTime GetRefreshTokenExpiryDate();
     }
 }

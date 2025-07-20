@@ -1,17 +1,17 @@
 ﻿using Auth.Application.HubSignalR;
 using Auth.Application.Services;
-using Auth.Core.IServices;
+using Auth.Core.Services;
 using Auth.DataAccess;
+using Auth.Domain.Entities;
 using AuthService.Settings;
-using CitizenRequest.Domain.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Prometheus;
 using Serilog;
 using System.Text;
+
 
 namespace AuthService
 {
@@ -24,7 +24,6 @@ namespace AuthService
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-           // Configuration.GetSection("ConnectionStrings").Bind(ConnectionStrings);
             Configuration.GetSection(ConnectionOptions.Section).Bind(ConnectionStrings);
             Configuration.GetSection($"{ConnectionOptions.Section}:{RmqSettings.Section}").Bind(ConnectionStrings.RmqSettings);
         }
@@ -49,6 +48,7 @@ namespace AuthService
                 AddEntityFrameworkStores<ApplicationDbContexts>()
                 .AddErrorDescriber<AuthErrorDescriber>()
                 .AddDefaultTokenProviders();
+
 
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
     
@@ -155,8 +155,7 @@ namespace AuthService
             app.UseWebSockets();
 
             app.UseCors("ApiCorsPolicy");
-            app.UseMetricServer();
-            app.UseHttpMetrics();
+
 
             app.UseRouting();
 
@@ -167,7 +166,6 @@ namespace AuthService
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<MessageHub>("/messageHub");
-                endpoints.MapMetrics();
             });
         }
     }
