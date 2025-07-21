@@ -2,7 +2,15 @@
 {
     public class LoginRequestDto
     {
+     
+        /// <summary>
+        /// Логин пользователя
+        /// </summary>
         public string Login { get; set; }
-        public string Password_hash { get; set; }
+        
+        /// <summary>
+        /// Пароль
+        /// </summary>
+        public string Password { get; set; }
     }
 }

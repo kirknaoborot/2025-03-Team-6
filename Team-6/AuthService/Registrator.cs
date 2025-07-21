@@ -1,5 +1,4 @@
-﻿using Auth.Application.HubSignalR;
-using Auth.Application.Services;
+﻿using Auth.Application.Services;
 using Auth.Core.IRepositories;
 using Auth.Core.IServices;
 using Auth.DataAccess;
@@ -15,17 +14,17 @@ namespace AuthService
         public static IServiceCollection AddServices(this IServiceCollection services, ConnectionOptions connectionSettings, IConfiguration configuration)
         {
             services
-                    .InstallServices()
-                    .ConfigureContext(connectionSettings.ApplicationDbContext)
-                    .InstallRepositories()
-                    .InstallSignalR();
+                .InstallServices()
+                .ConfigureContext(connectionSettings.ApplicationDbContext)
+                .InstallRepositories();
             return services;
         }
 
         private static IServiceCollection InstallServices(this IServiceCollection serviceCollection)
         {
             serviceCollection
-                .AddTransient<IUserService, UserService>();
+                .AddTransient<IUserService, UserService>()
+                .AddTransient<IAuthService, Auth.Application.Services.AuthService>();
 
             return serviceCollection;
         }
@@ -33,17 +32,9 @@ namespace AuthService
         private static IServiceCollection InstallRepositories(this IServiceCollection serviceCollection)
         {
             serviceCollection
-                .AddTransient<IUserRepository, UserRepository>();
+                .AddTransient<IUserRepository, UserRepository>()
+                .AddTransient<ITokenRepository, TokenRepository>();
 
-            return serviceCollection;
-        }
-
-        private static IServiceCollection InstallSignalR(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddSignalR().AddHubOptions<MessageHub>(options =>
-            {
-                options.EnableDetailedErrors = true;
-            });
             return serviceCollection;
         }
     }

@@ -4,13 +4,30 @@ namespace Auth.Domain.Entities
 {
     public class RefreshToken
     {
+        /// <summary>
+        /// Идентификатор записи
+        /// </summary>
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
+        
+        /// <summary>
+        /// Токен доступа
+        /// </summary>
         public string Token { get; set; }
-        public string UserId { get; set; }
+        
+        /// <summary>
+        /// Период доступа
+        /// </summary>
         public DateTime Expires { get; set; }
-        public bool IsRevoked { get; set; }
-        public DateTime? RevokedDate { get; set; }
+        
+        /// <summary>
+        /// Идентификатор пользователя
+        /// </summary>
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Флаг отозван ли токен
+        /// </summary>
         public bool IsUsed { get; set; }
     }
 }

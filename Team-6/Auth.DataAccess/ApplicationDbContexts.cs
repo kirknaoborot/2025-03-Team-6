@@ -5,13 +5,13 @@ using Auth.DataAccess.Configuration;
 
 namespace Auth.DataAccess
 {
-    public class ApplicationDbContexts : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContexts : DbContext
     {
    
         public ApplicationDbContexts(DbContextOptions<ApplicationDbContexts> options) : base(options)
         { }
 
-        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<User> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
