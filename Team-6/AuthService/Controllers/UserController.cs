@@ -5,13 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Controllers;
 
+[Route("api/user")]
+[ApiController]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
 
     public UserController(IUserService userService)
     {
-        userService = _userService;
+        _userService = userService;
     }
     
     /// <summary>

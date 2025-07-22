@@ -4,26 +4,26 @@
   },
   "Routes": [
     {
-      "UpstreamPathTemplate": "/auth/token",
       "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/token",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/auth/login",
+      "DownstreamPathTemplate": "/api/auth/login",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7217
+          "Port": 57685
         }
       ]
     },
     {
-      "UpstreamPathTemplate": "/data/data",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/WeatherForecast/GetWeatherForecast",
-      "DownstreamScheme": "https",
+      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamPathTemplate": "/user/create",
+      "DownstreamPathTemplate": "/api/user/user",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7227
+          "Port": 57685
         }
       ]
     }
