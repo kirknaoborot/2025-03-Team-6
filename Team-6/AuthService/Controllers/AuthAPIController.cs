@@ -7,6 +7,7 @@ using AuthService.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 
 namespace AuthService.Controllers
 {
@@ -21,6 +22,7 @@ namespace AuthService.Controllers
         private readonly IJwtTokenGenerator _tokenGenerator;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContexts _context;
+        private static readonly ConcurrentDictionary<string, ApplicationUser> _activeUsers = new();
 
 
         public AuthAPIController(IUserService authService, IConfiguration configuration, IJwtTokenGenerator tokenGenerator, UserManager<ApplicationUser> userManager, ApplicationDbContexts context)
@@ -54,6 +56,21 @@ namespace AuthService.Controllers
             {
                 var authResponse = await _authService.Login(model);
                 _response.Result = authResponse;
+
+        
+                if (authResponse.User != null)
+                {
+                    var user = await _userManager.FindByIdAsync(authResponse.User.ID);
+                    if (user != null)
+                    {
+                        user.LastSeen = DateTime.UtcNow;
+                        await _userManager.UpdateAsync(user);
+
+            
+                        _activeUsers.AddOrUpdate(authResponse.User.ID, user, (key, oldValue) => user);
+                        System.Console.WriteLine($"Пользователь {user.FullName} ({user.UserName}) вошел в систему и добавлен в список активных.");
+                    }
+                }
                 return Ok(_response);
             }
             catch (UnauthorizedAccessException)
@@ -61,6 +78,36 @@ namespace AuthService.Controllers
                 _response.IsSuccess = false;
                 _response.Message = "Логин или пароль неверны";
                 return BadRequest(_response);
+            }
+        }
+
+        [HttpGet("get-active-users")]
+        public async Task<ActionResult<List<AuthResponse>>> GetActiveUsers()
+        {
+            try
+            {
+                var activeUsersList = new List<AuthResponse>();
+
+                foreach (var kvp in _activeUsers)
+                {
+                    var user = kvp.Value;
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    activeUsersList.Add(new AuthResponse(
+                        user.FullName ?? "",
+                        "true",
+                        user.Status ?? "online",
+                        user.LastSeen ?? DateTime.UtcNow,
+                        string.Join(",", roles)
+                    ));
+                }
+
+                return Ok(activeUsersList);
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Ошибка при получении активных пользователей: {ex.Message}");
+                return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }
 
