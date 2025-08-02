@@ -8,7 +8,7 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
 {
     public void Configure(EntityTypeBuilder<Conversation> entity)
     {
-        entity.ToTable("conversations");
+        entity.ToTable("conversations", schema: "conversation");
 
         entity.HasKey(e => e.ConversationId);
         entity.Property(e => e.ConversationId).HasColumnName("conversation_id");

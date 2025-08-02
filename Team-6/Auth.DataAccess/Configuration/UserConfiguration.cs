@@ -12,6 +12,11 @@ namespace Auth.DataAccess.Configuration
 
             builder.ToTable("users", "auth");
 
+            builder.Property(e => e.Id)
+                .HasColumnName("id")
+                .IsRequired()
+                .HasMaxLength(100);
+            
             builder.Property(e => e.FullName)
                 .HasColumnName("full_name")
                 .IsRequired()

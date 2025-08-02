@@ -50,11 +50,16 @@ namespace AuthService
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            services.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
+            services.AddCors(options =>
             {
-                builder.WithOrigins("http://localhost:3000").
-                AllowAnyMethod().AllowAnyHeader();
-            }));
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
 
             // использование Bearer токенов
             services.AddSwaggerGen(options =>
@@ -136,9 +141,8 @@ namespace AuthService
             app.UseHttpsRedirection();
             app.UseWebSockets();
 
-            app.UseCors("ApiCorsPolicy");
-
-
+            app.UseCors("AllowFrontend");
+            
             app.UseRouting();
 
             app.UseAuthentication();

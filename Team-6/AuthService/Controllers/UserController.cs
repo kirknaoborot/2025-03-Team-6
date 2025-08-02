@@ -71,4 +71,38 @@ public class UserController : ControllerBase
 
         return Ok();
     }
+    /*
+    /// <summary>
+    /// Метод получения активных пользователей
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("get-active-users")]
+    public async Task<ActionResult<List<AuthResponse>>> GetActiveUsers()
+    {
+        try
+        {
+            var activeUsersList = new List<AuthResponse>();
+
+            foreach (var kvp in _activeUsers)
+            {
+                var user = kvp.Value;
+                var roles = await _userManager.GetRolesAsync(user);
+
+                activeUsersList.Add(new AuthResponse(
+                    user.FullName ?? "",
+                    "true",
+                    user.Status ?? "online",
+                    user.LastSeen ?? DateTime.UtcNow,
+                    string.Join(",", roles)
+                ));
+            }
+
+            return Ok(activeUsersList);
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"Ошибка при получении активных пользователей: {ex.Message}");
+            return StatusCode(500, "Внутренняя ошибка сервера");
+        }
+    }*/
 }

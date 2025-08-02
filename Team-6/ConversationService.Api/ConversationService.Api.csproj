@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ConversationService.Application\ConversationService.Application.csproj" />
+      <ProjectReference Include="..\ConversationService.Infrastructure\ConversationService.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

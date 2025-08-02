@@ -11,7 +11,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 57685
+          "Port": 56468
         }
       ]
     },
@@ -23,7 +23,19 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 57685
+          "Port": 56468
+        }
+      ]
+    },
+    {
+      "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamPathTemplate": "/conversation/conversations",
+      "DownstreamPathTemplate": "/api/conversation/conversations",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5235
         }
       ]
     }
