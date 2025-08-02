@@ -4,21 +4,35 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Auth.DataAccess.Configuration
 {
-    public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
+    public class UserConfiguration : IEntityTypeConfiguration<User>
     {
-        public void Configure(EntityTypeBuilder<ApplicationUser> builder)
+        public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasKey(e => e.Id);
 
-            builder.ToTable("Users", "handbooks");
+            builder.ToTable("users", "auth");
 
-            builder.Property(e => e.FullName).IsRequired(false).HasMaxLength(100);
-            builder.Property(e => e.Login).IsRequired(false);
-            builder.Property(e => e.PasswordsHash).IsRequired(false);
-            builder.Property(e => e.IsActive).IsRequired(false);
-            builder.Property(e => e.Status).IsRequired(false).HasMaxLength(20);
-            builder.Property(e => e.LastSeen).IsRequired(false).HasColumnType("date");
-            builder.Property(e => e.Role).IsRequired(false).HasMaxLength(50);
+            builder.Property(e => e.FullName)
+                .HasColumnName("full_name")
+                .IsRequired()
+                .HasMaxLength(100);
+            
+            builder.Property(e => e.Login)
+                .HasColumnName("login")
+                .IsRequired();
+            
+            builder.Property(e => e.PasswordsHash)
+                .HasColumnName("passwords_hash")
+                .IsRequired();
+            
+            builder.Property(e => e.IsActive)
+                .HasColumnName("is_active")
+                .IsRequired();
+            
+            builder.Property(e => e.Role)
+                .HasColumnName("role")
+                .IsRequired()
+                .HasMaxLength(50);
         }
     }
 }

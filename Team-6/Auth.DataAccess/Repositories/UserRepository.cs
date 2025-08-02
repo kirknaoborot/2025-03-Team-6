@@ -1,12 +1,12 @@
 ﻿using Auth.Core.IRepositories;
-using Authorization.Models;
+using Auth.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace  Auth.DataAccess.Repositories
 {
-    public class UserRepository :IUserRepository
+    public class UserRepository : IUserRepository
     {
-        public readonly ApplicationDbContexts _dbContext;
+        private readonly ApplicationDbContexts _dbContext;
 
         public UserRepository(ApplicationDbContexts dbContext)
         {
@@ -15,14 +15,42 @@ namespace  Auth.DataAccess.Repositories
 
         public async Task<List<User>> Get()
         {
-            var authorEntities = await _dbContext.ApplicationUsers
-              .AsNoTracking()
-              .ToListAsync();
-            var auth = authorEntities
-                .Select(x => User.Create(x.FullName, x.Login, x.PasswordsHash, x.IsActive, x.Status, x.LastSeen, x.Role).user)
-                .ToList();
+            var users = await _dbContext.Users
+                .AsNoTracking()
+                .Where(x => x.IsActive)
+                .ToListAsync();
 
-            return auth;
+            return users;
+        }
+        
+        public async Task<User> Get(Guid id)
+        {
+            var user = await _dbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id && x.IsActive);
+
+            return user;
+        }
+        
+        public async Task<User> Get(string login)
+        {
+            var user = await _dbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Login.ToLower() == login.ToLower() && x.IsActive);
+
+            return user;
+        }
+
+        public async Task Create(User user)
+        {
+            await _dbContext.Users.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task Delete(Guid id)
+        {
+            await _dbContext.Users
+                .ExecuteUpdateAsync(x=> x.SetProperty(y => y.IsActive, false));
         }
     }
 }

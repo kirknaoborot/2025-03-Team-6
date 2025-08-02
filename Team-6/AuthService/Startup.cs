@@ -1,5 +1,4 @@
-﻿using Auth.Application.HubSignalR;
-using Auth.Application.Services;
+﻿using Auth.Application.Services;
 using Auth.Core.Services;
 using Auth.DataAccess;
 using Auth.Domain.Entities;
@@ -44,27 +43,10 @@ namespace AuthService
 
             services.Configure<JwtOptions>(Configuration.GetSection("ApiSettings:JwtOptions"));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>().
-                AddEntityFrameworkStores<ApplicationDbContexts>()
-                .AddErrorDescriber<AuthErrorDescriber>()
-                .AddDefaultTokenProviders();
-
-
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-    
-
+            
             services.AddEndpointsApiExplorer();
-
-
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.User.AllowedUserNameCharacters =
-                "абвгдеёжзийклмнопрстуфчцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФЧЦЧШЩЪЫЬЭЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/";
-                options.User.RequireUniqueEmail = true;
-
-            });
-
-
+            
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
@@ -165,7 +147,6 @@ namespace AuthService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<MessageHub>("/messageHub");
             });
         }
     }

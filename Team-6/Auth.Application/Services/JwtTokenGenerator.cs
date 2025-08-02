@@ -22,19 +22,18 @@ namespace Auth.Application.Services
             _context = context;
         }
 
-        public string GenerateAccessToken(ApplicationUser applicationUser, IEnumerable<string> roles)
+        public string GenerateAccessToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
 
             var claimList = new List<Claim>
             {
-                new Claim("id", applicationUser.Id),
-                new Claim(JwtRegisteredClaimNames.Email, applicationUser.Login),
-                new Claim(JwtRegisteredClaimNames.Name, applicationUser.FullName)
+                new Claim("id", user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Login),
+                new Claim(JwtRegisteredClaimNames.Name, user.FullName),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
             };
-
-            claimList.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -62,9 +61,9 @@ namespace Auth.Application.Services
             return DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpirationDays);
         }
 
-        public async Task<AuthResponseDto> GenerateAuthTokens(ApplicationUser user, IEnumerable<string> roles)
+        public async Task<AuthResponseDto> GenerateAuthTokens(User user)
         {
-            var accessToken = GenerateAccessToken(user, roles);
+            var accessToken = GenerateAccessToken(user);
             var refreshToken = GenerateRefreshToken();
             var refreshTokenExpiry = GetRefreshTokenExpiryDate();
 
@@ -74,8 +73,7 @@ namespace Auth.Application.Services
                 Token = refreshToken,
                 UserId = user.Id,
                 Expires = refreshTokenExpiry,
-                IsUsed = false,
-                IsRevoked = false
+                IsUsed = false
             });
 
             await _context.SaveChangesAsync();
@@ -87,32 +85,26 @@ namespace Auth.Application.Services
                 RefreshTokenExpiryTime = refreshTokenExpiry
             };
         }
+
         public ClaimsPrincipal GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
 
-            try
+            var tokenValidationParameters = new TokenValidationParameters
             {
-                var tokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidIssuer = _jwtOptions.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = _jwtOptions.Audience,
-                    ValidateLifetime = false,
-                    ClockSkew = TimeSpan.Zero
-                };
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidIssuer = _jwtOptions.Issuer,
+                ValidateAudience = true,
+                ValidAudience = _jwtOptions.Audience,
+                ValidateLifetime = false,
+                ClockSkew = TimeSpan.Zero
+            };
 
-                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
-                return principal;
-            }
-            catch
-            {
-                return null;
-            }
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+            return principal;
         }
     }
 }

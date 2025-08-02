@@ -6,10 +6,7 @@ namespace Auth.Core.Services
 {
     public interface IJwtTokenGenerator
     {
-        string GenerateAccessToken(ApplicationUser applicationUser, IEnumerable<string> roles);
-        Task<AuthResponseDto> GenerateAuthTokens(ApplicationUser user, IEnumerable<string> roles);
-        string GenerateRefreshToken();
+        Task<AuthResponseDto> GenerateAuthTokens(User user);
         ClaimsPrincipal GetPrincipalFromToken(string token);
-        DateTime GetRefreshTokenExpiryDate();
     }
 }
