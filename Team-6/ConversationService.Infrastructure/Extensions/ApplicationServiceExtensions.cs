@@ -26,8 +26,8 @@ public static class ApplicationServiceExtensions
             {
                 cfg.Host("localhost", "/", h =>
                 {
-                    h.Username("admin"); // или guest
-                    h.Password("admin"); // или guest
+                    h.Username("guest"); // или guest
+                    h.Password("guest"); // или guest
                 });
 
                 cfg.ReceiveEndpoint("create-conversation-queue", e =>

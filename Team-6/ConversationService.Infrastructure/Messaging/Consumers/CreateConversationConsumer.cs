@@ -23,8 +23,8 @@ public class CreateConversationConsumer : IConsumer<CreateConversationCommand>
         {
             ConversationId = cmd.ConversationId,
             Message = cmd.Message,
-            Channel = Enum.Parse<ChannelType>(cmd.Channel),
-            Status = Enum.Parse<StatusType>(cmd.Status),
+            Channel = cmd.Channel,
+            Status = cmd.Status,
             WorkerId = cmd.WorkerId,
             CreateDate = cmd.CreateDate
         };
