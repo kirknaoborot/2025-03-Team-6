@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface Conversation {
-  id: string;
-  createdAt: string;
+  conversationId: string;
+  createDate: string;
   status: string;
+  channel: string;
+  message: string;
+  workerId: string;
 }
 
 export default function Conversations() {
@@ -17,7 +20,7 @@ export default function Conversations() {
     const fetchConversations = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        const res = await fetch('http://localhost:5325/conversations', {
+        const res = await fetch('http://localhost:56466/conversation/conversations', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -73,16 +76,20 @@ export default function Conversations() {
           <table className="table table-bordered table-hover align-middle">
             <thead className="table-light">
               <tr>
-                <th>Номер обращения</th>
-                <th>Создано</th>
+                <th>ID</th>
+                <th>Дата создания</th>
+                <th>Канал</th>
+                <th>Сообщение</th>
                 <th>Статус</th>
               </tr>
             </thead>
             <tbody>
               {conversations.map((conv) => (
-                <tr key={conv.id}>
-                  <td>{conv.id}</td>
-                  <td>{new Date(conv.createdAt).toLocaleString()}</td>
+                <tr key={conv.conversationId}>
+                  <td>{conv.conversationId}</td>
+                  <td>{new Date(conv.createDate).toLocaleString()}</td>
+                  <td>{conv.channel}</td>
+                  <td>{conv.message}</td>
                   <td>{renderStatusBadge(conv.status)}</td>
                 </tr>
               ))}
