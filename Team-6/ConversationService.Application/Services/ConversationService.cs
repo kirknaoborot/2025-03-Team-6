@@ -59,4 +59,19 @@ public class ConversationService : IConversationService
         
         return result;
     }
+
+    public async Task CreateConversation(ConversationDto dto)
+    {
+        var conversation = new Conversation
+        {
+            ConversationId = dto.ConversationId,
+            Channel = dto.Channel,
+            Message = dto.Message,
+            Status = dto.Status,
+            WorkerId = dto.WorkerId,
+            CreateDate = dto.CreateDate
+        };
+        
+        await _conversationRepository.CreateConversation(conversation);
+    }
 }

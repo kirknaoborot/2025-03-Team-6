@@ -41,4 +41,14 @@ public class ConversationRepository : IConversationRepository
         
         return conversation;
     }
+
+    /// <summary>
+    /// Метод создния обращения
+    /// </summary>
+    /// <param name="conversation"></param>
+    public async Task CreateConversation(Conversation conversation)
+    {
+        await _context.Conversations.AddAsync(conversation);
+        await _context.SaveChangesAsync();
+    }
 }

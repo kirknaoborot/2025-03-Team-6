@@ -17,27 +17,30 @@ public static class ApplicationServiceExtensions
         var connectionSting = configuration.GetConnectionString("Conversation");
 
         services.AddDbContext<ConversationServiceContext>(options => options.UseNpgsql(connectionSting));
-/*
+
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<ConversationCreatedConsumer>();
+            x.AddConsumer<CreateConversationConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("rabbitmq://localhost", h =>
+                cfg.Host("localhost", "/", h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username("admin"); // или guest
+                    h.Password("admin"); // или guest
                 });
 
-                cfg.ConfigureEndpoints(context);
+                cfg.ReceiveEndpoint("create-conversation-queue", e =>
+                {
+                    e.ConfigureConsumer<CreateConversationConsumer>(context);
+                });
             });
-        });*/
+        });
         
         // register services
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IConversationService, Application.Services.ConversationService>();
-        /*services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();*/
+        services.AddScoped<IMessageBusPublisher, MessageBusPublisher>();
 
         return services;
     }
