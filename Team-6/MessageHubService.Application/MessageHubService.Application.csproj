@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure.Shared\Infrastructure.Shared.csproj" />
-    <ProjectReference Include="..\MessageHubService.Domain\MessageHubService.Domain.csproj" />
+	  <ProjectReference Include="..\MessageHubService.Domain\MessageHubService.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
