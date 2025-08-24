@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Shared;
+using Infrastructure.Shared.Contracts;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,23 +27,9 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                      h.Username(rabbitConfig.Username);
                      h.Password(rabbitConfig.Password);
                  });
-                 cfg.Message<ClientMessage>(m => m.SetEntityName("ClientMessage"));
-                 cfg.Send<ClientMessage>(s =>
-                 {
-                     s.UseRoutingKeyFormatter(m => m.Message.Priority);
-                 });
-                 cfg.Publish<ClientMessage>(t =>
-                 {
-                     t.ExchangeType = "topic";
-                 });
                  cfg.ReceiveEndpoint("ClientMessageEvent", e =>
                  {
                      e.ConfigureConsumer<ClientMessageEventConsumer>(context);
-                     e.Bind<ClientMessage>(p =>
-                     {
-                         p.ExchangeType = "topic";
-                         p.RoutingKey = "high";
-                     });
                  });
              });
          });

@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Shared;
+using Infrastructure.Shared.Contracts;
 using MassTransit;
 using MessageHubService.Application.Services;
 using MessageHubService.Domain.Entities;
@@ -17,7 +18,6 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                     .GetSection(nameof(RabbitMqOptions))
                     .Get<RabbitMqOptions>() ?? throw new ArgumentException("Missing RabbitMq configuration section");
 
-
                 services.AddMassTransit(x =>
                 {
                     x.UsingRabbitMq((context, cfg) =>
@@ -25,15 +25,6 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                         cfg.Host(rabbitConfig.Host, "/", h => {
                             h.Username(rabbitConfig.Username);
                             h.Password(rabbitConfig.Password);
-                        });
-                        cfg.Message<ClientMessage>(m => m.SetEntityName("ClientMessage"));
-                        cfg.Send<ClientMessage>(s =>
-                        {
-                            s.UseRoutingKeyFormatter(m => m.Message.Priority);
-                        });
-                        cfg.Publish<ClientMessage>(t =>
-                        {
-                            t.ExchangeType = "topic";
                         });
                     });
                 });

@@ -1,11 +1,10 @@
-﻿using Infrastructure.Shared;
-using Infrastructure.Shared.Contracts;
+﻿using Infrastructure.Shared.Contracts;
 using MassTransit;
 using Infrastructure.Shared.Enums;
 
 namespace OrchestratService.Application
 {
-    public class ClientMessageEventConsumer : IConsumer<ClientMessage>
+    public class ClientMessageEventConsumer : IConsumer<ClientMessageEvent>
     {
 		private readonly IBus _bus;
 
@@ -14,9 +13,8 @@ namespace OrchestratService.Application
 			_bus = bus;
 		}
 
-		public async Task Consume(ConsumeContext<ClientMessage> context)
+		public async Task Consume(ConsumeContext<ClientMessageEvent> context)
         {
-			await Task.Delay(TimeSpan.FromSeconds(1));
             Console.WriteLine($"message id {context.Message.Id}, message text {context.Message.MessageText}");
 
 			var createConversationCommand = new CreateConversationCommand

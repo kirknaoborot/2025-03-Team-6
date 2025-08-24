@@ -1,7 +1,6 @@
 using ConversationService.Application.DTO;
 using ConversationService.Application.Interfaces;
 using Infrastructure.Shared.Contracts;
-using Infrastructure.Shared.Enums;
 using MassTransit;
 
 namespace ConversationService.Infrastructure.Messaging.Consumers;

@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Shared;
+using Infrastructure.Shared.Contracts;
 using MassTransit;
 using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -61,7 +62,13 @@ namespace MessageHubService.Application.Services
         {
             _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(OnIncomingMessage)}() -> Received text '{e.Text}', message id '{e.Id}', send data '{e.SendData}'");
 
-            var newInMEssage = new ClientMessage(e.Id, e.Text, e.SendData, "high");
+            var newInMEssage = new ClientMessageEvent
+            {
+                Id = e.Id,
+                MessageText = e.Text,
+                SendData = e.SendData,
+                Priority = "high"
+            };
 
             await _bus.Publish(newInMEssage);
         }
