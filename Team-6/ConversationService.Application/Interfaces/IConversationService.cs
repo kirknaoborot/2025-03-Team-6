@@ -6,6 +6,5 @@ public interface IConversationService
 {
     Task<IReadOnlyCollection<ConversationDto>> GetAllConversations();
     Task<ConversationDto> GetConversation(Guid conversationId);
-
     Task CreateConversation(ConversationDto dto);
 }

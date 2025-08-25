@@ -30,7 +30,7 @@ public static class ApplicationServiceExtensions
                     h.Password("guest"); // или guest
                 });
 
-                cfg.ReceiveEndpoint("create-conversation-queue", e =>
+                cfg.ReceiveEndpoint("create-conversation-command-queue", e =>
                 {
                     e.ConfigureConsumer<CreateConversationConsumer>(context);
                 });

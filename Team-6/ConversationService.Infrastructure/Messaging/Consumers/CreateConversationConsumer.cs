@@ -7,16 +7,18 @@ namespace ConversationService.Infrastructure.Messaging.Consumers;
 
 public class CreateConversationConsumer : IConsumer<CreateConversationCommand>
 {
-    private readonly IConversationService _service;
+	private readonly IBus _bus;
+	private readonly IConversationService _service;
 
-    public CreateConversationConsumer(IConversationService service)
+    public CreateConversationConsumer(IConversationService service, IBus bus)
     {
-        _service = service;
+		_bus = bus;
+		_service = service;
     }
 
     public async Task Consume(ConsumeContext<CreateConversationCommand> context)
     {
-        var cmd = context.Message;
+		var cmd = context.Message;
 
         var dto = new ConversationDto
         {
@@ -29,5 +31,17 @@ public class CreateConversationConsumer : IConsumer<CreateConversationCommand>
         };
 
         await _service.CreateConversation(dto);
-    }
+
+		var createConversationCommand = new CreateConversationEvent
+		{
+			ConversationId = cmd.ConversationId,
+			Message = cmd.Message,
+			Channel = cmd.Channel,
+			Status = cmd.Status,
+			WorkerId = cmd.WorkerId,
+			CreateDate = cmd.CreateDate
+		};
+
+		await _bus.Publish(createConversationCommand);
+	}
 }

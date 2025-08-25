@@ -1,8 +1,6 @@
 ﻿using Infrastructure.Shared;
-using Infrastructure.Shared.Contracts;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OrchestratService.Application;
 
@@ -21,16 +19,22 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
          {
              x.SetSnakeCaseEndpointNameFormatter();
              x.AddConsumer<ClientMessageEventConsumer>();
+			 x.AddConsumer<CreateConversationEventConsumer>();
              x.UsingRabbitMq((IBusRegistrationContext context, IRabbitMqBusFactoryConfigurator cfg) =>
              {
                  cfg.Host(rabbitConfig.Host, "/", h => {
                      h.Username(rabbitConfig.Username);
                      h.Password(rabbitConfig.Password);
                  });
-                 cfg.ReceiveEndpoint("ClientMessageEvent", e =>
+                 cfg.ReceiveEndpoint("client-message-event-queue", e =>
                  {
                      e.ConfigureConsumer<ClientMessageEventConsumer>(context);
                  });
+				 cfg.ReceiveEndpoint("create-conversation-event-queue", e =>
+				 {
+					 e.ConfigureConsumer<CreateConversationEventConsumer>(context);
+				 });
+
              });
          });
      });

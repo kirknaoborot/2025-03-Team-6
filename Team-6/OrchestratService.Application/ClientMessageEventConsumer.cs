@@ -19,7 +19,7 @@ namespace OrchestratService.Application
 
 			var createConversationCommand = new CreateConversationCommand
 			{
-				ConversationId = new Guid(),
+				ConversationId = Guid.NewGuid(),
 				Message = context.Message.MessageText,
 				Status = StatusType.New,
 				Channel = ChannelType.Telegram,

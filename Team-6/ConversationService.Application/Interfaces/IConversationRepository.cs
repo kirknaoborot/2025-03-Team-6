@@ -6,6 +6,5 @@ public interface IConversationRepository
 {
     Task<List<Conversation>> GetConversations();
     Task<Conversation> GetConversation(Guid id);
-
     Task CreateConversation(Conversation conversation);
 }
