@@ -26,15 +26,14 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                      h.Username(rabbitConfig.Username);
                      h.Password(rabbitConfig.Password);
                  });
-                 cfg.ReceiveEndpoint("client-message-event-queue", e =>
+                 cfg.ReceiveEndpoint(rabbitConfig.ClientMessageEventQueue, e =>
                  {
                      e.ConfigureConsumer<ClientMessageEventConsumer>(context);
                  });
-				 cfg.ReceiveEndpoint("create-conversation-event-queue", e =>
+				 cfg.ReceiveEndpoint(rabbitConfig.CreateConversationEventQueue, e =>
 				 {
 					 e.ConfigureConsumer<CreateConversationEventConsumer>(context);
 				 });
-
              });
          });
      });

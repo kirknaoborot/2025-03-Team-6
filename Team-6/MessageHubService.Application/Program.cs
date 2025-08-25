@@ -1,5 +1,4 @@
 ﻿using Infrastructure.Shared;
-using Infrastructure.Shared.Contracts;
 using MassTransit;
 using MessageHubService.Application.Services;
 using MessageHubService.Domain.Entities;
