@@ -1,10 +1,11 @@
-﻿using Auth.Application.Services;
+﻿using Auth.Application.Consumer;
+using Auth.Application.Services;
 using Auth.Core.Services;
 using Auth.DataAccess;
 using Auth.Domain.Entities;
 using AuthService.Settings;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -90,6 +91,32 @@ namespace AuthService
                  });
             });
             this.ConfigureAuthentication(services);
+
+            Log.Logger = new LoggerConfiguration()
+           .MinimumLevel.Debug()
+           .WriteTo.Console()
+           .CreateLogger();
+
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserLoggedInEventHandler>();
+
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("localhost", "/", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+
+                    cfg.ReceiveEndpoint("user-login-event-queue", e =>
+                    {
+                        e.ConfigureConsumer<UserLoggedInEventHandler>(context);
+                    });
+
+                });
+            });
+
             services.AddAuthorization();
         }
 

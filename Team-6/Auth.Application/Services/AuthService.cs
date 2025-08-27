@@ -1,9 +1,12 @@
-﻿using System.Security.Claims;
-using Auth.Application.Helpers;
+﻿using Auth.Application.Helpers;
 using Auth.Core.Dto;
 using Auth.Core.IRepositories;
 using Auth.Core.IServices;
 using Auth.Core.Services;
+using Infrastructure.Shared.Contracts;
+using MassTransit;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Auth.Application.Services;
 
@@ -12,12 +15,18 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly ITokenRepository _tokenRepository;
+    private readonly ISendEndpointProvider _send;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserRepository userRepository, IJwtTokenGenerator jwtTokenGenerator, ITokenRepository tokenRepository)
+    public AuthService(IUserRepository userRepository, IJwtTokenGenerator jwtTokenGenerator, ITokenRepository tokenRepository,
+         ISendEndpointProvider send
+        , ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _jwtTokenGenerator = jwtTokenGenerator;
         _tokenRepository = tokenRepository;
+        _send = send;
+        _logger = logger;
     }
 
     public async Task<AuthResponseDto> Login(LoginRequestDto loginRequestDto)
@@ -28,10 +37,10 @@ public class AuthService : IAuthService
         {
             throw new UnauthorizedAccessException("User not found");
         }
-        
+
         var checkPassword = PasswordHelper.Verify(loginRequestDto.Password, user.PasswordsHash);
 
-        if (checkPassword == false)
+        if (!checkPassword)
         {
             throw new UnauthorizedAccessException("Invalid password");
         }
@@ -52,6 +61,25 @@ public class AuthService : IAuthService
                 IsActive = user.IsActive
             }
         };
+
+        var loginEvent = new UserLoggedInEvent
+        {
+            Login = user.Login,
+            FullName = user.FullName,
+            Role = user.Role,
+            LoginTime = DateTime.UtcNow,
+        };
+
+        try
+        {
+            var endpoint = await _send.GetSendEndpoint(new Uri("queue:user-login-event-queue"));
+            await endpoint.Send(loginEvent);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Не удалось отправить событие о входе пользователя {Login}", user.Login);
+        }
 
         return result;
     }
