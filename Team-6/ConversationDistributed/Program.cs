@@ -2,19 +2,17 @@ using ConversationDistributed;
 using ConversationDistributed.Consumers;
 using ConversationDistributed.Services;
 using MassTransit;
-using OrchestratService.Application;
-
 
 var builder = Host.CreateApplicationBuilder(args);
 
 // Сервис состояния пользователей
-builder.Services.AddSingleton<IUserStateService, UserStateService>();
+builder.Services.AddSingleton<IAgentStateService, AgentStateService>();
 
 // MassTransit
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<UserLoggedInConsumer>();
-    x.AddConsumer<CreateConversationEventConsumer>();
+    x.AddConsumer<DefineOperatorForConversationConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -31,15 +29,9 @@ builder.Services.AddMassTransit(x =>
         });
 
         // Слушаем: новое обращение
-        cfg.ReceiveEndpoint("create-conversation-event-queue", e =>
+        cfg.ReceiveEndpoint("define-operator-for-conversation-command-queue", e =>
         {
-            e.ConfigureConsumer<CreateConversationEventConsumer>(context);
-        });
-
-        // Очередь для исходящих предложений 
-        cfg.ReceiveEndpoint("assignment-proposals-queue", e =>
-        {
-            // Можно добавить consumer
+            e.ConfigureConsumer<DefineOperatorForConversationConsumer>(context);
         });
     });
 });

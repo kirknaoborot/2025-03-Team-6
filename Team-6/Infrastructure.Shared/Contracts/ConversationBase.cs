@@ -2,7 +2,7 @@
 
 namespace Infrastructure.Shared.Contracts;
 
-public class CreateConversationBase
+public class ConversationBase
 {
 	public Guid ConversationId { get; set; }
 	public string Message { get; set; }

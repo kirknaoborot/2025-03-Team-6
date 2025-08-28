@@ -64,6 +64,7 @@ public class AuthService : IAuthService
 
         var loginEvent = new UserLoggedInEvent
         {
+			Id = user.Id,
             Login = user.Login,
             FullName = user.FullName,
             Role = user.Role,

@@ -74,4 +74,21 @@ public class ConversationService : IConversationService
         
         await _conversationRepository.CreateConversation(conversation);
     }
+
+	public async Task UpdateConversation(ConversationDto dto)
+	{
+		Console.WriteLine($"====> public async Task UpdateConversation(ConversationDto dto) ==> dto.ConversationId => '{dto.ConversationId}'");
+
+		var conversation = new Conversation
+		{
+			ConversationId = dto.ConversationId,
+			Channel = dto.Channel,
+			Message = dto.Message,
+			Status = dto.Status,
+			WorkerId = dto.WorkerId,
+			CreateDate = dto.CreateDate
+		};
+
+		await _conversationRepository.UpdateConversation(conversation);
+	}
 }

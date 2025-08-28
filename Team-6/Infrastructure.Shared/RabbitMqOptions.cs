@@ -14,7 +14,9 @@
 		/// <summary>
 		/// Название очереди для события создания обращения
 		/// </summary>
-		public string CreateConversationEventQueue { get; set; }
+		public string ConversationEventQueue { get; set; }
+
+		public string DefineAgentEvent { get; set; }
 
 	}
 }

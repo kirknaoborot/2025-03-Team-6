@@ -17,7 +17,7 @@ namespace OrchestratService.Application
         {
             Console.WriteLine($"message id {context.Message.Id}, message text {context.Message.MessageText}");
 
-			var createConversationCommand = new CreateConversationCommand
+			var createConversationCommand = new ConversationCommand
 			{
 				ConversationId = Guid.NewGuid(),
 				Message = context.Message.MessageText,

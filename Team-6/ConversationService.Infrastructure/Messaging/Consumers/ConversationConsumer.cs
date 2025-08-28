@@ -6,22 +6,20 @@ using MassTransit;
 
 namespace ConversationService.Infrastructure.Messaging.Consumers;
 
-public class CreateConversationConsumer : IConsumer<ConversationCommand>
+public class ConversationConsumer : IConsumer<ConversationCommand>
 {
 	private readonly IBus _bus;
 	private readonly IConversationService _service;
 
-    public CreateConversationConsumer(IConversationService service, IBus bus)
+    public ConversationConsumer(IConversationService service, IBus bus)
     {
 		_bus = bus;
 		_service = service;
     }
 
-	public async Task Consume(ConsumeContext<ConversationCommand> context)
-	{
+    public async Task Consume(ConsumeContext<ConversationCommand> context)
+    {
 		var cmd = context.Message;
-
-		Console.WriteLine($"CreateConversationConsumer => Consume => cmd.ConversationId = '{cmd.ConversationId}', cmd.Status = '{cmd.Status}'");
 
 		var dto = new ConversationDto
 		{

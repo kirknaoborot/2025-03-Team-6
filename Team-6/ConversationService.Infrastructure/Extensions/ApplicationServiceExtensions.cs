@@ -20,7 +20,7 @@ public static class ApplicationServiceExtensions
 
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<CreateConversationConsumer>();
+            x.AddConsumer<ConversationConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -30,9 +30,9 @@ public static class ApplicationServiceExtensions
                     h.Password("guest"); // или guest
                 });
 
-                cfg.ReceiveEndpoint("create-conversation-command-queue", e =>
+                cfg.ReceiveEndpoint("conversation-command-queue", e =>
                 {
-                    e.ConfigureConsumer<CreateConversationConsumer>(context);
+                    e.ConfigureConsumer<ConversationConsumer>(context);
                 });
             });
         });
