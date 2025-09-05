@@ -1,4 +1,5 @@
-﻿using MessageHubService.Application.Interfaces;
+﻿using Infrastructure.Shared;
+using MessageHubService.Application.Interfaces;
 using MessageHubService.Domain.Entities;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -9,9 +10,9 @@ namespace MessageHubService.Application.Services
 {
     public class TelegramBotService : IBotWork, IMessageEvent
     {
-        private readonly TelegramBotClient _bot;
-        private readonly Task<User> _me;
-        private readonly CancellationTokenSource _cancellationToken;
+        private TelegramBotClient _bot;
+        private Task<User> _me;
+        private CancellationTokenSource _cancellationToken;
 
         public event EventHandler<MessageEventArgs>? OnIncomingMessage;
         public event EventHandler<MessageEventArgs>? OnOutgoingMessage;
@@ -19,17 +20,25 @@ namespace MessageHubService.Application.Services
         public string Name { get; private set; }
         public string Token { get; private set; }
 
-        public TelegramBotService(string token, string name)
+        public TelegramBotService()
         {
-            Name = name;
-            Token = token;
-
-            _cancellationToken = new CancellationTokenSource();
-            _bot = new TelegramBotClient(Token, cancellationToken: _cancellationToken.Token);
-            _me = _bot.GetMe();
+           
         }
 
-        public async Task Start()
+		public void SetTokenAndName(string token, string name)
+		{
+			Name = name;
+			Token = token;
+		}
+
+		public void DefineTelegramBotClient()
+		{
+			_cancellationToken = new CancellationTokenSource();
+			_bot = new TelegramBotClient(Token, cancellationToken: _cancellationToken.Token);
+			_me = _bot.GetMe();
+		}
+
+		public async Task Start()
         {
             _bot.OnError += OnError;
             _bot.OnMessage += OnMessage;
@@ -80,9 +89,11 @@ namespace MessageHubService.Application.Services
             var message = new MessageEventArgs
             {
                 Id = msg.Id,
+				UserId = msg.Chat.Id,
                 Text = msg.Text,
-                SendData = DateTime.UtcNow
-            };
+                SendData = DateTime.UtcNow,
+				BotToken = Token
+			};
 
             await Task.Run(() =>
             {
@@ -111,5 +122,12 @@ namespace MessageHubService.Application.Services
             if (pollAnswer.User != null)
                 await _bot.SendMessage(pollAnswer.User.Id, $"You voted for option(s) id [{string.Join(',', pollAnswer.OptionIds)}]");
         }
-    }
+
+		public async Task SentMessageToClient(SendMessageDto sendMessageDto)
+		{
+			Console.WriteLine($"===> SentMessageToClient => sendMessageDto.UserId = '{sendMessageDto.UserId}', sendMessageDto.MessageText = '{sendMessageDto.MessageText}'");
+
+			await _bot.SendMessage(sendMessageDto.UserId, sendMessageDto.MessageText);
+		}
+	}
 }

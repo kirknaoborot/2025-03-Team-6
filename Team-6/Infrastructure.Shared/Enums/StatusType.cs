@@ -17,5 +17,8 @@ public enum StatusType
     InWork = 2,
     
     [Display(Name = "Обработано")]
-    Closed = 3
+    Closed = 3,
+
+	[Display(Name = "Агент не был найден")]
+	AgentNotFound = 4
 }

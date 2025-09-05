@@ -77,8 +77,6 @@ public class ConversationService : IConversationService
 
 	public async Task UpdateConversation(ConversationDto dto)
 	{
-		Console.WriteLine($"====> public async Task UpdateConversation(ConversationDto dto) ==> dto.ConversationId => '{dto.ConversationId}'");
-
 		var conversation = new Conversation
 		{
 			ConversationId = dto.ConversationId,

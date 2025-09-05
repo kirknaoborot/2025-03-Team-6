@@ -1,5 +1,7 @@
 ﻿using Infrastructure.Shared;
 using MassTransit;
+using MessageHubService.Application;
+using MessageHubService.Application.Interfaces;
 using MessageHubService.Application.Services;
 using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -19,15 +21,23 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
 
                 services.AddMassTransit(x =>
                 {
-                    x.UsingRabbitMq((context, cfg) =>
+					x.AddConsumer<SendMessageEventConsumer>();
+
+					x.UsingRabbitMq((context, cfg) =>
                     {
                         cfg.Host(rabbitConfig.Host, "/", h => {
                             h.Username(rabbitConfig.Username);
                             h.Password(rabbitConfig.Password);
                         });
-                    });
+
+						cfg.ReceiveEndpoint("send-message-event-queue", e =>
+						{
+							e.ConfigureConsumer<SendMessageEventConsumer>(context);
+						});
+					});
                 });
 
+				services.AddScoped<IBotWork, TelegramBotService>();
                 services.Configure<TelegramBotOptionsList>(hostContext.Configuration.GetSection(nameof(TelegramBotOptionsList)));
                 services.AddHostedService<SendMessageService>();
             });

@@ -4,8 +4,12 @@
     {
         public int Id { get; set; }
 
+		public long UserId { get; set; }
+
         public string? Text { get; set; }
 
         public DateTime SendData { get; set; }
+
+		public string BotToken { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace MessageHubService.Application.Services
 {
     public class SendMessageService : BackgroundService
     {
-        private readonly List<TelegramBotService> _telegramBots = [];
+        private static readonly List<TelegramBotService> _telegramBots = [];
         private readonly ILogger<SendMessageService> _logger;
         private readonly IConfiguration _configuration;
         private readonly IBus _bus;
@@ -32,9 +32,11 @@ namespace MessageHubService.Application.Services
             {
                 foreach (var bot in bots)
                 {
-                    var telegramBot = new TelegramBotService(bot.Token, bot.Name);
+                    var telegramBot = new TelegramBotService();
+					telegramBot.SetTokenAndName(bot.Token, bot.Name);
+					telegramBot.DefineTelegramBotClient();
 
-                    telegramBot.OnIncomingMessage += OnIncomingMessage;
+					telegramBot.OnIncomingMessage += OnIncomingMessage;
 
                     _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(ExecuteAsync)}() -> Start bot: name '{telegramBot.Name}'.");
 
@@ -58,17 +60,31 @@ namespace MessageHubService.Application.Services
             }
         }
 
-        private async void OnIncomingMessage(object sender, MessageEventArgs e)
+		public static bool TryGetTelegramBotByToken(string token, out TelegramBotService telegramBot)
+		{
+			Console.WriteLine($"=====> '{token}', bot count '{_telegramBots.Count}'");
+
+			_telegramBots.ForEach(x => Console.WriteLine($"===> x.Name = '{x.Name}', '{x.Token}'"));
+
+			telegramBot = _telegramBots.FirstOrDefault(x => x.Token == token);
+
+			return telegramBot != null;
+		}
+
+		private async void OnIncomingMessage(object sender, MessageEventArgs e)
         {
-            _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(OnIncomingMessage)}() -> Received text '{e.Text}', message id '{e.Id}', send data '{e.SendData}'");
+            _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(OnIncomingMessage)}() -> Received text '{e.Text}', message id '{e.Id}', send data '{e.SendData}', bot token '{e.BotToken}'");
 
             var newInMEssage = new ClientMessageEvent
             {
                 Id = e.Id,
+				UserId = e.UserId,
                 MessageText = e.Text,
                 SendData = e.SendData,
-                Priority = "high"
-            };
+                Priority = "high",
+				Channel = Infrastructure.Shared.Enums.ChannelType.Telegram,
+				BotToken = e.BotToken,
+			};
 
             await _bus.Publish(newInMEssage);
         }

@@ -17,9 +17,11 @@ namespace OrchestratService.Application
 			var defineOperatorForConversationCommand = new DefineOperatorForConversationCommand
 			{
 				ConversationId = context.Message.ConversationId,
+				UserId = context.Message.UserId,
 				MessageText = context.Message.Message,
 				CreateDate = context.Message.CreateDate,
 				Channel = context.Message.Channel,
+				BotToken = context.Message.BotToken,
 			};
 
 			await _bus.Publish(defineOperatorForConversationCommand);
