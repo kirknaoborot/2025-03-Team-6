@@ -5,43 +5,62 @@ import * as signalR from "@microsoft/signalr";
 interface Conversation {
   conversationId: string;
   createDate: string;
-  status: string;
+  status: string; // теперь это строка: "New", "InWork", ...
   channel: string;
   message: string;
   workerId: string;
 }
 
+// Подписи к статусам
+const statusLabels: Record<string, string> = {
+  New: "Новое",
+  Distributed: "Распределено",
+  InWork: "В работе",
+  Closed: "Обработано",
+  AgentNotFound: "Агент не был найден",
+};
+
+// Цвета бейджей
+const statusColors: Record<string, string> = {
+  New: "primary",
+  Distributed: "info",
+  InWork: "warning",
+  Closed: "success",
+  AgentNotFound: "danger",
+};
+
 export default function Conversations() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [onlineStatus, setOnlineStatus] = useState(false); // <-- новый стейт для индикатора
+  const [onlineStatus, setOnlineStatus] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "all" | "new" | "inWork" | "closed" | "agentNotFound" | "distributed"
+  >("all");
+
   const navigate = useNavigate();
 
+  // SignalR подключение
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl("http://localhost:54000/onlinestatus", { withCredentials: true })
       .withAutomaticReconnect()
       .build();
 
-    connection.start()
+    connection
+      .start()
       .then(() => {
         console.log("Connected to SignalR Hub");
-
-        // Отправляем серверу, что пользователь онлайн
         const user = localStorage.getItem("user") || "anonymous";
         connection.invoke("UserOnline", user);
-
-        // Устанавливаем флаг, чтобы показать плашку
         setOnlineStatus(true);
       })
-      .catch(err => console.error(err));
+      .catch((err) => console.error(err));
 
-    return () => {
-      connection.stop();
-    };
+    return () => connection.stop();
   }, []);
 
+  // Загрузка обращений
   useEffect(() => {
     const fetchConversations = async () => {
       try {
@@ -69,16 +88,43 @@ export default function Conversations() {
   };
 
   const renderStatusBadge = (status: string) => {
-    let color = "secondary";
-    if (status.toLowerCase().includes("завершено")) color = "success";
-    else if (status.toLowerCase().includes("в работе")) color = "warning";
-    else if (status.toLowerCase().includes("ошибка")) color = "danger";
-    return <span className={`badge bg-${color}`}>{status}</span>;
+    return (
+      <span className={`badge bg-${statusColors[status] || "secondary"}`}>
+        {statusLabels[status] || status}
+      </span>
+    );
   };
+
+  // Подсчёты для вкладок
+  const counts = {
+    all: conversations.length,
+    new: conversations.filter((c) => c.status === "New").length,
+    inWork: conversations.filter((c) => c.status === "InWork").length,
+    closed: conversations.filter((c) => c.status === "Closed").length,
+    distributed: conversations.filter((c) => c.status === "Distributed").length,
+    agentNotFound: conversations.filter((c) => c.status === "AgentNotFound").length,
+  };
+
+  // Фильтрация по активной вкладке
+  const filteredConversations = conversations.filter((c) => {
+    switch (activeTab) {
+      case "new":
+        return c.status === "New";
+      case "inWork":
+        return c.status === "InWork";
+      case "closed":
+        return c.status === "Closed";
+      case "distributed":
+        return c.status === "Distributed";
+      case "agentNotFound":
+        return c.status === "AgentNotFound";
+      default:
+        return true;
+    }
+  });
 
   return (
     <div className="container mt-5">
-      {/* Индикатор онлайн-статуса */}
       {onlineStatus && (
         <div className="alert alert-success">
           Вы перешли в статус <strong>готов</strong>
@@ -92,6 +138,58 @@ export default function Conversations() {
         </button>
       </div>
 
+      {/* Вкладки */}
+      <ul className="nav nav-tabs mb-3">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "all" ? "active" : ""}`}
+            onClick={() => setActiveTab("all")}
+          >
+            Все <span className="badge bg-secondary">{counts.all}</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "new" ? "active" : ""}`}
+            onClick={() => setActiveTab("new")}
+          >
+            Новые <span className="badge bg-primary">{counts.new}</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "inWork" ? "active" : ""}`}
+            onClick={() => setActiveTab("inWork")}
+          >
+            В работе <span className="badge bg-warning text-dark">{counts.inWork}</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "closed" ? "active" : ""}`}
+            onClick={() => setActiveTab("closed")}
+          >
+            Завершенные <span className="badge bg-success">{counts.closed}</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "distributed" ? "active" : ""}`}
+            onClick={() => setActiveTab("distributed")}
+          >
+            Распределено <span className="badge bg-info">{counts.distributed}</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "agentNotFound" ? "active" : ""}`}
+            onClick={() => setActiveTab("agentNotFound")}
+          >
+            Без агента <span className="badge bg-danger">{counts.agentNotFound}</span>
+          </button>
+        </li>
+      </ul>
+
       {loading && <div className="alert alert-info">Загрузка...</div>}
       {error && <div className="alert alert-danger">{error}</div>}
 
@@ -100,7 +198,7 @@ export default function Conversations() {
           <table className="table table-bordered table-hover align-middle">
             <thead className="table-light">
               <tr>
-                <th>ID</th>
+                <th>#</th>
                 <th>Дата создания</th>
                 <th>Канал</th>
                 <th>Сообщение</th>
@@ -108,9 +206,9 @@ export default function Conversations() {
               </tr>
             </thead>
             <tbody>
-              {conversations.map(conv => (
+              {filteredConversations.map((conv, index) => (
                 <tr key={conv.conversationId}>
-                  <td>{conv.conversationId}</td>
+                  <td>#{conv.conversationId.slice(0, 8)}</td>
                   <td>{new Date(conv.createDate).toLocaleString()}</td>
                   <td>{conv.channel}</td>
                   <td>{conv.message}</td>

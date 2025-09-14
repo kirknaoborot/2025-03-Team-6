@@ -12,7 +12,7 @@ public static class ConversationMapper
             ConversationId = conversationDto.ConversationId,
             Channel = conversationDto.Channel.ToString(),
             Message = conversationDto.Message,
-            Status = conversationDto.Status.GetDisplayName(),
+            Status = conversationDto.Status.ToString(),
             CreateDate = conversationDto.CreateDate,
             WorkerId = conversationDto.WorkerId,
         };
