@@ -34,6 +34,7 @@ export default function Conversations() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [onlineStatus, setOnlineStatus] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "all" | "new" | "inWork" | "closed" | "agentNotFound" | "distributed"
   >("all");
@@ -54,6 +55,7 @@ export default function Conversations() {
         const user = localStorage.getItem("user") || "anonymous";
         connection.invoke("UserOnline", user);
         setOnlineStatus(true);
+        setShowModal(true); // показываем модалку при подключении
       })
       .catch((err) => console.error(err));
 
@@ -131,6 +133,43 @@ export default function Conversations() {
         </div>
       )}
 
+      {/* Модальное окно */}
+      {showModal && (
+        <div
+          className="modal show fade"
+          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+          tabIndex={-1}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Статус: готов</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p>
+                  Вы переведены в статус <strong>готов</strong>, на вас будут распределяться
+                  обращения.
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => setShowModal(false)}
+                >
+                  Понятно
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Обращения</h2>
         <button className="btn btn-outline-danger" onClick={handleLogout}>
@@ -161,7 +200,8 @@ export default function Conversations() {
             className={`nav-link ${activeTab === "inWork" ? "active" : ""}`}
             onClick={() => setActiveTab("inWork")}
           >
-            В работе <span className="badge bg-warning text-dark">{counts.inWork}</span>
+            В работе{" "}
+            <span className="badge bg-warning text-dark">{counts.inWork}</span>
           </button>
         </li>
         <li className="nav-item">
@@ -185,7 +225,8 @@ export default function Conversations() {
             className={`nav-link ${activeTab === "agentNotFound" ? "active" : ""}`}
             onClick={() => setActiveTab("agentNotFound")}
           >
-            Без агента <span className="badge bg-danger">{counts.agentNotFound}</span>
+            Без агента{" "}
+            <span className="badge bg-danger">{counts.agentNotFound}</span>
           </button>
         </li>
       </ul>
@@ -206,8 +247,12 @@ export default function Conversations() {
               </tr>
             </thead>
             <tbody>
-              {filteredConversations.map((conv, index) => (
-                <tr key={conv.conversationId}>
+              {filteredConversations.map((conv) => (
+                <tr
+                  key={conv.conversationId}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate(`/conversation/${conv.conversationId}`)}
+                >
                   <td>#{conv.conversationId.slice(0, 8)}</td>
                   <td>{new Date(conv.createDate).toLocaleString()}</td>
                   <td>{conv.channel}</td>
