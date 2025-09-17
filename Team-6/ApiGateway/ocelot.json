@@ -118,6 +118,36 @@
           "Value": "claims['role'] > value"
         }
       ]
+    },
+    {
+      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamPathTemplate": "/conversation/reply-close",
+      "DownstreamPathTemplate": "/api/conversation/conversation-reply-close",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5235
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "ClaimsToHeaders": [
+        {
+          "Key": "X-User-Id",
+          "Value": "claims['id'] > value"
+        },
+        {
+          "Key": "X-User-Email",
+          "Value": "claims['email'] > value"
+        },
+        {
+          "Key": "X-User-Role",
+          "Value": "claims['role'] > value"
+        }
+      ]
     }
   ]
 }
