@@ -38,4 +38,9 @@ public class Conversation
     /// Дата обновления записи
     /// </summary>
     public DateTimeOffset UpdateDate { get; set; } = DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Текст ответа
+    /// </summary>
+    public string Answer { get; set; }
 }

@@ -1,4 +1,5 @@
 using ConversationService.Infrastructure.Extensions;
+using Infrastructure.Shared.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,4 +34,5 @@ app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+app.UseMiddleware<HeaderClaimsMiddleware>();
 app.Run();

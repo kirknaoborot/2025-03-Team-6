@@ -19,13 +19,13 @@ namespace OnlineStatusService
         }
 
 
-        public async Task UserOnline(Guid userId)
+        public async Task UserOnline(string userId)
         {
             Console.WriteLine($"Пользователь {userId} онлайн");
 
             await _publishEndpoint.Publish(new AgentStatusEvent
             {
-                AgentId = userId,
+                AgentId = Guid.TryParse(userId, out var result) ? result : Guid.Empty,
                 Date = DateTime.UtcNow,
                 Status = Infrastructure.Shared.Enums.AgentStatusType.Connect
             });

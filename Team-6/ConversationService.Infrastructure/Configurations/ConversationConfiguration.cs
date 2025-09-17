@@ -37,5 +37,8 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
         entity.Property(e => e.UpdateDate)
             .HasColumnName("update_date")
             .IsRequired();
+
+        entity.Property(e => e.Answer)
+            .HasColumnName("answer");
     }
 }

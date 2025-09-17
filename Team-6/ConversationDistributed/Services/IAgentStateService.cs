@@ -9,9 +9,8 @@ namespace ConversationDistributed.Services
         IEnumerable<Agent> GetAllOperators();
 		IEnumerable<Agent> GetAllFreeOperators();
 		Agent GetFirstFreeOperator();
-		string GetFullName(Guid userId);
         void ReleaseConversationFromUser(Guid userId);
-        void UserLoggedIn(UserLoggedInEvent userInfo);
+        void UserLoggedIn(AgentStatusEvent userInfo);
         void UserLoggedOut(Guid userId);
     }
 }

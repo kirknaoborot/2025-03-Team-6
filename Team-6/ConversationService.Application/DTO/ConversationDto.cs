@@ -33,4 +33,9 @@ public class ConversationDto
     /// Дата создания
     /// </summary>
     public DateTimeOffset CreateDate { get; set; }
+
+    /// <summary>
+    /// Ответ оператора
+    /// </summary>
+    public string Answer { get; set; }
 }

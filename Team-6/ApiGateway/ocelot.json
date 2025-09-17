@@ -14,6 +14,20 @@
           "Port": 56468
         }
       ]
+      /* без авторизации */
+    },
+    {
+      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamPathTemplate": "/auth/refresh",
+      "DownstreamPathTemplate": "/api/auth/refresh-token",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 56468
+        }
+      ]
+      /* без авторизации */
     },
     {
       "UpstreamHttpMethod": [ "POST" ],
@@ -24,6 +38,24 @@
         {
           "Host": "localhost",
           "Port": 56468
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "ClaimsToHeaders": [
+        {
+          "Key": "X-User-Id",
+          "Value": "claims['id'] > value"
+        },
+        {
+          "Key": "X-User-Email",
+          "Value": "claims['email'] > value"
+        },
+        {
+          "Key": "X-User-Role",
+          "Value": "claims['role'] > value"
         }
       ]
     },
@@ -36,6 +68,54 @@
         {
           "Host": "localhost",
           "Port": 5235
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "ClaimsToHeaders": [
+        {
+          "Key": "X-User-Id",
+          "Value": "claims['id'] > value"
+        },
+        {
+          "Key": "X-User-Email",
+          "Value": "claims['email'] > value"
+        },
+        {
+          "Key": "X-User-Role",
+          "Value": "claims['role'] > value"
+        }
+      ]
+    },
+    {
+      "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamPathTemplate": "/conversation/conversation",
+      "DownstreamPathTemplate": "/api/conversation/conversation",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5235
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "ClaimsToHeaders": [
+        {
+          "Key": "X-User-Id",
+          "Value": "claims['id'] > value"
+        },
+        {
+          "Key": "X-User-Email",
+          "Value": "claims['email'] > value"
+        },
+        {
+          "Key": "X-User-Role",
+          "Value": "claims['role'] > value"
         }
       ]
     }

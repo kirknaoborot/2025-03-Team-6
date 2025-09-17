@@ -109,7 +109,7 @@ export default function ConversationDetail() {
 
       try {
         // через Ocelot: /conversation?id=...
-        const data = await apiFetch<any>(`/conversation/conversation?id=${encodeURIComponent(id)}`, {
+        const data = await apiFetch<any>(`/conversation?id=${encodeURIComponent(id)}`, {
           method: "GET",
         });
 

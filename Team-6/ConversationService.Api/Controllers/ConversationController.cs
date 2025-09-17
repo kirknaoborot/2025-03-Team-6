@@ -37,10 +37,12 @@ public class ConversationController : ControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("conversations/{id}")]
-    public async Task<ActionResult<ConversationDto>> GetConversation(Guid id)
+    [HttpGet("conversation")]
+    public async Task<ActionResult<ConversationDto>> GetConversation([FromQuery] Guid id)
     {
-        var conversation = await _conversationService.GetConversation(id);
+        var requestUser = HttpContext.User;
+
+        var conversation = await _conversationService.GetConversation(requestUser, id);
 
         if (conversation is null)
         {

@@ -1,6 +1,8 @@
 using ConversationService.Application.DTO;
 using ConversationService.Application.Interfaces;
 using ConversationService.Domain.Entities;
+using Infrastructure.Shared.Enums;
+using System.Security.Claims;
 
 namespace ConversationService.Application.Services;
 
@@ -17,9 +19,16 @@ public class ConversationService : IConversationService
     /// Метод получения списка обращений
     /// </summary>
     /// <returns></returns>
-    public async Task<IReadOnlyCollection<ConversationDto>> GetAllConversations()
+    public async Task<IReadOnlyCollection<ConversationDto>> GetAllConversations(Guid userId, RoleType role)
     {
         var conversations = await _conversationRepository.GetConversations();
+
+        if (role == RoleType.Worker)
+        {
+            conversations = conversations
+                .Where(x => x.WorkerId ==  userId)
+                .ToList();
+        }
 
         var result = conversations
             .Select(x => new ConversationDto
@@ -54,7 +63,8 @@ public class ConversationService : IConversationService
                 Message = conversation.Message,
                 Status = conversation.Status,
                 WorkerId = conversation.WorkerId,
-                CreateDate = conversation.CreateDate
+                CreateDate = conversation.CreateDate,
+                Answer = conversation.Answer
             };
         
         return result;
