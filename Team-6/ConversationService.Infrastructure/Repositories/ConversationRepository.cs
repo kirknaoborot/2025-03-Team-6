@@ -50,6 +50,7 @@ public class ConversationRepository : IConversationRepository
     /// <param name="conversation"></param>
     public async Task CreateConversation(Conversation conversation)
     {
+
 		await _context.Conversations.AddAsync(conversation);
         await _context.SaveChangesAsync();
     }

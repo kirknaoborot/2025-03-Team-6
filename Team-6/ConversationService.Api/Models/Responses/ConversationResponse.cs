@@ -36,4 +36,9 @@ public class ConversationResponse
     /// Ответ оператора
     /// </summary>
     public string Answer { get; set; }
+
+    /// <summary>
+    /// Номер обращения
+    /// </summary>
+    public string Number { get; set; }
 }

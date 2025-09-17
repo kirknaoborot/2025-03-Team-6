@@ -268,7 +268,7 @@ export default function Conversations() {
               <table>
                 <thead>
                   <tr>
-                    <th style={{ width: "10rem" }}>#</th>
+                    <th style={{ width: "10rem" }}>№ обращения</th>
                     <th style={{ width: "16rem" }}>Дата создания</th>
                     <th style={{ width: "10rem" }}>Канал</th>
                     <th>Сообщение</th>
@@ -284,7 +284,7 @@ export default function Conversations() {
                   )}
                   {!loading && !error && filtered.map((c) => (
                     <tr key={c.conversationId} style={{ cursor: "pointer" }} onClick={() => goDetail(c.conversationId)}>
-                      <td className="mono">#{c.conversationId.slice(0, 8)}</td>
+                      <td className="mono">{c.number}</td>
                       <td>{new Date(c.createDate).toLocaleString()}</td>
                       <td>{c.channel}</td>
                       <td title={c.message} style={{ maxWidth: 520, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

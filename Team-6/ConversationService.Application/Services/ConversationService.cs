@@ -2,6 +2,8 @@ using ConversationService.Application.DTO;
 using ConversationService.Application.Interfaces;
 using ConversationService.Domain.Entities;
 using Infrastructure.Shared.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System.Security.Claims;
 
 namespace ConversationService.Application.Services;
@@ -38,7 +40,8 @@ public class ConversationService : IConversationService
                 Message = x.Message,
                 Status = x.Status,
                 WorkerId = x.WorkerId,
-                CreateDate = x.CreateDate
+                CreateDate = x.CreateDate,
+                Number = $"{x.PrefixNumber}{x.Number}"
             })
             .ToList();
         
@@ -64,7 +67,8 @@ public class ConversationService : IConversationService
                 Status = conversation.Status,
                 WorkerId = conversation.WorkerId,
                 CreateDate = conversation.CreateDate,
-                Answer = conversation.Answer
+                Answer = conversation.Answer,
+                Number = $"{conversation.PrefixNumber}{conversation.Number}"
             };
         
         return result;
@@ -79,7 +83,7 @@ public class ConversationService : IConversationService
             Message = dto.Message,
             Status = dto.Status,
             WorkerId = dto.WorkerId,
-            CreateDate = dto.CreateDate
+            CreateDate = dto.CreateDate,
         };
         
         await _conversationRepository.CreateConversation(conversation);
@@ -101,10 +105,12 @@ public class ConversationService : IConversationService
 		await _conversationRepository.UpdateConversation(conversation);
 	}
 
+
     public async Task UpdateConversation(Conversation conversation)
     {
         await _conversationRepository.UpdateConversation(conversation);
     }
+
 
     public async Task ReplyConversation(Guid conversationId, string messageAnswer)
     {
@@ -112,6 +118,7 @@ public class ConversationService : IConversationService
         
         conversation.Answer = messageAnswer;
         conversation.Status = StatusType.Closed;
+        conversation.Number = conversation.Number;
 
         await UpdateConversation(conversation);
     }

@@ -16,6 +16,7 @@ public static class ConversationMapper
             CreateDate = conversationDto.CreateDate,
             WorkerId = conversationDto.WorkerId,
             Answer = conversationDto.Answer,
+            Number = conversationDto.Number
         };
     }
 }

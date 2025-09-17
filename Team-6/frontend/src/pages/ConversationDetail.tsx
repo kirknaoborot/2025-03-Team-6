@@ -26,6 +26,7 @@ interface TicketDetail {
   requester: { id?: string; name: string; email?: string; phone?: string };
   assignedAgent?: { id?: string; name?: string };
   history: HistoryItem[];
+    number: string; 
 }
 
 // ---- словари для статусов
@@ -116,6 +117,7 @@ export default function ConversationDetail() {
         // нормализация к модели UI (на случай несовпадения полей)
         const detail: TicketDetail = {
           conversationId: data.conversationId ?? id,
+		    number: data.number ?? `O-${id.slice(0, 8)}`,  // <-- вот здесь добавляем
           subject: data.subject ?? "Обращение пользователя",
           message: data.message ?? "",
           status: (data.status as TicketStatus) ?? "InWork",
@@ -210,7 +212,7 @@ export default function ConversationDetail() {
       <div className="header">
         <div>
           <div className="title">
-            Обращение <span className="mono">#{id || "—"}</span>
+            Обращение <span className="mono">{ticket?.number || "—"}</span>
           </div>
           <div className="muted">
             {dot(ticket?.status)}
