@@ -94,9 +94,25 @@ public class ConversationService : IConversationService
 			Message = dto.Message,
 			Status = dto.Status,
 			WorkerId = dto.WorkerId,
-			CreateDate = dto.CreateDate
+			CreateDate = dto.CreateDate,
+            Answer = dto.Answer
 		};
 
 		await _conversationRepository.UpdateConversation(conversation);
 	}
+
+    public async Task UpdateConversation(Conversation conversation)
+    {
+        await _conversationRepository.UpdateConversation(conversation);
+    }
+
+    public async Task ReplyConversation(Guid conversationId, string messageAnswer)
+    {
+        var conversation = await GetConversation(conversationId);
+        
+        conversation.Answer = messageAnswer;
+        conversation.Status = StatusType.Closed;
+
+        await UpdateConversation(conversation);
+    }
 }

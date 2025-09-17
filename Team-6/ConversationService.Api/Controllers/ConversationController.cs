@@ -1,4 +1,5 @@
 using ConversationService.Api.Mapping;
+using ConversationService.Api.Models.Requests;
 using ConversationService.Application.DTO;
 using ConversationService.Application.Interfaces;
 using Infrastructure.Shared.Enums;
@@ -57,5 +58,18 @@ public class ConversationController : ControllerBase
         var result = ConversationMapper.ToResponse(conversation);
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Метод закрытия обращения
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="reply"></param>
+    /// <returns></returns>
+    [HttpPost("conversation-reply")]
+    public async Task<IActionResult> UpdateConversation([FromQuery] Guid id, [FromBody] ReplyDto reply)
+    {
+        await _conversationService.ReplyConversation(id, reply.AgentMessage);
+        return Ok();
     }
 }
