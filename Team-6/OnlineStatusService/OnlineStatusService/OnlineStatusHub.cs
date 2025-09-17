@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Infrastructure.Shared.Contracts;
+using MassTransit;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +11,24 @@ namespace OnlineStatusService
 {
     public class OnlineStatusHub : Hub
     {
-        public async Task UserOnline(string userId)
+        private readonly IPublishEndpoint _publishEndpoint;
+
+        public OnlineStatusHub(IPublishEndpoint publishEndpoint)
+        {
+            _publishEndpoint = publishEndpoint;
+        }
+
+
+        public async Task UserOnline(Guid userId)
         {
             Console.WriteLine($"Пользователь {userId} онлайн");
 
-            // Здесь можно добавить код для RabbitMQ, например:
-            // await _rabbitService.EnqueueUserOnline(userId);
+            await _publishEndpoint.Publish(new AgentStatusEvent
+            {
+                AgentId = userId,
+                Date = DateTime.UtcNow,
+                Status = Infrastructure.Shared.Enums.AgentStatusType.Connect
+            });
 
             await Clients.Others.SendAsync("UserCameOnline", userId);
         }
