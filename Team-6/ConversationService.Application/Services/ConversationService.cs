@@ -5,6 +5,7 @@ using Infrastructure.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using System.Security.Claims;
+using System.Threading.Channels;
 
 namespace ConversationService.Application.Services;
 
@@ -115,7 +116,11 @@ public class ConversationService : IConversationService
     public async Task ReplyConversation(Guid conversationId, string messageAnswer)
     {
         var conversation = await GetConversation(conversationId);
-        
+
+        conversation.WorkerId = conversation.WorkerId;
+        conversation.CreateDate = conversation.CreateDate;
+        conversation.Message = conversation.Message;
+        conversation.Channel = conversation.Channel;
         conversation.Answer = messageAnswer;
         conversation.Status = StatusType.Closed;
         conversation.Number = conversation.Number;
