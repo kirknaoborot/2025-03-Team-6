@@ -69,6 +69,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConversationStateService", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConversationState", "ConversationState\ConversationState.csproj", "{8FAF8596-0F7B-4161-AA4F-F8BF6AFA1BB5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OnlineStatusService", "OnlineStatusService", "{69658E41-9124-4483-9A3F-2AEE80E6E207}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineStatusService", "OnlineStatusService\OnlineStatusService\OnlineStatusService.csproj", "{0AFC5C93-FB40-4277-9F38-C4329A8C3C78}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +175,10 @@ Global
 		{8FAF8596-0F7B-4161-AA4F-F8BF6AFA1BB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FAF8596-0F7B-4161-AA4F-F8BF6AFA1BB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FAF8596-0F7B-4161-AA4F-F8BF6AFA1BB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AFC5C93-FB40-4277-9F38-C4329A8C3C78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AFC5C93-FB40-4277-9F38-C4329A8C3C78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AFC5C93-FB40-4277-9F38-C4329A8C3C78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AFC5C93-FB40-4277-9F38-C4329A8C3C78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -199,6 +207,7 @@ Global
 		{5AC9FD31-D918-4649-A7EE-0C545B633B3E} = {60D84241-4BBA-4EE1-A4AA-C606C4F51347}
 		{AB8530C6-1234-4421-AB02-956823D1EB8C} = {D533AE1B-159D-4158-BD5C-C73B21706AFE}
 		{8FAF8596-0F7B-4161-AA4F-F8BF6AFA1BB5} = {BB5142D2-F72B-4AF3-8225-5ACFCFC70816}
+		{0AFC5C93-FB40-4277-9F38-C4329A8C3C78} = {69658E41-9124-4483-9A3F-2AEE80E6E207}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {290C0D19-5A46-4060-83F8-20810C11AE63}

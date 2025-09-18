@@ -38,4 +38,19 @@ public class Conversation
     /// Дата обновления записи
     /// </summary>
     public DateTimeOffset UpdateDate { get; set; } = DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Текст ответа
+    /// </summary>
+    public string Answer { get; set; }
+
+    /// <summary>
+    /// Номер обращения
+    /// </summary>
+    public long Number {  get; set; }
+
+    /// <summary>
+    /// Префикс номера
+    /// </summary>
+    public string PrefixNumber { get; set; } = "ВХ-ОБР-";
 }

@@ -1,7 +1,10 @@
 using ConversationService.Api.Mapping;
+using ConversationService.Api.Models.Requests;
 using ConversationService.Application.DTO;
 using ConversationService.Application.Interfaces;
+using Infrastructure.Shared.Enums;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ConversationService.Api.Controllers;
 
@@ -23,7 +26,12 @@ public class ConversationController : ControllerBase
     [HttpGet("conversations")]
     public async Task<IActionResult> Get()
     {
-        var conversations = await _conversationService.GetAllConversations();
+        var requestUser = HttpContext.User;
+
+        var userId = Guid.TryParse(User.FindFirst("id")?.Value, out var resultUserId) ? resultUserId : Guid.Empty;
+        var role = Enum.TryParse<RoleType>(User.FindFirst(ClaimTypes.Role)?.Value, true, out var resultEnum) ? resultEnum : RoleType.Worker;
+
+        var conversations = await _conversationService.GetAllConversations(userId, role);
 
         var result = conversations
             .Select(x => ConversationMapper.ToResponse(x))
@@ -37,8 +45,8 @@ public class ConversationController : ControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("conversations/{id}")]
-    public async Task<ActionResult<ConversationDto>> GetConversation(Guid id)
+    [HttpGet("conversation")]
+    public async Task<ActionResult<ConversationDto>> GetConversation([FromQuery] Guid id)
     {
         var conversation = await _conversationService.GetConversation(id);
 
@@ -50,5 +58,18 @@ public class ConversationController : ControllerBase
         var result = ConversationMapper.ToResponse(conversation);
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Метод закрытия обращения
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="reply"></param>
+    /// <returns></returns>
+    [HttpPost("conversation-reply-close")]
+    public async Task<IActionResult> UpdateConversation([FromQuery] Guid id, [FromBody] ReplyDto reply)
+    {
+        await _conversationService.ReplyConversation(id, reply.AgentMessage);
+        return Ok();
     }
 }

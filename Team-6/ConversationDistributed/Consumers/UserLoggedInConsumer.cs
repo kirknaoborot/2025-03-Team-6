@@ -15,11 +15,11 @@ namespace ConversationDistributed.Consumers
             _logger = logger;
         }
 
-        public Task Consume(ConsumeContext<UserLoggedInEvent> context)
+        public Task Consume(ConsumeContext<AgentStatusEvent> context)
         {
             var msg = context.Message;
             _userState.UserLoggedIn(msg);
-            _logger.LogInformation($"Пользователь вошёл: {msg.FullName} ({msg.Login})");
+            _logger.LogInformation($"Пользователь вошёл: {msg.AgentId})");
 
             return Task.CompletedTask;
         }

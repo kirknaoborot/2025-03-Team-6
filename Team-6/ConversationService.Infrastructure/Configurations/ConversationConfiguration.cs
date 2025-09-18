@@ -37,5 +37,24 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
         entity.Property(e => e.UpdateDate)
             .HasColumnName("update_date")
             .IsRequired();
+
+        entity.Property(e => e.Answer)
+            .HasColumnName("answer");
+
+        entity.Property(e => e.PrefixNumber)
+            .HasColumnName("prefix_number");
+
+        entity.Property(e => e.Number)
+            .HasColumnName("number")
+            .ValueGeneratedOnAdd();
+
+        entity.Property(e => e.Number)
+            .Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+
+        entity.Property(e => e.Number)
+            .Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+
+        entity.HasIndex(e => e.Number)
+            .IsUnique();
     }
 }

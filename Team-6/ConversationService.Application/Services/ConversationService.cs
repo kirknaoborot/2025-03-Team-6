@@ -1,6 +1,11 @@
 using ConversationService.Application.DTO;
 using ConversationService.Application.Interfaces;
 using ConversationService.Domain.Entities;
+using Infrastructure.Shared.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
+using System.Security.Claims;
+using System.Threading.Channels;
 
 namespace ConversationService.Application.Services;
 
@@ -17,9 +22,16 @@ public class ConversationService : IConversationService
     /// Метод получения списка обращений
     /// </summary>
     /// <returns></returns>
-    public async Task<IReadOnlyCollection<ConversationDto>> GetAllConversations()
+    public async Task<IReadOnlyCollection<ConversationDto>> GetAllConversations(Guid userId, RoleType role)
     {
         var conversations = await _conversationRepository.GetConversations();
+
+        if (role == RoleType.Worker)
+        {
+            conversations = conversations
+                .Where(x => x.WorkerId ==  userId)
+                .ToList();
+        }
 
         var result = conversations
             .Select(x => new ConversationDto
@@ -29,7 +41,8 @@ public class ConversationService : IConversationService
                 Message = x.Message,
                 Status = x.Status,
                 WorkerId = x.WorkerId,
-                CreateDate = x.CreateDate
+                CreateDate = x.CreateDate,
+                Number = $"{x.PrefixNumber}{x.Number}"
             })
             .ToList();
         
@@ -54,7 +67,9 @@ public class ConversationService : IConversationService
                 Message = conversation.Message,
                 Status = conversation.Status,
                 WorkerId = conversation.WorkerId,
-                CreateDate = conversation.CreateDate
+                CreateDate = conversation.CreateDate,
+                Answer = conversation.Answer,
+                Number = $"{conversation.PrefixNumber}{conversation.Number}"
             };
         
         return result;
@@ -69,7 +84,7 @@ public class ConversationService : IConversationService
             Message = dto.Message,
             Status = dto.Status,
             WorkerId = dto.WorkerId,
-            CreateDate = dto.CreateDate
+            CreateDate = dto.CreateDate,
         };
         
         await _conversationRepository.CreateConversation(conversation);
@@ -84,9 +99,32 @@ public class ConversationService : IConversationService
 			Message = dto.Message,
 			Status = dto.Status,
 			WorkerId = dto.WorkerId,
-			CreateDate = dto.CreateDate
+			CreateDate = dto.CreateDate,
+            Answer = dto.Answer
 		};
 
 		await _conversationRepository.UpdateConversation(conversation);
 	}
+
+
+    public async Task UpdateConversation(Conversation conversation)
+    {
+        await _conversationRepository.UpdateConversation(conversation);
+    }
+
+
+    public async Task ReplyConversation(Guid conversationId, string messageAnswer)
+    {
+        var conversation = await GetConversation(conversationId);
+
+        conversation.WorkerId = conversation.WorkerId;
+        conversation.CreateDate = conversation.CreateDate;
+        conversation.Message = conversation.Message;
+        conversation.Channel = conversation.Channel;
+        conversation.Answer = messageAnswer;
+        conversation.Status = StatusType.Closed;
+        conversation.Number = conversation.Number;
+
+        await UpdateConversation(conversation);
+    }
 }

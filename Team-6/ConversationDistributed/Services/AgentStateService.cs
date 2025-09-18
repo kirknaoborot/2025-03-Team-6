@@ -8,13 +8,11 @@ namespace ConversationDistributed.Services
         private readonly ConcurrentDictionary<Guid, Agent> _agents
            = new();
 
-        public void UserLoggedIn(UserLoggedInEvent agentInfo)
+        public void UserLoggedIn(AgentStatusEvent agentInfo)
         {
 			var agent = new Agent
 			{
-				Id = agentInfo.Id,
-				Login = agentInfo.Login,
-				FullName = agentInfo.FullName,
+				Id = agentInfo.AgentId,
 				IsFreeForConversation = true
 			};
 
@@ -41,11 +39,6 @@ namespace ConversationDistributed.Services
             {
 				user.IsFreeForConversation = true;
             }
-        }
-
-        public string GetFullName(Guid userId)
-        {
-            return _agents.TryGetValue(userId, out var user) ? user.FullName : null;
         }
 
         public IEnumerable<Agent> GetAllOperators()

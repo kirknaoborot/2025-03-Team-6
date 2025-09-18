@@ -31,4 +31,14 @@ public class ConversationResponse
     /// Дата создания
     /// </summary>
     public DateTimeOffset CreateDate { get; set; }
+
+    /// <summary>
+    /// Ответ оператора
+    /// </summary>
+    public string Answer { get; set; }
+
+    /// <summary>
+    /// Номер обращения
+    /// </summary>
+    public string Number { get; set; }
 }

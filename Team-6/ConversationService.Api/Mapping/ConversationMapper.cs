@@ -15,6 +15,8 @@ public static class ConversationMapper
             Status = conversationDto.Status.ToString(),
             CreateDate = conversationDto.CreateDate,
             WorkerId = conversationDto.WorkerId,
+            Answer = conversationDto.Answer,
+            Number = conversationDto.Number
         };
     }
 }

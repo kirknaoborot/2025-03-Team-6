@@ -22,6 +22,7 @@ public class ConversationRepository : IConversationRepository
     public async Task<List<Conversation>> GetConversations()
     {
         var conversations = await _context.Conversations
+            .AsNoTracking()
             .TagWith("Запрос получения списка пользователей")
             .ToListAsync();
 
@@ -36,6 +37,7 @@ public class ConversationRepository : IConversationRepository
     public async Task<Conversation> GetConversation(Guid id)
     {
         var conversation = await _context.Conversations
+            .AsNoTracking()
             .TagWith($"Запрос получения пользователя по идентификатору: {id}")
             .SingleOrDefaultAsync(x => x.ConversationId == id);
         
@@ -48,6 +50,7 @@ public class ConversationRepository : IConversationRepository
     /// <param name="conversation"></param>
     public async Task CreateConversation(Conversation conversation)
     {
+
 		await _context.Conversations.AddAsync(conversation);
         await _context.SaveChangesAsync();
     }
