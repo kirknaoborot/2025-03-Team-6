@@ -43,4 +43,9 @@ public class ConversationDto
     /// Номер обращения
     /// </summary>
     public string Number { get; set; }
+
+    /// <summary>
+    /// Идентификатор пользователя
+    /// </summary>
+    public long UserId { get; set; }
 }

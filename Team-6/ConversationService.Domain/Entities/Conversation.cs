@@ -53,4 +53,9 @@ public class Conversation
     /// Префикс номера
     /// </summary>
     public string PrefixNumber { get; set; } = "ВХ-ОБР-";
+
+    /// <summary>
+    /// Идентификатор пользователя
+    /// </summary>
+    public long UserId { get; set; }
 }

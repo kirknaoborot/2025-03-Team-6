@@ -69,7 +69,8 @@ public class ConversationService : IConversationService
                 WorkerId = conversation.WorkerId,
                 CreateDate = conversation.CreateDate,
                 Answer = conversation.Answer,
-                Number = $"{conversation.PrefixNumber}{conversation.Number}"
+                Number = $"{conversation.PrefixNumber}{conversation.Number}",
+                UserId = conversation.UserId
             };
         
         return result;
@@ -85,6 +86,7 @@ public class ConversationService : IConversationService
             Status = dto.Status,
             WorkerId = dto.WorkerId,
             CreateDate = dto.CreateDate,
+            UserId = dto.UserId,
         };
         
         await _conversationRepository.CreateConversation(conversation);
@@ -100,18 +102,17 @@ public class ConversationService : IConversationService
 			Status = dto.Status,
 			WorkerId = dto.WorkerId,
 			CreateDate = dto.CreateDate,
-            Answer = dto.Answer
-		};
+            Answer = dto.Answer,
+            UserId = dto.UserId,
+        };
 
 		await _conversationRepository.UpdateConversation(conversation);
 	}
-
 
     public async Task UpdateConversation(Conversation conversation)
     {
         await _conversationRepository.UpdateConversation(conversation);
     }
-
 
     public async Task ReplyConversation(Guid conversationId, string messageAnswer)
     {
@@ -124,6 +125,7 @@ public class ConversationService : IConversationService
         conversation.Answer = messageAnswer;
         conversation.Status = StatusType.Closed;
         conversation.Number = conversation.Number;
+        conversation.UserId = conversation.UserId;
 
         await UpdateConversation(conversation);
     }

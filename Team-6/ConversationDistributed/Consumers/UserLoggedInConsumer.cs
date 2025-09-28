@@ -4,7 +4,7 @@ using MassTransit;
 
 namespace ConversationDistributed.Consumers
 {
-    public class UserLoggedInConsumer : IConsumer<UserLoggedInEvent>
+    public class UserLoggedInConsumer : IConsumer<AgentStatusEvent>
     {
         private readonly IAgentStateService _userState;
         private readonly ILogger<UserLoggedInConsumer> _logger;

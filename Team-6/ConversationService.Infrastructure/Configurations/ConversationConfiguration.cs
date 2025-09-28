@@ -48,6 +48,9 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
             .HasColumnName("number")
             .ValueGeneratedOnAdd();
 
+        entity.Property(e => e.UserId)
+            .HasColumnName("user_id");
+
         entity.Property(e => e.Number)
             .Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
 

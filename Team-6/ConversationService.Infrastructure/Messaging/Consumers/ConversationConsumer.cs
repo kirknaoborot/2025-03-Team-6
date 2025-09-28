@@ -33,7 +33,8 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 			Channel = cmd.Channel,
 			Status = cmd.Status,
 			WorkerId = cmd.WorkerId,
-			CreateDate = cmd.CreateDate
+			CreateDate = cmd.CreateDate,
+			UserId = cmd.UserId
 		};
 
 		if (cmd.Status == StatusType.New)
