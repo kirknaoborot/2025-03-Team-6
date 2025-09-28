@@ -41,26 +41,39 @@ export default function Conversations() {
 
   const navigate = useNavigate();
 
-  // SignalR подключение
-  useEffect(() => {
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:54000/onlinestatus", { withCredentials: true })
-      .withAutomaticReconnect()
-      .build();
+// SignalR подключение
+useEffect(() => {
+  const connection = new signalR.HubConnectionBuilder()
+    .withUrl("http://localhost:54000/onlinestatus", { withCredentials: true })
+    .withAutomaticReconnect()
+    .build();
 
-    connection
-      .start()
-      .then(() => {
-        console.log("Connected to SignalR Hub");
-        const user = localStorage.getItem("user") || "anonymous";
-        connection.invoke("UserOnline", user);
-        setOnlineStatus(true);
-        setShowModal(true); // показываем модалку при подключении
-      })
-      .catch((err) => console.error(err));
+  connection
+    .start()
+    .then(() => {
+      console.log("Connected to SignalR Hub");
 
-    return () => connection.stop();
-  }, []);
+      const storedUser = localStorage.getItem("user");
+      let userId: string = "anonymous";
+
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          userId = parsed.id?.toString() || "anonymous";
+        } catch (e) {
+          console.error("Ошибка парсинга user из localStorage", e);
+        }
+      }
+
+      connection.invoke("UserOnline", userId);
+
+      setOnlineStatus(true);
+      setShowModal(true); // показываем модалку при подключении
+    })
+    .catch((err) => console.error(err));
+
+  return () => connection.stop();
+}, []);
 
   // Загрузка обращений
   useEffect(() => {
