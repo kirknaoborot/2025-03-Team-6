@@ -69,7 +69,7 @@ public class ConversationController : ControllerBase
     [HttpPost("conversation-reply-close")]
     public async Task<IActionResult> UpdateConversation([FromQuery] Guid id, [FromBody] ReplyDto reply)
     {
-        await _conversationService.ReplyConversation(id, reply.AgentMessage);
+        await _conversationService.ReplyConversation(id, reply.Message);
         return Ok();
     }
 }

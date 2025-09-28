@@ -5,6 +5,6 @@
         /// <summary>
         /// сообщение оператора
         /// </summary>
-        public string AgentMessage { get; set; }
+        public string Message { get; set; }
     }
 }
