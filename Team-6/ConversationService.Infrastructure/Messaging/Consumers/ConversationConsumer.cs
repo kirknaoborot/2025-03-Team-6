@@ -34,7 +34,8 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 			Status = cmd.Status,
 			WorkerId = cmd.WorkerId,
 			CreateDate = cmd.CreateDate,
-			UserId = cmd.UserId
+			UserId = cmd.UserId,
+			Answer = cmd.Answer
 		};
 
 		if (cmd.Status == StatusType.New)
@@ -62,7 +63,7 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 			var sendMessageEvent = new SendMessageEvent
 			{
 				UserId = cmd.UserId,
-				MessageText = "На данный момент нет свободного агента. Пожалуйста, обратитесь позже.",
+				MessageText = cmd.Answer,
 				Channel = cmd.Channel,
 				BotToken = cmd.BotToken,
 			};

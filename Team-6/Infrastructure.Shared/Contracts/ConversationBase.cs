@@ -12,4 +12,5 @@ public class ConversationBase
 	public Guid WorkerId { get; set; }
 	public DateTimeOffset CreateDate { get; set; }
 	public string BotToken { get; set; }
+	public string Answer { get; set; }
 }

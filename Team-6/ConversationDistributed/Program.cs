@@ -1,4 +1,3 @@
-using ConversationDistributed;
 using ConversationDistributed.Consumers;
 using ConversationDistributed.Services;
 using MassTransit;
@@ -7,6 +6,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 // Сервис состояния пользователей
 builder.Services.AddSingleton<IAgentStateService, AgentStateService>();
+builder.Services.AddSingleton<ConvState>();
 
 // MassTransit
 builder.Services.AddMassTransit(x =>
@@ -36,7 +36,8 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
+var convState = host.Services.GetRequiredService<ConvState>();
+convState.ExecuteAsync(CancellationToken.None);
 await host.RunAsync();

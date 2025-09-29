@@ -9,15 +9,17 @@ public class DefineOperatorForConversationConsumer : IConsumer<DefineOperatorFor
 	private readonly IBus _bus;
 	private readonly IAgentStateService _IUserStateService;
 	private readonly ILogger<DefineOperatorForConversationConsumer> _logger;
+	private readonly ConvState _convState;
 
-	public DefineOperatorForConversationConsumer(IAgentStateService userStateService, IBus bus, ILogger<DefineOperatorForConversationConsumer> logger)
+	public DefineOperatorForConversationConsumer(IAgentStateService userStateService, IBus bus, ILogger<DefineOperatorForConversationConsumer> logger, ConvState convState)
 	{
 		_IUserStateService = userStateService;
 		_bus = bus;
 		_logger = logger;
+		_convState = convState;
 	}
 
-	public Task Consume(ConsumeContext<DefineOperatorForConversationCommand> context)
+	public async Task Consume(ConsumeContext<DefineOperatorForConversationCommand> context)
 	{
 		var user = _IUserStateService.GetFirstFreeOperator();
 
@@ -26,23 +28,25 @@ public class DefineOperatorForConversationConsumer : IConsumer<DefineOperatorFor
 		if (user != null)
 		{
 			_IUserStateService.AssignConversationToUser(user.Id, context.Message.ConversationId);
+
+			var workerId = user == null ? Guid.Empty : user.Id;
+
+			var defineOperatorForConversationEvent = new DefineAgentEvent
+			{
+				ConversationId = context.Message.ConversationId,
+				UserId = context.Message.UserId,
+				WorkerId = workerId,
+				MessageText = context.Message.MessageText,
+				CreateDate = context.Message.CreateDate,
+				Channel = context.Message.Channel,
+				BotToken = context.Message.BotToken
+			};
+
+			await _bus.Publish(defineOperatorForConversationEvent);
 		}
-
-		var workerId = user == null ? Guid.Empty : user.Id;
-
-		var defineOperatorForConversationEvent = new DefineAgentEvent
+		else
 		{
-			ConversationId = context.Message.ConversationId,
-			UserId = context.Message.UserId,
-			WorkerId = workerId,
-			MessageText = context.Message.MessageText,
-			CreateDate = context.Message.CreateDate,
-			Channel = context.Message.Channel,
-			BotToken = context.Message.BotToken
-		};
-
-		_bus.Publish(defineOperatorForConversationEvent);
-
-		return Task.CompletedTask;
+			await _convState.AddConversationAsync(context.Message);
+		}
 	}
 }

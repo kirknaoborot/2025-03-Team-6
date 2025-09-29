@@ -31,6 +31,7 @@ public class DefineAgentConsumer : IConsumer<DefineAgentEvent>
 			WorkerId = context.Message.WorkerId,
 			CreateDate = context.Message.CreateDate,
 			BotToken = context.Message.BotToken,
+			Answer = context.Message.Answer,
 		};
 
 		return _bus.Publish(updateConversationCommand);

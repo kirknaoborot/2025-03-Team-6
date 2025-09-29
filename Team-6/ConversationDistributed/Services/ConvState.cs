@@ -1,11 +1,10 @@
-﻿using ConversationDistributed.Services;
-using Infrastructure.Shared.Contracts;
+﻿using Infrastructure.Shared.Contracts;
 using MassTransit;
 using System.Collections.Concurrent;
 
-namespace ConversationState.Services
-{
-    public class ConvState : BackgroundService
+namespace ConversationDistributed.Services;
+
+    public class ConvState //: BackgroundService
     {
         private readonly IAgentStateService _agentStateService;
         private readonly IBus _bus;
@@ -48,7 +47,18 @@ namespace ConversationState.Services
 
             if (pending.IsTimedOut())
             {
-                _logger.LogWarning("Обращение {ConversationId} отменено по таймауту.", conversationId);
+				await _bus.Publish(new DefineAgentEvent
+				{
+					ConversationId = conversationId,
+					WorkerId = Guid.Empty,
+					MessageText = pending.Command.MessageText,
+					CreateDate = pending.Command.CreateDate,
+					Channel = pending.Command.Channel,
+					BotToken = pending.Command.BotToken,
+					UserId = pending.Command.UserId,
+					Answer = "На данный момент нет свободного агента. Пожалуйста, обратитесь позже."
+				});
+				_logger.LogWarning("Обращение {ConversationId} отменено по таймауту.", conversationId);
                 _pendingConversations.TryRemove(conversationId, out _);
                 return true;
             }
@@ -79,13 +89,14 @@ namespace ConversationState.Services
             return false; // не назначено — продолжаем ждать
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    var tasks = _pendingConversations.Keys
+				_logger.LogInformation($"Количество необработанных обращений {_pendingConversations?.Count}.");
+				var tasks = _pendingConversations.Keys
                         .Select(conversationId => TryAssignOperatorAsync(conversationId))
                         .ToArray();
 
@@ -112,7 +123,6 @@ namespace ConversationState.Services
                 EnqueueTime = DateTime.UtcNow;
             }
 
-            public bool IsTimedOut() => DateTime.UtcNow - EnqueueTime > TimeSpan.FromHours(1);
+            public bool IsTimedOut() => DateTime.UtcNow - EnqueueTime > TimeSpan.FromSeconds(10);
         }
     }
-}

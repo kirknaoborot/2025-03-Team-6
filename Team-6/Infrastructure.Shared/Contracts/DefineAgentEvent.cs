@@ -11,4 +11,5 @@ public class DefineAgentEvent
 	public DateTimeOffset CreateDate { get; set; }
 	public ChannelType Channel { get; set; }
 	public string BotToken { get; set; }
+	public string Answer { get; set; }
 }
