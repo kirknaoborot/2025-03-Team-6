@@ -44,80 +44,53 @@
         "AuthenticationProviderKey": "JwtAuth",
         "AllowedScopes": []
       },
-      "ClaimsToHeaders": [
-        {
-          "Key": "X-User-Id",
-          "Value": "claims['id'] > value"
-        },
-        {
-          "Key": "X-User-Email",
-          "Value": "claims['email'] > value"
-        },
-        {
-          "Key": "X-User-Role",
-          "Value": "claims['role'] > value"
-        }
-      ]
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
     },
     {
-      "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ],
       "UpstreamPathTemplate": "/conversation/conversations",
       "DownstreamPathTemplate": "/api/conversation/conversations",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5235
+          "Port": 55822
         }
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "JwtAuth",
         "AllowedScopes": []
       },
-      "ClaimsToHeaders": [
-        {
-          "Key": "X-User-Id",
-          "Value": "claims['id'] > value"
-        },
-        {
-          "Key": "X-User-Email",
-          "Value": "claims['email'] > value"
-        },
-        {
-          "Key": "X-User-Role",
-          "Value": "claims['role'] > value"
-        }
-      ]
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
     },
     {
       "UpstreamHttpMethod": [ "GET" ],
       "UpstreamPathTemplate": "/conversation/conversation",
       "DownstreamPathTemplate": "/api/conversation/conversation",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5235
+          "Port": 55822
         }
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "JwtAuth",
         "AllowedScopes": []
       },
-      "ClaimsToHeaders": [
-        {
-          "Key": "X-User-Id",
-          "Value": "claims['id'] > value"
-        },
-        {
-          "Key": "X-User-Email",
-          "Value": "claims['email'] > value"
-        },
-        {
-          "Key": "X-User-Role",
-          "Value": "claims['role'] > value"
-        }
-      ]
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
     },
     {
       "UpstreamHttpMethod": [ "POST" ],
@@ -134,20 +107,11 @@
         "AuthenticationProviderKey": "JwtAuth",
         "AllowedScopes": []
       },
-      "ClaimsToHeaders": [
-        {
-          "Key": "X-User-Id",
-          "Value": "claims['id'] > value"
-        },
-        {
-          "Key": "X-User-Email",
-          "Value": "claims['email'] > value"
-        },
-        {
-          "Key": "X-User-Role",
-          "Value": "claims['role'] > value"
-        }
-      ]
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
     }
   ]
 }

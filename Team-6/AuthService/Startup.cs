@@ -120,7 +120,7 @@ namespace AuthService
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
 
                         ValidateLifetime = true,
-                        ClockSkew = TimeSpan.FromSeconds(30) // допуск по времени
+                        ClockSkew = TimeSpan.FromMinutes(30) // допуск по времени
                     };
                 });
 

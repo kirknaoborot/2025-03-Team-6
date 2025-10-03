@@ -8,6 +8,8 @@ namespace ConversationDistributed.Services
         private readonly ConcurrentDictionary<Guid, Agent> _agents
            = new();
 
+        private List<Agent> agentsTest = [];
+
         public void UserLoggedIn(AgentStatusEvent agentInfo)
         {
 			var agent = new Agent
@@ -16,7 +18,9 @@ namespace ConversationDistributed.Services
 				IsFreeForConversation = true
 			};
 
-			_agents[agent.Id] = agent;
+            Console.WriteLine($"agents: ========> {agentsTest.Count}");
+            agentsTest.Add(agent);
+            _agents[agent.Id] = agent;
         }
 
         public void UserLoggedOut(Guid userId)
@@ -53,7 +57,8 @@ namespace ConversationDistributed.Services
 
 		public Agent GetFirstFreeOperator()
 		{
-			return _agents.Values.FirstOrDefault(x => x.IsFreeForConversation);
+            Console.WriteLine($"agents GetFirstFreeOperator: ========> {agentsTest.Count}");
+            return agentsTest.FirstOrDefault(x => x.IsFreeForConversation);
 		}
 	}
 }

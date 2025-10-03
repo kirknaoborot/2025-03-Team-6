@@ -70,7 +70,7 @@ public class ConversationService : IConversationService
                 CreateDate = conversation.CreateDate,
                 Answer = conversation.Answer,
                 Number = $"{conversation.PrefixNumber}{conversation.Number}",
-                UserId = conversation.UserId
+                UserId = conversation.UserId ?? 0
             };
         
         return result;

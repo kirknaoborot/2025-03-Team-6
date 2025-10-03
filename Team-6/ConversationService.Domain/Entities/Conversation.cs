@@ -57,5 +57,5 @@ public class Conversation
     /// <summary>
     /// Идентификатор пользователя
     /// </summary>
-    public long UserId { get; set; }
+    public long? UserId { get; set; }
 }

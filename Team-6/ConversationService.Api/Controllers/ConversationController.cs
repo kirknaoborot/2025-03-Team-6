@@ -26,17 +26,27 @@ public class ConversationController : ControllerBase
     [HttpGet("conversations")]
     public async Task<IActionResult> Get()
     {
-        var requestUser = HttpContext.User;
+        // 1) Пытаемся взять из клеймов (если вдруг сервис будет с авторизацией)
+        var userId = Guid.TryParse(User.FindFirst("id")?.Value, out var tmpUserId) ? tmpUserId : Guid.Empty;
 
-        var userId = Guid.TryParse(User.FindFirst("id")?.Value, out var resultUserId) ? resultUserId : Guid.Empty;
-        var role = Enum.TryParse<RoleType>(User.FindFirst(ClaimTypes.Role)?.Value, true, out var resultEnum) ? resultEnum : RoleType.Worker;
+        // ВАЖНО: в токене клейм называется "role", а не ClaimTypes.Role
+        var roleStr = User.FindFirst("role")?.Value;
+
+
+        if (userId == Guid.Empty && Request.Headers.TryGetValue("X-User-Id", out var xUserId))
+            Guid.TryParse(xUserId.FirstOrDefault(), out userId);
+
+        if (string.IsNullOrWhiteSpace(roleStr) && Request.Headers.TryGetValue("X-User-Role", out var xRole))
+            roleStr = xRole.FirstOrDefault();
+
+        // Парсим роль
+        var role = Enum.TryParse<RoleType>(roleStr, true, out var parsedRole)
+            ? parsedRole
+            : RoleType.Worker;
 
         var conversations = await _conversationService.GetAllConversations(userId, role);
 
-        var result = conversations
-            .Select(x => ConversationMapper.ToResponse(x))
-            .ToList();
-        
+        var result = conversations.Select(ConversationMapper.ToResponse).ToList();
         return Ok(result);
     }
 
