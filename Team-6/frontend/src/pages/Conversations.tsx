@@ -1,20 +1,35 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as signalR from "@microsoft/signalr";
-import { apiFetch } from "../api/apiFetch";
 
+/* ===== Types ===== */
 interface Conversation {
   conversationId: string;
   createDate: string;
-  status: StatusKey;
+  status: StatusKey;    // "New" | "Distributed" | ...
   channel: string;
   message: string;
   workerId: string;
 }
-
-type TabKey = "all" | "new" | "inWork" | "closed" | "agentNotFound" | "distributed";
 type StatusKey = "New" | "Distributed" | "InWork" | "Closed" | "AgentNotFound";
+type TabKey    = "all" | "new" | "inWork" | "closed" | "agentNotFound" | "distributed";
 
+interface User {
+  id: string;          // Guid
+  fullName: string;
+  login: string;
+  passwordsHash?: string;
+  role: string | number;
+  isActive: boolean;
+}
+type AuthStorage = {
+  accessToken: string;
+  refreshToken?: string;
+  refreshTokenExpiryTime?: string;
+  user: User;
+};
+
+/* ===== UI dicts ===== */
 const statusLabels: Record<StatusKey, string> = {
   New: "Новое",
   Distributed: "Распределено",
@@ -22,7 +37,6 @@ const statusLabels: Record<StatusKey, string> = {
   Closed: "Обработано",
   AgentNotFound: "Агент не найден",
 };
-
 const statusDots: Record<StatusKey, string> = {
   New: "#6b7280",
   Distributed: "#0d6efd",
@@ -31,76 +45,117 @@ const statusDots: Record<StatusKey, string> = {
   AgentNotFound: "#dc3545",
 };
 
+/* ===== Styles (inline) ===== */
+const styles = `
+.layout { display:grid; grid-template-columns: 260px 1fr; gap:24px; }
+@media (max-width: 992px){ .layout { grid-template-columns:1fr; } }
+.card { border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
+.section { padding:16px 18px; }
+.section + .section { border-top:1px solid #f3f4f6; }
+.header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.title { font-size:18px; font-weight:600; color:#111827; letter-spacing:.2px; }
+.muted { color:#6b7280; font-size:13px; }
+
+.segmented { display:inline-flex; border:1px solid #d1d5db; border-radius:8px; overflow:hidden; }
+.segmented button { appearance:none; background:#fff; border:none; padding:8px 14px; font-weight:600; font-size:14px; color:#374151; cursor:pointer; min-width:110px; }
+.segmented button + button { border-left:1px solid #e5e7eb; }
+.segmented .active { background:#111827; color:#fff; }
+
+.sidebar .section-title { font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:.08em; padding:12px 14px; border-bottom:1px solid #f3f4f6; }
+.nav-vert { padding: 8px; display:flex; flex-direction:column; gap:6px; }
+.nav-item { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:8px; color:#374151; cursor:pointer; }
+.nav-item:hover { background:#f9fafb; }
+.nav-item.active { background:#eef2ff; color:#111827; border:1px solid #e5e7eb; }
+.nav-count { font-size:12px; color:#6b7280; }
+
+.search { display:flex; gap:8px; padding:10px; }
+.input { width:100%; border:1px solid #e5e7eb; border-radius:8px; padding:8px 10px; font-size:14px; }
+
+.table-wrap { overflow:auto; }
+table { width:100%; border-collapse:collapse; }
+thead th { position:sticky; top:0; background:#f9fafb; color:#374151; font-weight:600; font-size:13px; letter-spacing:.02em; border-bottom:1px solid #e5e7eb; padding:10px 12px; text-align:left; }
+tbody td { padding:12px; border-bottom:1px solid #f3f4f6; font-size:14px; color:#111827; }
+tbody tr:hover { background:#fcfcfd; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.status { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:#374151; }
+.dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+.btn { border:1px solid #d1d5db; background:#111827; color:#fff; border-radius:8px; padding:10px 14px; font-weight:600; }
+.btn.secondary { background:#fff; color:#111827; }
+.helpbar { margin: 6px 0 16px; color:#6b7280; font-size:13px; }
+.actionbar { display:flex; gap:8px; align-items:center; }
+`;
+
+/* ===== Component ===== */
 export default function Conversations() {
   const navigate = useNavigate();
 
-  // data
+  // данные
   const [items, setItems] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // filters
+  // фильтры
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
 
-  // signalR status toggle
+  // signalR
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
-  const userId = useMemo(() => (localStorage.getItem("user") || "anonymous"), []);
 
-  // styles (строгий минимализм)
-  const styles = `
-    .layout { display:grid; grid-template-columns: 260px 1fr; gap:24px; }
-    @media (max-width: 992px){ .layout { grid-template-columns:1fr; } }
-    .card { border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
-    .section { padding:16px 18px; }
-    .section + .section { border-top:1px solid #f3f4f6; }
-    .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-    .title { font-size:18px; font-weight:600; color:#111827; letter-spacing:.2px; }
-    .muted { color:#6b7280; font-size:13px; }
-    .segmented { display:inline-flex; border:1px solid #d1d5db; border-radius:8px; overflow:hidden; }
-    .segmented button { appearance:none; background:#fff; border:none; padding:8px 14px; font-weight:600; font-size:14px; color:#374151; cursor:pointer; min-width:110px; }
-    .segmented button + button { border-left:1px solid #e5e7eb; }
-    .segmented .active { background:#111827; color:#fff; }
-    .sidebar .section-title { font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:.08em; padding:12px 14px; border-bottom:1px solid #f3f4f6; }
-    .nav-vert { padding: 8px; display:flex; flex-direction:column; gap:6px; }
-    .nav-item { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:8px; color:#374151; cursor:pointer; }
-    .nav-item:hover { background:#f9fafb; }
-    .nav-item.active { background:#eef2ff; color:#111827; border:1px solid #e5e7eb; }
-    .nav-count { font-size:12px; color:#6b7280; }
-    .search { display:flex; gap:8px; padding:10px; }
-    .input { width:100%; border:1px solid #e5e7eb; border-radius:8px; padding:8px 10px; font-size:14px; }
-    .table-wrap { overflow:auto; }
-    table { width:100%; border-collapse:collapse; }
-    thead th { position:sticky; top:0; background:#f9fafb; color:#374151; font-weight:600; font-size:13px; letter-spacing:.02em; border-bottom:1px solid #e5e7eb; padding:10px 12px; text-align:left; }
-    tbody td { padding:12px; border-bottom:1px solid #f3f4f6; font-size:14px; color:#111827; }
-    tbody tr:hover { background:#fcfcfd; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .status { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:#374151; }
-    .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
-    .btn { border:1px solid #d1d5db; background:#111827; color:#fff; border-radius:8px; padding:10px 14px; font-weight:600; }
-    .btn.secondary { background:#fff; color:#111827; }
-    .helpbar { margin: 6px 0 16px; color:#6b7280; font-size:13px; }
-  `;
+  // читаем auth один раз
+  const { accessToken, currentUser }: { accessToken: string | null; currentUser: User | null } = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("auth");
+      if (!raw) return { accessToken: null, currentUser: null };
+      const parsed = JSON.parse(raw) as AuthStorage;
+      return { accessToken: parsed?.accessToken ?? null, currentUser: parsed?.user ?? null };
+    } catch {
+      return { accessToken: null, currentUser: null };
+    }
+  }, []);
 
-  // load data
+  /* ===== Data load ===== */
   useEffect(() => {
     (async () => {
       setLoading(true);
       setError("");
       try {
-        const data = await apiFetch<Conversation[]>("/conversation/conversations", { method: "GET" });
+        const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:56466";
+        if (!accessToken) {
+          setError("Нет accessToken (ключ 'auth' в localStorage пустой)");
+          setLoading(false);
+          return;
+        }
+        const res = await fetch(`${baseUrl}/conversation/conversations`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem("auth");
+          navigate("/");
+          return;
+        }
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || `HTTP ${res.status}`);
+        }
+        const data: Conversation[] = await res.json();
         setItems(data);
       } catch (e: any) {
-        setError(e.message || "Ошибка получения данных");
+        setError(e?.message || "Ошибка получения данных");
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [accessToken, navigate]);
 
-  // signalR helpers
+  /* ===== SignalR ===== */
   const ensureConnection = () => {
     if (!connectionRef.current) {
       const c = new signalR.HubConnectionBuilder()
@@ -123,7 +178,9 @@ export default function Conversations() {
     try {
       const conn = ensureConnection();
       await conn.start();
-      await conn.invoke("UserOnline", userId);
+      // серверу нужен ПОЛНЫЙ user
+const jsonPayload = JSON.stringify({ id: currentUser?.id ?? "anonymous" });
+await conn.invoke("UserOnline", jsonPayload);
       setConnected(true);
     } catch (e) {
       console.error("SignalR connect error:", e);
@@ -142,13 +199,16 @@ export default function Conversations() {
   };
 
   useEffect(() => {
+    // auto-connect по желанию — отключено. Если надо, раскомментируй:
+    // connect();
     return () => {
       connectionRef.current?.stop().catch(() => {});
       connectionRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // counts & filtered
+  /* ===== Derived ===== */
   const counts = useMemo(() => ({
     all: items.length,
     new: items.filter((c) => c.status === "New").length,
@@ -160,7 +220,6 @@ export default function Conversations() {
 
   const filtered = useMemo(() => {
     let list = items;
-    // фильтр по табу
     switch (activeTab) {
       case "new": list = list.filter((c) => c.status === "New"); break;
       case "inWork": list = list.filter((c) => c.status === "InWork"); break;
@@ -169,7 +228,6 @@ export default function Conversations() {
       case "agentNotFound": list = list.filter((c) => c.status === "AgentNotFound"); break;
       default: break;
     }
-    // текстовый поиск (по сообщению и каналу)
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter((c) =>
@@ -181,8 +239,14 @@ export default function Conversations() {
     return list;
   }, [items, activeTab, search]);
 
-  const goDetail = (id: string) => navigate(`/conversation?id=${encodeURIComponent(id)}`);
+  const goDetail = (id: string) => navigate(`/conversation/${encodeURIComponent(id)}`);
 
+  const handleLogout = () => {
+    localStorage.removeItem("auth");
+    navigate("/");
+  };
+
+  /* ===== Render ===== */
   return (
     <div className="container py-4">
       <style>{styles}</style>
@@ -195,23 +259,26 @@ export default function Conversations() {
             {connected ? "Статус: готов — распределение включено" : "Статус: неготов — распределение выключено"}
           </div>
         </div>
-        <div className="segmented" aria-label="Статус оператора">
-          <button
-            className={!connected ? "active" : ""}
-            onClick={disconnect}
-            disabled={!connected || connecting}
-            title="Сделать статус Неготов"
-          >
-            Не готов
-          </button>
-          <button
-            className={connected ? "active" : ""}
-            onClick={connect}
-            disabled={connected || connecting}
-            title="Сделать статус Готов"
-          >
-            Готов
-          </button>
+        <div className="actionbar">
+          <div className="segmented" aria-label="Статус оператора">
+            <button
+              className={!connected ? "active" : ""}
+              onClick={disconnect}
+              disabled={!connected || connecting}
+              title="Сделать статус Неготов"
+            >
+              Не готов
+            </button>
+            <button
+              className={connected ? "active" : ""}
+              onClick={connect}
+              disabled={connected || connecting}
+              title="Сделать статус Готов"
+            >
+              {connecting ? "Подключение…" : "Готов"}
+            </button>
+          </div>
+          <button className="btn secondary" onClick={handleLogout}>Выйти</button>
         </div>
       </div>
 
@@ -228,7 +295,6 @@ export default function Conversations() {
         <aside className="sidebar">
           <div className="card">
             <div className="section-title">Фильтр</div>
-
             <div className="search">
               <input
                 className="input"
@@ -284,7 +350,7 @@ export default function Conversations() {
                   )}
                   {!loading && !error && filtered.map((c) => (
                     <tr key={c.conversationId} style={{ cursor: "pointer" }} onClick={() => goDetail(c.conversationId)}>
-                      <td className="mono">{c.number}</td>
+                      <td className="mono">#{c.conversationId.slice(0, 8)}</td>
                       <td>{new Date(c.createDate).toLocaleString()}</td>
                       <td>{c.channel}</td>
                       <td title={c.message} style={{ maxWidth: 520, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
