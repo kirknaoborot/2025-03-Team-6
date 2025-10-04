@@ -6,7 +6,7 @@ import * as signalR from "@microsoft/signalr";
 interface Conversation {
   conversationId: string;
   createDate: string;
-  status: StatusKey;    // "New" | "Distributed" | ...
+  status: StatusKey;    // "New" | "Distributed" | "InWork" | "Closed" | "AgentNotFound"
   channel: string;
   message: string;
   workerId: string;
@@ -15,7 +15,7 @@ type StatusKey = "New" | "Distributed" | "InWork" | "Closed" | "AgentNotFound";
 type TabKey    = "all" | "new" | "inWork" | "closed" | "agentNotFound" | "distributed";
 
 interface User {
-  id: string;          // Guid
+  id: string;
   fullName: string;
   login: string;
   passwordsHash?: string;
@@ -45,7 +45,7 @@ const statusDots: Record<StatusKey, string> = {
   AgentNotFound: "#dc3545",
 };
 
-/* ===== Styles (inline) ===== */
+/* ===== Self-contained styles ===== */
 const styles = `
 .layout { display:grid; grid-template-columns: 260px 1fr; gap:24px; }
 @media (max-width: 992px){ .layout { grid-template-columns:1fr; } }
@@ -90,12 +90,12 @@ tbody tr:hover { background:#fcfcfd; }
 export default function Conversations() {
   const navigate = useNavigate();
 
-  // данные
+  // data
   const [items, setItems] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // фильтры
+  // filters
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
 
@@ -104,7 +104,7 @@ export default function Conversations() {
   const [connecting, setConnecting] = useState(false);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
 
-  // читаем auth один раз
+  // auth (читаем один раз)
   const { accessToken, currentUser }: { accessToken: string | null; currentUser: User | null } = useMemo(() => {
     try {
       const raw = localStorage.getItem("auth");
@@ -142,8 +142,8 @@ export default function Conversations() {
           return;
         }
         if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
+          const txt = await res.text();
+          throw new Error(txt || `HTTP ${res.status}`);
         }
         const data: Conversation[] = await res.json();
         setItems(data);
@@ -172,40 +172,45 @@ export default function Conversations() {
     return connectionRef.current!;
   };
 
+  const canStart = (state: signalR.HubConnectionState) =>
+    state === signalR.HubConnectionState.Disconnected;
+
   const connect = async () => {
-    if (connecting || connected) return;
+    const conn = ensureConnection();
+    if (!canStart(conn.state) || connecting) return;
+
     setConnecting(true);
     try {
-      const conn = ensureConnection();
       await conn.start();
-      // серверу нужен ПОЛНЫЙ user
-const jsonPayload = JSON.stringify({ id: currentUser?.id ?? "anonymous" });
-await conn.invoke("UserOnline", jsonPayload);
+      // СЕРВЕР ЖДЁТ СТРОКУ JSON, поэтому шлём JSON.stringify({ id })
+      const jsonPayload = JSON.stringify({ id: currentUser?.id ?? "anonymous" });
+      await conn.invoke("UserOnline", jsonPayload);
       setConnected(true);
     } catch (e) {
       console.error("SignalR connect error:", e);
       setConnected(false);
+      try { await conn.stop(); } catch {}
     } finally {
       setConnecting(false);
     }
   };
 
   const disconnect = async () => {
-    if (connecting) return;
-    try {
-      await connectionRef.current?.stop();
-    } catch {}
+    const conn = connectionRef.current;
+    if (!conn) return;
+    if (conn.state === signalR.HubConnectionState.Disconnected) {
+      setConnected(false);
+      return;
+    }
+    try { await conn.stop(); } catch {}
     setConnected(false);
   };
 
   useEffect(() => {
-    // auto-connect по желанию — отключено. Если надо, раскомментируй:
-    // connect();
     return () => {
       connectionRef.current?.stop().catch(() => {});
       connectionRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* ===== Derived ===== */
@@ -239,7 +244,7 @@ await conn.invoke("UserOnline", jsonPayload);
     return list;
   }, [items, activeTab, search]);
 
-  const goDetail = (id: string) => navigate(`/conversation/${encodeURIComponent(id)}`);
+  const goDetail = (id: string) => navigate(`/conversation?id=${encodeURIComponent(id)}`);
 
   const handleLogout = () => {
     localStorage.removeItem("auth");
@@ -295,6 +300,7 @@ await conn.invoke("UserOnline", jsonPayload);
         <aside className="sidebar">
           <div className="card">
             <div className="section-title">Фильтр</div>
+
             <div className="search">
               <input
                 className="input"
