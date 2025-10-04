@@ -246,10 +246,22 @@ export default function Conversations() {
 
   const goDetail = (id: string) => navigate(`/conversation?id=${encodeURIComponent(id)}`);
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth");
-    navigate("/");
-  };
+const handleLogout = async (e?: React.MouseEvent) => {
+  e?.preventDefault();
+  try { await connectionRef.current?.stop(); } catch {}
+  connectionRef.current = null;
+
+  localStorage.removeItem("auth");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("user");
+  sessionStorage.removeItem("auth");
+
+  // сразу на страницу логина
+  navigate("/login", { replace: true });
+
+  // если вдруг роутер/guard тупит — оставь страховку:
+  // setTimeout(() => (window.location.href = "/login"), 0);
+};
 
   /* ===== Render ===== */
   return (
