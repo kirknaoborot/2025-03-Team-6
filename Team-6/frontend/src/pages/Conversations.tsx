@@ -104,6 +104,27 @@ export default function Conversations() {
   const [connecting, setConnecting] = useState(false);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
 
+const authObj = useMemo(() => {
+  try {
+    const raw = localStorage.getItem("auth");
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}, []);
+
+const userRole = authObj?.user?.role;
+const isAdmin = (() => {
+  if (userRole === undefined || userRole === null) return false;
+
+  // Приводим к строке для универсальности
+  const roleStr = String(userRole).toLowerCase();
+
+  return (
+    roleStr === "0" || // если пришло число 0
+    roleStr === "administrator" ||
+    roleStr === "администратор"
+  );
+})();
+
   // auth (читаем один раз)
   const { accessToken, currentUser }: { accessToken: string | null; currentUser: User | null } = useMemo(() => {
     try {
@@ -295,6 +316,15 @@ const handleLogout = async (e?: React.MouseEvent) => {
               {connecting ? "Подключение…" : "Готов"}
             </button>
           </div>
+  {isAdmin && (
+    <button
+      type="button"
+      className="btn"
+      onClick={() => navigate("/users/new")}
+    >
+      + Новый пользователь
+    </button>
+  )}
           <button className="btn secondary" onClick={handleLogout}>Выйти</button>
         </div>
       </div>
