@@ -112,6 +112,111 @@
         "X-User-Email": "Claims[email] > value",
         "X-User-Role": "Claims[role] > value"
       }
+    },
+    {
+      "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamPathTemplate": "/channel/channels",
+      "DownstreamPathTemplate": "/api/channel/channels",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7220
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamPathTemplate": "/channel/channel",
+      "DownstreamPathTemplate": "/api/channel/channels",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7220
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamPathTemplate": "/channel/channel",
+      "DownstreamPathTemplate": "/api/channel/channel",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7220
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "UpstreamHttpMethod": [ "PUT" ],
+      "UpstreamPathTemplate": "/channel/channel",
+      "DownstreamPathTemplate": "/api/channel/channel",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7220
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "UpstreamPathTemplate": "/channel/channel",
+      "DownstreamPathTemplate": "/api/channel/channel",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7220
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
     }
   ]
 }

@@ -18,7 +18,7 @@ namespace ChannelSettings.Controllers
         private readonly IMapper _mapper = mapper;
         private readonly ILogger<ChannelController> _logger = logger;
 
-        [HttpGet]
+        [HttpGet("channels")]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken)
         {
@@ -26,29 +26,29 @@ namespace ChannelSettings.Controllers
             return Ok(response);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("channel")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAsync(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAsync([FromQuery] int id, CancellationToken cancellationToken)
         {
             var channel = await _service.GetByIdAsync(id, cancellationToken);
             return Ok(_mapper.Map<ChannelModel, ChannelDto>(channel));
         }
 
-        [HttpPost]
+        [HttpPost("channel")]
         public async Task<IActionResult> CreateAsync([FromBody] CreatingChannelDto creatingChannelDto)
         {
             return Ok(await _service.CreateAsync(_mapper.Map<CreatingChannel>(creatingChannelDto)));
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> EditAsync(int id, [FromBody] UpdatingChannelDto updatingChannelDto)
+        [HttpPut("channel")]
+        public async Task<IActionResult> EditAsync([FromQuery] int id, [FromBody] UpdatingChannelDto updatingChannelDto)
         {
             await _service.UpdateAsync(id, _mapper.Map<UpdatingChannelDto, UpdatingChannel>(updatingChannelDto));
             return Ok();
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteAsync(int id)
+        [HttpDelete("channel")]
+        public async Task<IActionResult> DeleteAsync([FromQuery] int id)
         {
             await _service.DeleteAsync(id);
             return Ok();

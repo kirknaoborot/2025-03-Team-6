@@ -325,6 +325,16 @@ const handleLogout = async (e?: React.MouseEvent) => {
       + Новый пользователь
     </button>
   )}
+{isAdmin && (
+  <button
+    type="button"
+    className="btn"
+    onClick={() => navigate("/channels")}
+    title="Настройки каналов"
+  >
+    ⚙️ Каналы
+  </button>
+)}
           <button className="btn secondary" onClick={handleLogout}>Выйти</button>
         </div>
       </div>
