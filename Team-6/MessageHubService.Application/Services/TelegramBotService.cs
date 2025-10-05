@@ -92,7 +92,7 @@ namespace MessageHubService.Application.Services
 				UserId = msg.Chat.Id,
                 Text = msg.Text,
                 SendData = DateTime.UtcNow,
-				BotToken = Token
+				ChannelSettingId = Token
 			};
 
             await Task.Run(() =>

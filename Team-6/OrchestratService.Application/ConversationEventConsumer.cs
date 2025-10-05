@@ -21,7 +21,7 @@ namespace OrchestratService.Application
 				MessageText = context.Message.Message,
 				CreateDate = context.Message.CreateDate,
 				Channel = context.Message.Channel,
-				BotToken = context.Message.BotToken,
+				ChannelSettingsId = context.Message.ChannelSettingsId,
 			};
 
 			await _bus.Publish(defineOperatorForConversationCommand);

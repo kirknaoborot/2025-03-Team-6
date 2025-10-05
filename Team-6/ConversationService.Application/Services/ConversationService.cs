@@ -137,6 +137,9 @@ public class ConversationService : IConversationService
            MessageText = conversation.Answer,
            UserId = conversation.UserId,
            Channel = conversation.Channel,
+           ChannelSettingsId = conversation.ChannelSettingsId
         };
+
+        await _bus.Publish(sendMessageEvent);
     }
 }

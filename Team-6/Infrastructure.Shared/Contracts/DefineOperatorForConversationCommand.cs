@@ -9,5 +9,5 @@ public class DefineOperatorForConversationCommand
 	public string MessageText { get; set; }
 	public DateTimeOffset CreateDate { get; set; }
 	public ChannelType Channel { get; set; }
-	public string BotToken { get; set; }
+	public int ChannelSettingsId { get; set; }
 }

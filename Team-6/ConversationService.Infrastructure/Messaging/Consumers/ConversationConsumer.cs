@@ -24,7 +24,7 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
     {
 		var cmd = context.Message;
 
-		_logger.LogInformation($"{nameof(ConversationConsumer)}.{nameof(Consume)}() -> user id '{cmd.UserId}', conversation id '{cmd.ConversationId}', status '{cmd.Status}', bot id '{cmd.ChannelSettingId}'");
+		_logger.LogInformation($"{nameof(ConversationConsumer)}.{nameof(Consume)}() -> user id '{cmd.UserId}', conversation id '{cmd.ConversationId}', status '{cmd.Status}', bot id '{cmd.ChannelSettingsId}'");
 
 		var dto = new ConversationDto
 		{

@@ -30,7 +30,7 @@ public class DefineAgentConsumer : IConsumer<DefineAgentEvent>
 			Channel = context.Message.Channel,
 			WorkerId = context.Message.WorkerId,
 			CreateDate = context.Message.CreateDate,
-			BotToken = context.Message.BotToken,
+			ChannelSettingsId = context.Message.ChannelSettingsId,
 			Answer = context.Message.Answer,
 		};
 
