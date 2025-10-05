@@ -10,6 +10,6 @@
 
         public DateTime SendData { get; set; }
 
-		public string BotToken { get; set; }
+		public int ChannelSettingId { get; set; }
     }
 }

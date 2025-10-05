@@ -1,5 +1,4 @@
-﻿using Infrastructure.Shared;
-using Infrastructure.Shared.Contracts;
+﻿using Infrastructure.Shared.Contracts;
 using MassTransit;
 using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +9,7 @@ namespace MessageHubService.Application.Services
 {
     public class SendMessageService : BackgroundService
     {
-        private static readonly List<TelegramBotService> _telegramBots = [];
+        private static readonly Dictionary<int, TelegramBotService> _telegramBots = [];
         private readonly ILogger<SendMessageService> _logger;
         private readonly IConfiguration _configuration;
         private readonly IBus _bus;
@@ -30,6 +29,8 @@ namespace MessageHubService.Application.Services
 
             if (bots != null)
             {
+                var i = 1;
+
                 foreach (var bot in bots)
                 {
                     var telegramBot = new TelegramBotService();
@@ -40,7 +41,8 @@ namespace MessageHubService.Application.Services
 
                     _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(ExecuteAsync)}() -> Start bot: name '{telegramBot.Name}'.");
 
-                    _telegramBots.Add(telegramBot);
+                    _telegramBots.Add(i,telegramBot);
+                    i++;
                     await telegramBot.Start();
                 }
             }
@@ -54,26 +56,28 @@ namespace MessageHubService.Application.Services
         {
             _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(ExecuteAsync)}() -> Background service is stopping.");
 
-            foreach (var bot in _telegramBots)
+            foreach (var bot in _telegramBots.Values)
             {
                 await bot.Stop();
             }
         }
 
-		public static bool TryGetTelegramBotByToken(string token, out TelegramBotService telegramBot)
+		public static bool TryGetTelegramBot(int id, out TelegramBotService telegramBot)
 		{
-			Console.WriteLine($"=====> '{token}', bot count '{_telegramBots.Count}'");
+            Console.WriteLine($"{nameof(SendMessageService)}.{nameof(TryGetTelegramBot)}() -> bot id '{id}'. Bot count '{_telegramBots.Count}'");
 
-			_telegramBots.ForEach(x => Console.WriteLine($"===> x.Name = '{x.Name}', '{x.Token}'"));
+			_telegramBots.Values.ToList().ForEach(x => Console.WriteLine($"{nameof(SendMessageService)}.{nameof(TryGetTelegramBot)}() -> bot name '{x.Name}', bot token'{x.Token}'"));
 
-			telegramBot = _telegramBots.FirstOrDefault(x => x.Token == token);
+			telegramBot = _telegramBots.FirstOrDefault(x => x.Key == id).Value;
 
-			return telegramBot != null;
+            Console.WriteLine($"{nameof(SendMessageService)}.{nameof(TryGetTelegramBot)}() -> telegramBot != null '{telegramBot != null}'");
+
+            return telegramBot != null;
 		}
 
 		private async void OnIncomingMessage(object sender, MessageEventArgs e)
         {
-            _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(OnIncomingMessage)}() -> Received text '{e.Text}', message id '{e.Id}', send data '{e.SendData}', bot token '{e.BotToken}'");
+            _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(OnIncomingMessage)}() -> Received text '{e.Text}', message id '{e.Id}', send data '{e.SendData}', bot id '{e.ChannelSettingId}'");
 
             var newInMEssage = new ClientMessageEvent
             {
@@ -83,7 +87,7 @@ namespace MessageHubService.Application.Services
                 SendData = e.SendData,
                 Priority = "high",
 				Channel = Infrastructure.Shared.Enums.ChannelType.Telegram,
-				BotToken = e.BotToken,
+				ChannelSettingsId = e.ChannelSettingId,
 			};
 
             await _bus.Publish(newInMEssage);

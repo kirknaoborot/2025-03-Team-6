@@ -18,7 +18,7 @@ namespace OrchestratService.Application
 
 		public async Task Consume(ConsumeContext<ClientMessageEvent> context)
         {
-			_logger.LogInformation($"{nameof(ClientMessageEventConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', message text '{context.Message.MessageText}', channel '{context.Message.Channel}', bot token '{context.Message.BotToken}'");
+			_logger.LogInformation($"{nameof(ClientMessageEventConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', message text '{context.Message.MessageText}', channel '{context.Message.Channel}', bot id '{context.Message.ChannelSettingsId}'");
 
 			var createConversationCommand = new ConversationCommand
 			{
@@ -28,7 +28,7 @@ namespace OrchestratService.Application
 				Status = StatusType.New,
 				Channel = context.Message.Channel,
 				CreateDate = context.Message.SendData,
-				BotToken = context.Message.BotToken,
+                ChannelSettingsId = context.Message.ChannelSettingsId,
 			};
 
 			await _bus.Publish(createConversationCommand);

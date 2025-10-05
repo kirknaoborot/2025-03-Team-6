@@ -24,7 +24,7 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
     {
 		var cmd = context.Message;
 
-		_logger.LogInformation($"{nameof(ConversationConsumer)}.{nameof(Consume)}() -> user id '{cmd.UserId}', conversation id '{cmd.ConversationId}', status '{cmd.Status}', bot token '{cmd.BotToken}'");
+		_logger.LogInformation($"{nameof(ConversationConsumer)}.{nameof(Consume)}() -> user id '{cmd.UserId}', conversation id '{cmd.ConversationId}', status '{cmd.Status}', bot id '{cmd.ChannelSettingId}'");
 
 		var dto = new ConversationDto
 		{
@@ -52,7 +52,7 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 				Status = cmd.Status,
 				WorkerId = cmd.WorkerId,
 				CreateDate = cmd.CreateDate,
-				BotToken = cmd.BotToken,
+                ChannelSettingsId = cmd.ChannelSettingsId,
 			};
 
 			await _bus.Publish(createConversationCommand);
@@ -66,7 +66,7 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 				UserId = cmd.UserId,
 				MessageText = cmd.Answer,
 				Channel = cmd.Channel,
-				BotToken = cmd.BotToken,
+                ChannelSettingsId = cmd.ChannelSettingsId,
 			};
 
 			await _bus.Publish(sendMessageEvent);

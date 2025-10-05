@@ -10,5 +10,5 @@ public class ClientMessageEvent
     public DateTime SendData { get; set; }
     public string Priority { get; set; }
 	public ChannelType Channel { get; set; }
-	public string BotToken { get; set; }
+	public int ChannelSettingsId { get; set; }
 }

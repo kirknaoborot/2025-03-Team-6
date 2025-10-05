@@ -7,6 +7,6 @@ namespace Infrastructure.Shared.Contracts
 		public long UserId { get; set; }
 		public string MessageText { get; set; }
 		public ChannelType Channel { get; set; }
-		public string BotToken { get; set; }
+		public int ChannelSettingsId { get; set; }
 	}
 }

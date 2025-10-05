@@ -17,9 +17,9 @@ public class SendMessageEventConsumer : IConsumer<SendMessageEvent>
 
 	public async Task Consume(ConsumeContext<SendMessageEvent> context)
 	{
-		_logger.LogInformation($"{nameof(SendMessageEventConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', message text '{context.Message.MessageText}', bot token '{context.Message.BotToken}'");
+		_logger.LogInformation($"{nameof(SendMessageEventConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', message text '{context.Message.MessageText}', bot token '{context.Message.ChannelSettingsId}'");
 
-		if (SendMessageService.TryGetTelegramBotByToken(context.Message.BotToken, out var telegramBot))
+		if (SendMessageService.TryGetTelegramBot(context.Message.ChannelSettingsId, out var telegramBot))
 		{
 			var sendMessageDto = new SendMessageDto(context.Message.UserId, context.Message.MessageText);
 
