@@ -1,21 +1,21 @@
 using ConversationService.Application.DTO;
 using ConversationService.Application.Interfaces;
 using ConversationService.Domain.Entities;
+using Infrastructure.Shared.Contracts;
 using Infrastructure.Shared.Enums;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using System.Security.Claims;
-using System.Threading.Channels;
+using MassTransit;
 
 namespace ConversationService.Application.Services;
 
 public class ConversationService : IConversationService
 {
     private readonly IConversationRepository _conversationRepository;
+    private readonly IBus _bus;
 
-    public ConversationService(IConversationRepository conversationRepository)
+    public ConversationService(IConversationRepository conversationRepository, IBus bus)
     {
         _conversationRepository = conversationRepository;
+        _bus = bus;
     }
 
     /// <summary>
@@ -87,6 +87,7 @@ public class ConversationService : IConversationService
             WorkerId = dto.WorkerId,
             CreateDate = dto.CreateDate,
             UserId = dto.UserId,
+            ChannelSettingsId = dto.ChannelSettingsId
         };
         
         await _conversationRepository.CreateConversation(conversation);
@@ -104,6 +105,7 @@ public class ConversationService : IConversationService
 			CreateDate = dto.CreateDate,
             Answer = dto.Answer,
             UserId = dto.UserId,
+            ChannelSettingsId = dto.ChannelSettingsId
         };
 
 		await _conversationRepository.UpdateConversation(conversation);
@@ -126,7 +128,15 @@ public class ConversationService : IConversationService
         conversation.Status = StatusType.Closed;
         conversation.Number = conversation.Number;
         conversation.UserId = conversation.UserId;
+        conversation.ChannelSettingsId = conversation.ChannelSettingsId;
 
         await UpdateConversation(conversation);
+
+        var sendMessageEvent = new SendMessageEvent
+        {
+           MessageText = conversation.Answer,
+           UserId = conversation.UserId,
+           Channel = conversation.Channel,
+        };
     }
 }

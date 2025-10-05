@@ -35,7 +35,8 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 			WorkerId = cmd.WorkerId,
 			CreateDate = cmd.CreateDate,
 			UserId = cmd.UserId,
-			Answer = cmd.Answer
+			Answer = cmd.Answer,
+			ChannelSettingsId = cmd.ChannelSettingsId
 		};
 
 		if (cmd.Status == StatusType.New)

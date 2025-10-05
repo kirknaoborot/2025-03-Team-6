@@ -8,32 +8,32 @@ public class Conversation
     /// Идентификатор обращения
     /// </summary>
     public Guid ConversationId { get; set; }
-    
+
     /// <summary>
     /// Канал
     /// </summary>
     public ChannelType Channel { get; set; }
-    
+
     /// <summary>
     /// Сообщение обращения
     /// </summary>
     public string Message { get; set; }
-    
+
     /// <summary>
     /// Статус /*отдельный класс*/
     /// </summary>
     public StatusType Status { get; set; }
-    
+
     /// <summary>
     /// Идентификатор
     /// </summary>
     public Guid WorkerId { get; set; }
-    
+
     /// <summary>
     /// Дата создания
     /// </summary>
     public DateTimeOffset CreateDate { get; set; }
-    
+
     /// <summary>
     /// Дата обновления записи
     /// </summary>
@@ -47,7 +47,7 @@ public class Conversation
     /// <summary>
     /// Номер обращения
     /// </summary>
-    public long Number {  get; set; }
+    public long Number { get; set; }
 
     /// <summary>
     /// Префикс номера
@@ -58,4 +58,9 @@ public class Conversation
     /// Идентификатор пользователя
     /// </summary>
     public long? UserId { get; set; }
+
+    /// <summary>
+    /// Идентификатор настройки в рамках которой прищло обращение
+    /// </summary>
+    public int ChannelSettingsId { get; set; }
 }

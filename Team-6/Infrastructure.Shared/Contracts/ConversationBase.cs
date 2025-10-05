@@ -13,4 +13,5 @@ public class ConversationBase
 	public DateTimeOffset CreateDate { get; set; }
 	public string BotToken { get; set; }
 	public string Answer { get; set; }
+	public int ChannelSettingsId { get; set; }
 }

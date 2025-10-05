@@ -48,4 +48,9 @@ public class ConversationDto
     /// Идентификатор пользователя
     /// </summary>
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Идентификатор настройки в рамках которой пришло обращение
+    /// </summary>
+    public int ChannelSettingsId { get; set; }
 }
