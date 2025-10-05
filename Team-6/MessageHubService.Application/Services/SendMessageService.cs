@@ -34,6 +34,7 @@ namespace MessageHubService.Application.Services
                 foreach (var bot in bots)
                 {
                     var telegramBot = new TelegramBotService();
+                    telegramBot.ChannelId = i;
 					telegramBot.SetTokenAndName(bot.Token, bot.Name);
 					telegramBot.DefineTelegramBotClient();
 

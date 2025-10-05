@@ -17,6 +17,7 @@ namespace MessageHubService.Application.Services
         public event EventHandler<MessageEventArgs>? OnIncomingMessage;
         public event EventHandler<MessageEventArgs>? OnOutgoingMessage;
 
+        public int ChannelId { get; set; }
         public string Name { get; private set; }
         public string Token { get; private set; }
 
@@ -92,8 +93,8 @@ namespace MessageHubService.Application.Services
 				UserId = msg.Chat.Id,
                 Text = msg.Text,
                 SendData = DateTime.UtcNow,
-				ChannelSettingId = Token
-			};
+                ChannelSettingId = ChannelId
+            };
 
             await Task.Run(() =>
             {
