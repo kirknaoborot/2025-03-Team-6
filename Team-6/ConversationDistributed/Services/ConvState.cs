@@ -54,7 +54,7 @@ namespace ConversationDistributed.Services;
 					MessageText = pending.Command.MessageText,
 					CreateDate = pending.Command.CreateDate,
 					Channel = pending.Command.Channel,
-					BotToken = pending.Command.BotToken,
+					ChannelSettingsId = pending.Command.ChannelSettingsId,
 					UserId = pending.Command.UserId,
 					Answer = "На данный момент нет свободного агента. Пожалуйста, обратитесь позже."
 				});

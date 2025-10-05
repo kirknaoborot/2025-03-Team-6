@@ -39,7 +39,7 @@ public class DefineOperatorForConversationConsumer : IConsumer<DefineOperatorFor
 				MessageText = context.Message.MessageText,
 				CreateDate = context.Message.CreateDate,
 				Channel = context.Message.Channel,
-				BotToken = context.Message.BotToken
+				ChannelSettingsId = context.Message.ChannelSettingsId
 			};
 
 			await _bus.Publish(defineOperatorForConversationEvent);
