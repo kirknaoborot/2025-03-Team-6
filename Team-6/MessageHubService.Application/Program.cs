@@ -3,6 +3,7 @@ using MassTransit;
 using MessageHubService.Application;
 using MessageHubService.Application.Interfaces;
 using MessageHubService.Application.Services;
+using MessageHubService.Application.Services.TelegramBot;
 using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Shared.Contracts;
 using MassTransit;
+using MessageHubService.Application.Services.TelegramBot;
 using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
