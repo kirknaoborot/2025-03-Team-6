@@ -6,7 +6,7 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace MessageHubService.Application.Services.TelegramBot
+namespace MessageHubService.Application.Services
 {
     public class TelegramBotService : IBotWork, IMessageEvent
     {
