@@ -39,30 +39,30 @@ namespace MessageHubService.Application.Services
 			_me = _bot.GetMe();
 		}
 
-		public async Task Start()
+        public async Task StartAsync()
         {
-            _bot.OnError += OnError;
-            _bot.OnMessage += OnMessage;
-            _bot.OnUpdate += OnUpdate;
+            _bot.OnError += OnErrorAsync;
+            _bot.OnMessage += OnMessageAsync;
+            _bot.OnUpdate += OnUpdateAsync;
 
             await _bot.GetMe();
         }
 
-        public async Task Stop()
+        public async Task StopAsync()
         {
-            _bot.OnError -= OnError;
-            _bot.OnMessage -= OnMessage;
-            _bot.OnUpdate -= OnUpdate;
+            _bot.OnError -= OnErrorAsync;
+            _bot.OnMessage -= OnMessageAsync;
+            _bot.OnUpdate -= OnUpdateAsync;
 
             await _cancellationToken.CancelAsync();
         }
 
-        async Task OnError(Exception exception, HandleErrorSource source)
+        async Task OnErrorAsync(Exception exception, HandleErrorSource source)
         {
             Console.WriteLine(exception);
         }
 
-        async Task OnMessage(Message msg, UpdateType type)
+        async Task OnMessageAsync(Message msg, UpdateType type)
         {
             if (msg.Text is not { } text)
             {
@@ -80,10 +80,10 @@ namespace MessageHubService.Application.Services
                         return; // command was not targeted at me
             }
             else
-                await OnTextMessage(msg);
+                await OnTextMessageAsync(msg);
         }
 
-        async Task OnTextMessage(Message msg) // received a text message that is not a command
+        async Task OnTextMessageAsync(Message msg) // received a text message that is not a command
         {
             Console.WriteLine($"Received text '{msg.Text}' in {msg.Chat}");
 
@@ -102,29 +102,29 @@ namespace MessageHubService.Application.Services
             });
         }
 
-        async Task OnUpdate(Update update)
+        async Task OnUpdateAsync(Update update)
         {
             switch (update)
             {
-                case { CallbackQuery: { } callbackQuery }: await OnCallbackQuery(callbackQuery); break;
-                case { PollAnswer: { } pollAnswer }: await OnPollAnswer(pollAnswer); break;
+                case { CallbackQuery: { } callbackQuery }: await OnCallbackQueryAsync(callbackQuery); break;
+                case { PollAnswer: { } pollAnswer }: await OnPollAnswerAsync(pollAnswer); break;
                 default: Console.WriteLine($"Received unhandled update {update.Type}"); break;
             };
         }
 
-        async Task OnCallbackQuery(CallbackQuery callbackQuery)
+        async Task OnCallbackQueryAsync(CallbackQuery callbackQuery)
         {
             await _bot.AnswerCallbackQuery(callbackQuery.Id, $"You selected {callbackQuery.Data}");
             await _bot.SendMessage(callbackQuery.Message!.Chat, $"Received callback from inline button {callbackQuery.Data}");
         }
 
-        async Task OnPollAnswer(PollAnswer pollAnswer)
+        async Task OnPollAnswerAsync(PollAnswer pollAnswer)
         {
             if (pollAnswer.User != null)
                 await _bot.SendMessage(pollAnswer.User.Id, $"You voted for option(s) id [{string.Join(',', pollAnswer.OptionIds)}]");
         }
 
-		public async Task SentMessageToClient(SendMessageDto sendMessageDto)
+		public async Task SentMessageToClientAsync(SendMessageDto sendMessageDto)
 		{
 			Console.WriteLine($"===> SentMessageToClient => sendMessageDto.UserId = '{sendMessageDto.UserId}', sendMessageDto.MessageText = '{sendMessageDto.MessageText}'");
 

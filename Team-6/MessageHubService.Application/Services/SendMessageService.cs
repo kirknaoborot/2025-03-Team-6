@@ -44,7 +44,7 @@ namespace MessageHubService.Application.Services
 
                     _telegramBots.Add(i,telegramBot);
                     i++;
-                    await telegramBot.Start();
+                    await telegramBot.StartAsync();
                 }
             }
             else
@@ -59,7 +59,7 @@ namespace MessageHubService.Application.Services
 
             foreach (var bot in _telegramBots.Values)
             {
-                await bot.Stop();
+                await bot.StopAsync();
             }
         }
 

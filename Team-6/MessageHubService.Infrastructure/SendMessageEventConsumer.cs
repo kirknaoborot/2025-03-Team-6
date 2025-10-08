@@ -25,6 +25,6 @@ public class SendMessageEventConsumer : IConsumer<SendMessageEvent>
 
 		var sendMessageDto = new SendMessageDto(context.Message.UserId, context.Message.MessageText);
 
-		await _botWork.SentMessageToClient(sendMessageDto);
+        await _botWork.SentMessageToClientAsync(sendMessageDto);
 	}
 }

@@ -23,7 +23,7 @@ public class SendMessageEventConsumer : IConsumer<SendMessageEvent>
 		{
 			var sendMessageDto = new SendMessageDto(context.Message.UserId, context.Message.MessageText);
 
-			await telegramBot.SentMessageToClient(sendMessageDto);
+            await telegramBot.SentMessageToClientAsync(sendMessageDto);
 		}
 	}
 }
