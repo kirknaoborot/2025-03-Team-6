@@ -12,17 +12,10 @@ namespace ChannelSettings.Core.MappingModels
             CreateMap<Channel, ChannelModel>();
 
             CreateMap<CreatingChannel, Channel>()
-                .ForMember(d => d.Id, map => map.Ignore())
-                .ForMember(d => d.Name, map => map.Ignore())
-                .ForMember(d => d.Token, map => map.Ignore())
-                .ForMember(d => d.Type, map => map.Ignore());
+                .ForMember(d => d.Id, map => map.Ignore());
 
             CreateMap<UpdatingChannel, Channel>()
-                .ForMember(d => d.Id, map => map.Ignore())
-                .ForMember(d => d.Name, map => map.Ignore())
-                .ForMember(d => d.Token, map => map.Ignore())
-                .ForMember(d => d.Type, map => map.Ignore());
-
+                .ForMember(d => d.Id, map => map.Ignore());
         }
     }
 }

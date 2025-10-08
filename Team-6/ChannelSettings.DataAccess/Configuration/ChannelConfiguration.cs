@@ -20,8 +20,8 @@ namespace ChannelSettings.DataAccess.Configuration
                 .IsRequired();
 
             builder.Property(e => e.Type)
-                .IsRequired();
-
+                .IsRequired()
+                .HasConversion<string>(); // сохранение enum как строки
         }
     }
 }

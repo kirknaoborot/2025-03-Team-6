@@ -44,7 +44,7 @@ namespace ChannelSettings.Application.Services
 
         public async Task DeleteAsync(int id)
         {
-            var channel = await _channelRepository.GetAsync(id, CancellationToken.None) ?? throw new Exception($"Запись с ID {id} не наыйдена");
+            var channel = await _channelRepository.GetAsync(id, CancellationToken.None) ?? throw new Exception($"Запись с ID {id} не найдена");
             _channelRepository.Delete(channel);
             await _channelRepository.SaveChangesAsync();
         }

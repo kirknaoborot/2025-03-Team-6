@@ -5,7 +5,7 @@ namespace ChannelSettings
 {
     public static class SetupMiddlewarePipeline
     {
-        public static WebApplication SetupMiddleware(this WebApplication app, ILogger logger)
+        public static WebApplication SetupMiddleware(this WebApplication app)
         {
             if (app.Environment.IsDevelopment())
             {
@@ -22,34 +22,12 @@ namespace ChannelSettings
             app.UseRouting();
 
             app.UseAuthentication();
-            app.UseAuthorization();
-
-            // Логирование перед попыткой создания БД
-            logger.LogInformation("Проверка и создание базы данных...");
+            app.UseAuthorization();         
 
             using (var scope = app.Services.CreateScope())
             {
                 ApplicationDbContext db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                try
-                {
-                    logger.LogInformation("Попытка создания таблиц через EnsureCreated...");
-                    var created = db.Database.EnsureCreated();
-                    if (!created)
-                    {
-                        logger.LogInformation($"Таблицы ранее были созданы");
-                    }
-                    else
-                    {
-                        logger.LogInformation($"Таблицы созданы: {created}");
-
-                    }
-                }
-                catch (Exception ex2)
-                {
-                    logger.LogError(ex2, "Ошибка при создании таблиц: {Message}", ex2.Message);
-                }
-
+                var created = db.Database.EnsureCreated();
             }
 
             app.UseEndpoints(endpoints =>

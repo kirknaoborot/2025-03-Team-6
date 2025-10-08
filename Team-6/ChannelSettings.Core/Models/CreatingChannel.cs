@@ -1,4 +1,4 @@
-﻿
+﻿using Infrastructure.Shared.Enums;
 
 namespace ChannelSettings.Core.Core
 {
@@ -6,6 +6,6 @@ namespace ChannelSettings.Core.Core
     {
         public string Name { get; set; }
         public string Token { get; set; }
-        public string Type { get; set; }
+        public ChannelType Type { get; set; }
     }
 }

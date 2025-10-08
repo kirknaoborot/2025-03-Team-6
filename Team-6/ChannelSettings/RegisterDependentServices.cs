@@ -15,29 +15,32 @@ namespace ChannelSettings
 {
     public static class RegisterDependentServices
     {
-        public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
-        {
+          public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
+          {
 
-            builder.Services.AddMemoryCache();
-            builder.Services.AddSerilog();
-
-            builder.Services.AddDbContext<ApplicationDbContext>();
-
-            builder.Services.Configure<StorageStrings>(options =>
-            {
-                options.ApplicationDbContext = builder.Configuration.GetValue<string>("StorageStrings:ApplicationDbContext")!;
-            });
-
-            builder.Services.AddSingleton<IStorageStrings>(options =>
-               options.GetRequiredService<IOptions<StorageStrings>>().Value);
+              builder.Services.AddMemoryCache();
+              builder.Services.AddSerilog();
 
 
-            builder.Services.AddServices();
+              builder.Services.AddDbContext<ApplicationDbContext>();
 
-            return builder;
-        }
 
-        public static IServiceCollection AddServices(this IServiceCollection services)//, ConnectionOptions connectionSettings)
+              builder.Services.Configure<StorageStrings>(options =>
+              {
+                  options.ApplicationDbContext = builder.Configuration.GetValue<string>("StorageStrings:ApplicationDbContext")!;
+              });
+
+              builder.Services.AddSingleton<IStorageStrings>(options =>
+                 options.GetRequiredService<IOptions<StorageStrings>>().Value);
+
+
+              builder.Services.AddServices();
+
+              return builder;
+          }
+   
+
+        public static IServiceCollection AddServices(this IServiceCollection services)
         {
             services
                     .InstallServices()
@@ -57,8 +60,6 @@ namespace ChannelSettings
             var configuration = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<ChannelModelMapper>();
-
-
                 cfg.AddProfile<ChannelDtoMapper>();
 
             });

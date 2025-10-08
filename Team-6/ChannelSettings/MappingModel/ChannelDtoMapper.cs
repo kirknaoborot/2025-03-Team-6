@@ -14,6 +14,7 @@ namespace ChannelSettings.MappingModel
             CreateMap<CreatingChannelDto, CreatingChannel>();
 
             CreateMap<UpdatingChannelDto, UpdatingChannel>();
+
         }
     }
 }
