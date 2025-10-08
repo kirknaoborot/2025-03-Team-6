@@ -92,3 +92,4 @@ desktop.ini
 # Node.js / Frontend
 # ======================
 node_modules/
+frontend/node_modules/
