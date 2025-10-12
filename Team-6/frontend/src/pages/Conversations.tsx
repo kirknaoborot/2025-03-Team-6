@@ -177,21 +177,51 @@ const isAdmin = (() => {
   }, [accessToken, navigate]);
 
   /* ===== SignalR ===== */
-  const ensureConnection = () => {
-    if (!connectionRef.current) {
-      const c = new signalR.HubConnectionBuilder()
-        .withUrl("http://localhost:54000/onlinestatus", { withCredentials: true })
-        .withAutomaticReconnect()
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
+const ensureConnection = () => {
+  if (!connectionRef.current) {
+    const c = new signalR.HubConnectionBuilder()
+      .withUrl("http://localhost:54000/onlinestatus", { withCredentials: true })
+      .withAutomaticReconnect()
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
 
-      c.on("UserCameOnline", (uid) => console.log("UserCameOnline:", uid));
-      c.onreconnected(() => setConnected(true));
-      c.onclose(() => setConnected(false));
-      connectionRef.current = c;
-    }
-    return connectionRef.current!;
-  };
+    // 🔹 Пользователь вышел / вошёл
+    c.on("UserCameOnline", (uid) => console.log("UserCameOnline:", uid));
+
+    // 🔹 Новое сообщение от backend
+    c.on("ConversationDistributed", async (message) => {
+      console.log("Новое сообщение получено:", message);
+
+      try {
+        const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:56466";
+        const res = await fetch(`${baseUrl}/conversation/conversations`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (res.ok) {
+          const data: Conversation[] = await res.json();
+          setItems(data); // 🔁 обновляем список обращений
+          console.log("Список обращений обновлён");
+        } else {
+          console.error("Ошибка при обновлении обращений:", res.status);
+        }
+      } catch (err) {
+        console.error("Ошибка при загрузке обращений:", err);
+      }
+    });
+
+    // 🔹 Восстановление и закрытие соединения
+    c.onreconnected(() => setConnected(true));
+    c.onclose(() => setConnected(false));
+
+    connectionRef.current = c;
+  }
+  return connectionRef.current!;
+};
 
   const canStart = (state: signalR.HubConnectionState) =>
     state === signalR.HubConnectionState.Disconnected;

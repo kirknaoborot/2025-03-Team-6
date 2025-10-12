@@ -1,64 +1,66 @@
 ﻿using Infrastructure.Shared.Contracts;
+using Infrastructure.Shared.Enums;
 using System.Collections.Concurrent;
 
 namespace ConversationDistributed.Services
 {
     public class AgentStateService : IAgentStateService
     {
-        private readonly ConcurrentDictionary<Guid, Agent> _agents
-           = new();
+        private List<Agent> agents = new();
 
-        private List<Agent> agentsTest = [];
-
-        public void UserLoggedIn(AgentStatusEvent agentInfo)
+        public void UserUpdateState(AgentStatusEvent agentInfo)
         {
-			var agent = new Agent
-			{
-				Id = agentInfo.AgentId,
-				IsFreeForConversation = true
-			};
 
-            Console.WriteLine($"agents: ========> {agentsTest.Count}");
-            agentsTest.Add(agent);
-            _agents[agent.Id] = agent;
-        }
+            if (agentInfo.Status == AgentStatusType.Connect)
+            {
+                agents.Add(new Agent
+                {
+                    Id = agentInfo.AgentId,
+                    IsFreeForConversation = true
+                });
 
-        public void UserLoggedOut(Guid userId)
-        {
-            _agents.TryRemove(userId, out _);
+                Console.WriteLine($"Добавлен агент: ========> {agentInfo.AgentId}");
+            }
+            else if (agentInfo.Status == AgentStatusType.Disconnect)
+            {
+                var agent = agents.FirstOrDefault(x => x.Id == agentInfo.AgentId);
+
+                if (agent is not null)
+                {
+                    agents.Remove(agent);
+                }
+
+                Console.WriteLine($"Отключен агент: ========> {agentInfo.AgentId}");
+            }
+
+            Console.WriteLine($"Кол-во активных агентов: ========> {agents.Count}");
         }
 
         public void AssignConversationToUser(Guid userId, Guid conversationId)
         {
-            if (_agents.TryGetValue(userId, out var user))
+            var agent = agents.FirstOrDefault(x => x.Id == userId);
+
+            if (agent is not null)
             {
-				user.ActiveConverstionId = conversationId;
-				user.IsFreeForConversation = false;
+                agent.ActiveConverstionId = conversationId;
+                agent.IsFreeForConversation = false;
             }
         }
 
         public void ReleaseConversationFromUser(Guid userId)
         {
-            if (_agents.TryGetValue(userId, out var user))
+            var agent = agents.FirstOrDefault(x => x.Id == userId);
+
+            if (agent is not null)
             {
-				user.IsFreeForConversation = true;
+                agent.IsFreeForConversation = true;
             }
         }
 
-        public IEnumerable<Agent> GetAllOperators()
-        {
-			return _agents.Values;
-        }
-
-		public IEnumerable<Agent> GetAllFreeOperators()
-		{
-			return _agents.Values.Where(x => x.IsFreeForConversation);
-		}
-
 		public Agent GetFirstFreeOperator()
 		{
-            Console.WriteLine($"agents GetFirstFreeOperator: ========> {agentsTest.Count}");
-            return agentsTest.FirstOrDefault(x => x.IsFreeForConversation);
+            Console.WriteLine($"agents GetFirstFreeOperator: ========> {agents.Count}");
+            return agents.FirstOrDefault(x => x.IsFreeForConversation);
 		}
 	}
 }

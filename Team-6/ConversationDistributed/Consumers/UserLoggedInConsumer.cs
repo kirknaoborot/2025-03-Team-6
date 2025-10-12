@@ -18,7 +18,7 @@ namespace ConversationDistributed.Consumers
         public Task Consume(ConsumeContext<AgentStatusEvent> context)
         {
             var msg = context.Message;
-            _userState.UserLoggedIn(msg);
+            _userState.UserUpdateState(msg);
             _logger.LogInformation($"Пользователь вошёл: {msg.AgentId})");
 
             return Task.CompletedTask;

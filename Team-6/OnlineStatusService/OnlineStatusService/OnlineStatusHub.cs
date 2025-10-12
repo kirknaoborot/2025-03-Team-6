@@ -14,6 +14,7 @@ namespace OnlineStatusService
     public class OnlineStatusHub : Hub
     {
         private readonly IPublishEndpoint _publishEndpoint;
+        private static readonly Dictionary<string, Guid> ClientConnections = new();
 
         public OnlineStatusHub(IPublishEndpoint publishEndpoint)
         {
@@ -35,14 +36,26 @@ namespace OnlineStatusService
                 Status = Infrastructure.Shared.Enums.AgentStatusType.Connect
             };
 
-            await _publishEndpoint.Publish(agentStatusEvent);
+            ClientConnections.Add(Context.ConnectionId, agentStatusEvent.AgentId);
 
+            await _publishEndpoint.Publish(agentStatusEvent);
             await Clients.Others.SendAsync("UserCameOnline", id);
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            Console.WriteLine($"Пользователь отключился: {Context.ConnectionId}");
+            var checkAgentId = ClientConnections.TryGetValue(Context.ConnectionId, out var agentId);
+
+            Console.WriteLine($"Пользователь отключился: {agentId}");
+
+            var agentStatusEvent = new AgentStatusEvent
+            {
+                AgentId = checkAgentId ? agentId : Guid.Empty,
+                Date = DateTime.UtcNow,
+                Status = Infrastructure.Shared.Enums.AgentStatusType.Disconnect
+            };
+
+            await _publishEndpoint.Publish(agentStatusEvent);
             await base.OnDisconnectedAsync(exception);
         }
     }

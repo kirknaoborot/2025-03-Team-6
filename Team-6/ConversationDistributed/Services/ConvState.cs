@@ -1,128 +1,92 @@
 ﻿using Infrastructure.Shared.Contracts;
 using MassTransit;
 using System.Collections.Concurrent;
+using System.Threading.Channels;
 
 namespace ConversationDistributed.Services;
 
-    public class ConvState //: BackgroundService
+public class ConvState
+{
+    private readonly IAgentStateService _agentStateService;
+    private readonly IBus _bus;
+    private readonly ILogger<ConvState> _logger;
+
+    private readonly Channel<DefineOperatorForConversationCommand> _queue = Channel.CreateUnbounded<DefineOperatorForConversationCommand>();
+
+    public ConvState(
+        IAgentStateService agentStateService,
+        IBus bus,
+        ILogger<ConvState> logger)
     {
-        private readonly IAgentStateService _agentStateService;
-        private readonly IBus _bus;
-        private readonly ILogger<ConvState> _logger;
+        _agentStateService = agentStateService;
+        _bus = bus;
+        _logger = logger;
 
-        // Храним информацию о "висящих" обращениях
-        private readonly ConcurrentDictionary<Guid, PendingConversation> _pendingConversations
-            = new();
+        _ = Task.Run(ProcessQueueAsync);
+    }
 
-        public ConvState(
-            IAgentStateService agentStateService,
-            IBus bus,
-            ILogger<ConvState> logger)
+    /// <summary>
+    /// Добавляет новое обращение
+    /// </summary>
+    public async Task AddConversationAsync(DefineOperatorForConversationCommand command)
+    {
+        await _queue.Writer.WriteAsync(command);
+        _logger.LogInformation("Обращение {ConversationId} добавлено в очередь.", command.ConversationId);
+    }
+
+    /// <summary>
+    /// Основной обработчик очереди
+    /// </summary>
+    private async Task ProcessQueueAsync()
+    {
+        await foreach (var command in _queue.Reader.ReadAllAsync())
         {
-            _agentStateService = agentStateService;
-            _bus = bus;
-            _logger = logger;
-        }
-
-        // Метод для добавления нового обращения в очередь ожидания
-        public async Task AddConversationAsync(DefineOperatorForConversationCommand command)
-        {
-            var conversation = new PendingConversation(command);
-
-            if (_pendingConversations.TryAdd(command.ConversationId, conversation))
+            try
             {
-                _logger.LogInformation("Обращение {ConversationId} добавлено в очередь ожидания.", command.ConversationId);
-            }
-            else
-            {
-                _logger.LogWarning("Обращение {ConversationId} уже находится в очереди.", command.ConversationId);
-            }
-        }
+                bool assigned = await TryAssignOperatorAsync(command);
 
-        // Попытка назначить оператора на обращение
-        public async Task<bool> TryAssignOperatorAsync(Guid conversationId)
-        {
-            if (!_pendingConversations.TryGetValue(conversationId, out var pending))
-                return true; // уже обработано или удалено
-
-            if (pending.IsTimedOut())
-            {
-				await _bus.Publish(new DefineAgentEvent
-				{
-					ConversationId = conversationId,
-					WorkerId = Guid.Empty,
-					MessageText = pending.Command.MessageText,
-					CreateDate = pending.Command.CreateDate,
-					Channel = pending.Command.Channel,
-					ChannelSettingsId = pending.Command.ChannelSettingsId,
-					UserId = pending.Command.UserId,
-					Answer = "На данный момент нет свободного агента. Пожалуйста, обратитесь позже."
-				});
-				_logger.LogWarning("Обращение {ConversationId} отменено по таймауту.", conversationId);
-                _pendingConversations.TryRemove(conversationId, out _);
-                return true;
-            }
-
-            var freeOperator = _agentStateService.GetFirstFreeOperator();
-            if (freeOperator != null)
-            {
-                // Назначаем оператора
-                _agentStateService.AssignConversationToUser(freeOperator.Id, pending.Command.ConversationId);
-
-                // Отправляем событие
-                await _bus.Publish(new DefineAgentEvent
+                if (!assigned)
                 {
-                    ConversationId = pending.Command.ConversationId,
-                    WorkerId = freeOperator.Id,
-                    MessageText = pending.Command.MessageText,
-                    CreateDate = pending.Command.CreateDate,
-                    Channel = pending.Command.Channel
-                });
-
-                // Удаляем из очереди
-                _pendingConversations.TryRemove(conversationId, out _);
-
-                _logger.LogInformation("Обращение {ConversationId} назначено оператору {WorkerId}.", conversationId, freeOperator.Id);
-                return true;
-            }
-
-            return false; // не назначено — продолжаем ждать
-        }
-
-        public async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                try
-                {
-				_logger.LogInformation($"Количество необработанных обращений {_pendingConversations?.Count}.");
-				var tasks = _pendingConversations.Keys
-                        .Select(conversationId => TryAssignOperatorAsync(conversationId))
-                        .ToArray();
-
-                    await Task.WhenAll(tasks);
+                    _logger.LogWarning("Нет свободных операторов для {ConversationId}, повторная попытка через 1с", command.ConversationId);
+                    _ = Task.Delay(1000).ContinueWith(async _ =>
+                    {
+                        await _queue.Writer.WriteAsync(command);
+                    });
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Ошибка при обработке очереди ожидания обращений.");
-                }
-
-                await Task.Delay(1000, stoppingToken); // раз в секунду
             }
-        }
-
-        // Внутренний класс для хранения данных о "ожидающем" обращении
-        private class PendingConversation
-        {
-            public DefineOperatorForConversationCommand Command { get; }
-            public DateTime EnqueueTime { get; }
-
-            public PendingConversation(DefineOperatorForConversationCommand command)
+            catch (Exception ex)
             {
-                Command = command;
-                EnqueueTime = DateTime.UtcNow;
+                _logger.LogError(ex, "Ошибка при обработке обращения {ConversationId}", command.ConversationId);
             }
-
-            public bool IsTimedOut() => DateTime.UtcNow - EnqueueTime > TimeSpan.FromSeconds(10);
         }
     }
+
+    /// <summary>
+    /// Попытка назначить свободного оператора.
+    /// </summary>
+    private async Task<bool> TryAssignOperatorAsync(DefineOperatorForConversationCommand command)
+    {
+        var freeOperator = _agentStateService.GetFirstFreeOperator();
+
+        if (freeOperator != null)
+        {
+            await _bus.Publish(new DefineAgentEvent
+            {
+                ConversationId = command.ConversationId,
+                WorkerId = freeOperator.Id,
+                MessageText = command.MessageText,
+                CreateDate = command.CreateDate,
+                Channel = command.Channel,
+                ChannelSettingsId = command.ChannelSettingsId,
+                UserId = command.UserId
+            });
+
+            _agentStateService.AssignConversationToUser(freeOperator.Id, command.ConversationId);
+            _logger.LogInformation("Обращение {ConversationId} назначено оператору {WorkerId}", command.ConversationId, freeOperator.Id);
+            
+            return true;
+        }
+
+        return false;
+    }
+}
