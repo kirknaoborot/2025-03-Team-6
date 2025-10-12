@@ -1,62 +1,36 @@
-﻿using Infrastructure.Shared.Contracts;
-using MassTransit;
+﻿using Infrastructure.Shared.Enums;
 using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using OnlineStatusService;
+using System.Collections.Concurrent;
 
-namespace OnlineStatusService
+public class OnlineStatusHub : Hub
 {
-    public class OnlineStatusHub : Hub
+    private readonly IAgentStatusNotifier _notifier;
+    private static readonly ConcurrentDictionary<string, Guid> Connections = new();
+
+    public OnlineStatusHub(IAgentStatusNotifier notifier)
     {
-        private readonly IPublishEndpoint _publishEndpoint;
-        private static readonly Dictionary<string, Guid> ClientConnections = new();
+        _notifier = notifier;
+    }
 
-        public OnlineStatusHub(IPublishEndpoint publishEndpoint)
+    public async Task UserOnline(string userId)
+    {
+        var obj = JObject.Parse(userId);
+        var id = obj["id"]?.Value<string>();
+        var agentId = Guid.TryParse(id, out var g) ? g : Guid.Empty;
+
+        Connections[Context.ConnectionId] = agentId;
+        await _notifier.PublishStatusAsync(agentId, AgentStatusType.Connect);
+    }
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        if (Connections.TryRemove(Context.ConnectionId, out var agentId))
         {
-            _publishEndpoint = publishEndpoint;
+            await _notifier.PublishStatusAsync(agentId, AgentStatusType.Disconnect);
         }
 
-
-        public async Task UserOnline(string userId)
-        {
-            Console.WriteLine($"Пользователь {userId} онлайн");
-
-            var obj = JObject.Parse(userId);
-            var id = obj["id"]?.Value<string>();
-
-            var agentStatusEvent = new AgentStatusEvent
-            {
-                AgentId = Guid.TryParse(id, out var result) ? result : Guid.Empty,
-                Date = DateTime.UtcNow,
-                Status = Infrastructure.Shared.Enums.AgentStatusType.Connect
-            };
-
-            ClientConnections.Add(Context.ConnectionId, agentStatusEvent.AgentId);
-
-            await _publishEndpoint.Publish(agentStatusEvent);
-            await Clients.Others.SendAsync("UserCameOnline", id);
-        }
-
-        public override async Task OnDisconnectedAsync(Exception? exception)
-        {
-            var checkAgentId = ClientConnections.TryGetValue(Context.ConnectionId, out var agentId);
-
-            Console.WriteLine($"Пользователь отключился: {agentId}");
-
-            var agentStatusEvent = new AgentStatusEvent
-            {
-                AgentId = checkAgentId ? agentId : Guid.Empty,
-                Date = DateTime.UtcNow,
-                Status = Infrastructure.Shared.Enums.AgentStatusType.Disconnect
-            };
-
-            await _publishEndpoint.Publish(agentStatusEvent);
-            await base.OnDisconnectedAsync(exception);
-        }
+        await base.OnDisconnectedAsync(exception);
     }
 }

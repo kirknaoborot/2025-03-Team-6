@@ -15,7 +15,7 @@ public class DefineAgentConsumer : IConsumer<DefineAgentEvent>
 		_logger = logger;
 	}
 
-	public Task Consume(ConsumeContext<DefineAgentEvent> context)
+	public async Task Consume(ConsumeContext<DefineAgentEvent> context)
 	{
 		var status = context.Message.WorkerId == Guid.Empty ? Infrastructure.Shared.Enums.StatusType.AgentNotFound : Infrastructure.Shared.Enums.StatusType.Distributed;
 
@@ -34,6 +34,12 @@ public class DefineAgentConsumer : IConsumer<DefineAgentEvent>
 			Answer = context.Message.Answer,
 		};
 
-		return _bus.Publish(updateConversationCommand);
+		var notifyCommand = new NotifySendCommand
+		{
+			AgentId = context.Message.WorkerId
+		};
+
+		await _bus.Publish(updateConversationCommand);
+		await _bus.Publish(notifyCommand);
 	}
 }

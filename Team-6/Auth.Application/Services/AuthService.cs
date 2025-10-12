@@ -15,17 +15,14 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly ITokenRepository _tokenRepository;
-    private readonly ISendEndpointProvider _send;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(IUserRepository userRepository, IJwtTokenGenerator jwtTokenGenerator, ITokenRepository tokenRepository,
-         ISendEndpointProvider send
-        , ILogger<AuthService> logger)
+        ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _jwtTokenGenerator = jwtTokenGenerator;
         _tokenRepository = tokenRepository;
-        _send = send;
         _logger = logger;
     }
 
@@ -61,26 +58,6 @@ public class AuthService : IAuthService
                 IsActive = user.IsActive
             }
         };
-
-        var loginEvent = new UserLoggedInEvent
-        {
-			Id = user.Id,
-            Login = user.Login,
-            FullName = user.FullName,
-            Role = user.Role,
-            LoginTime = DateTime.UtcNow,
-        };
-
-        try
-        {
-            var endpoint = await _send.GetSendEndpoint(new Uri("queue:user-login-event-queue"));
-            await endpoint.Send(loginEvent);
-
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Не удалось отправить событие о входе пользователя {Login}", user.Login);
-        }
 
         return result;
     }

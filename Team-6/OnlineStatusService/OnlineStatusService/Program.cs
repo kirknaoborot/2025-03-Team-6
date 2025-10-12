@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using MassTransit; // <-- обязательно для MassTransit
 using OnlineStatusService;
+using OnlineStatusService.Consumers;
 
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
@@ -11,10 +12,13 @@ var builder = Host.CreateDefaultBuilder(args)
 
         // SignalR
         services.AddSignalR();
+        services.AddSingleton<IAgentStatusNotifier, AgentStatusNotifier>();
 
         // MassTransit + RabbitMQ
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<NotifySendConsumer>();
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host("localhost", "/", h =>
@@ -22,7 +26,13 @@ var builder = Host.CreateDefaultBuilder(args)
                     h.Username("guest");
                     h.Password("guest");
                 });
+                cfg.ReceiveEndpoint("notify-send-event-queue", e =>
+                {
+                    e.ConfigureConsumeTopology = true;
+                    e.ConfigureConsumer<NotifySendConsumer>(context);
+                });
             });
+
         });
 
         // CORS для фронтенда

@@ -129,57 +129,8 @@ namespace AuthService
            .WriteTo.Console()
            .CreateLogger();
 
-            services.AddMassTransit(x =>
-            {
-                x.AddConsumer<UserLoggedInEventHandler>();
-
-                x.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.Host("localhost", "/", h =>
-                    {
-                        h.Username("guest");
-                        h.Password("guest");
-                    });
-
-                    cfg.ReceiveEndpoint("user-login-event-queue", e =>
-                    {
-                        e.ConfigureConsumer<UserLoggedInEventHandler>(context);
-                    });
-
-                });
-            });
-
             services.AddAuthorization();
         }
-
-        private void ConfigureAuthentication(IServiceCollection services)
-        {
-            var settingsSection = Configuration.GetSection("ApiSettings:JwtOptions");
-
-            var secret = settingsSection.GetValue<string>("Secret");
-            var issuer = settingsSection.GetValue<string>("Issuer");
-            var audience = settingsSection.GetValue<string>("Audience");
-
-            var key = Encoding.ASCII.GetBytes(secret);
-
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x =>
-            {
-                x.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidIssuer = issuer,
-                    ValidAudience = audience,
-                    ValidateAudience = true,
-                };
-            });
-        }
-
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContexts db)
         {

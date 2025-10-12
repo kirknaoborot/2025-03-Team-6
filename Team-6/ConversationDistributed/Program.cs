@@ -21,11 +21,13 @@ builder.Services.AddMassTransit(x =>
         });
         cfg.ReceiveEndpoint("user-login-event-queue", e =>
         {
+            e.ConfigureConsumeTopology = true;
             e.ConfigureConsumer<UserLoggedInConsumer>(context);
         });
 
         cfg.ReceiveEndpoint("define-operator-for-conversation-command-queue", e =>
         {
+            e.ConfigureConsumeTopology = true;
             e.ConfigureConsumer<DefineOperatorForConversationConsumer>(context);
         });
     });
