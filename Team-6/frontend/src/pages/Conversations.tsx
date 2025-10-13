@@ -1,3 +1,4 @@
+import { useSignalR } from "../signalr/SignalRProvider";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as signalR from "@microsoft/signalr";
@@ -89,7 +90,7 @@ tbody tr:hover { background:#fcfcfd; }
 /* ===== Component ===== */
 export default function Conversations() {
   const navigate = useNavigate();
-
+const { connected, connecting, start, stop } = useSignalR();
   // data
   const [items, setItems] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,10 +100,6 @@ export default function Conversations() {
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
 
-  // signalR
-  const [connected, setConnected] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const connectionRef = useRef<signalR.HubConnection | null>(null);
 
 const authObj = useMemo(() => {
   try {
@@ -177,92 +174,29 @@ const isAdmin = (() => {
   }, [accessToken, navigate]);
 
   /* ===== SignalR ===== */
-const ensureConnection = () => {
-  if (!connectionRef.current) {
-    const c = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:54000/onlinestatus", { withCredentials: true })
-      .withAutomaticReconnect()
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
-
-    // 🔹 Пользователь вышел / вошёл
-    c.on("UserCameOnline", (uid) => console.log("UserCameOnline:", uid));
-
-    // 🔹 Новое сообщение от backend
-    c.on("ConversationDistributed", async (message) => {
-      console.log("Новое сообщение получено:", message);
-
-      try {
-        const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:56466";
-        const res = await fetch(`${baseUrl}/conversation/conversations`, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (res.ok) {
-          const data: Conversation[] = await res.json();
-          setItems(data); // 🔁 обновляем список обращений
-          console.log("Список обращений обновлён");
-        } else {
-          console.error("Ошибка при обновлении обращений:", res.status);
-        }
-      } catch (err) {
-        console.error("Ошибка при загрузке обращений:", err);
-      }
-    });
-
-    // 🔹 Восстановление и закрытие соединения
-    c.onreconnected(() => setConnected(true));
-    c.onclose(() => setConnected(false));
-
-    connectionRef.current = c;
-  }
-  return connectionRef.current!;
-};
-
-  const canStart = (state: signalR.HubConnectionState) =>
-    state === signalR.HubConnectionState.Disconnected;
-
-  const connect = async () => {
-    const conn = ensureConnection();
-    if (!canStart(conn.state) || connecting) return;
-
-    setConnecting(true);
+useEffect(() => {
+  const handler = async () => {
+    console.log("🔁 Обновляем обращения после события ConversationDistributed");
     try {
-      await conn.start();
-      // СЕРВЕР ЖДЁТ СТРОКУ JSON, поэтому шлём JSON.stringify({ id })
-      const jsonPayload = JSON.stringify({ id: currentUser?.id ?? "anonymous" });
-      await conn.invoke("UserOnline", jsonPayload);
-      setConnected(true);
-    } catch (e) {
-      console.error("SignalR connect error:", e);
-      setConnected(false);
-      try { await conn.stop(); } catch {}
-    } finally {
-      setConnecting(false);
+      const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:56466";
+      const res = await fetch(`${baseUrl}/conversation/conversations`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (res.ok) {
+        const data: Conversation[] = await res.json();
+        setItems(data);
+      }
+    } catch (err) {
+      console.error("Ошибка обновления обращений:", err);
     }
   };
 
-  const disconnect = async () => {
-    const conn = connectionRef.current;
-    if (!conn) return;
-    if (conn.state === signalR.HubConnectionState.Disconnected) {
-      setConnected(false);
-      return;
-    }
-    try { await conn.stop(); } catch {}
-    setConnected(false);
-  };
-
-  useEffect(() => {
-    return () => {
-      connectionRef.current?.stop().catch(() => {});
-      connectionRef.current = null;
-    };
-  }, []);
+  window.addEventListener("conversation:update", handler);
+  return () => window.removeEventListener("conversation:update", handler);
+}, [accessToken]);
 
   /* ===== Derived ===== */
   const counts = useMemo(() => ({
@@ -328,24 +262,24 @@ const handleLogout = async (e?: React.MouseEvent) => {
           </div>
         </div>
         <div className="actionbar">
-          <div className="segmented" aria-label="Статус оператора">
-            <button
-              className={!connected ? "active" : ""}
-              onClick={disconnect}
-              disabled={!connected || connecting}
-              title="Сделать статус Неготов"
-            >
-              Не готов
-            </button>
-            <button
-              className={connected ? "active" : ""}
-              onClick={connect}
-              disabled={connected || connecting}
-              title="Сделать статус Готов"
-            >
-              {connecting ? "Подключение…" : "Готов"}
-            </button>
-          </div>
+<div className="segmented" aria-label="Статус оператора">
+  <button
+    className={!connected ? "active" : ""}
+    onClick={stop}
+    disabled={!connected || connecting}
+    title="Сделать статус Неготов"
+  >
+    Не готов
+  </button>
+  <button
+    className={connected ? "active" : ""}
+    onClick={start}
+    disabled={connected || connecting}
+    title="Сделать статус Готов"
+  >
+    {connecting ? "Подключение…" : "Готов"}
+  </button>
+</div>
   {isAdmin && (
     <button
       type="button"
