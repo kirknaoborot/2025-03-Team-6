@@ -1,19 +1,24 @@
-import { useSignalR } from "../signalr/SignalRProvider";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import * as signalR from "@microsoft/signalr";
+import { useSignalR } from "../signalr/SignalRProvider"; // 👈 импорт контекста
 
 /* ===== Types ===== */
 interface Conversation {
   conversationId: string;
   createDate: string;
-  status: StatusKey;    // "New" | "Distributed" | "InWork" | "Closed" | "AgentNotFound"
+  status: StatusKey;
   channel: string;
   message: string;
   workerId: string;
 }
 type StatusKey = "New" | "Distributed" | "InWork" | "Closed" | "AgentNotFound";
-type TabKey    = "all" | "new" | "inWork" | "closed" | "agentNotFound" | "distributed";
+type TabKey =
+  | "all"
+  | "new"
+  | "inWork"
+  | "closed"
+  | "agentNotFound"
+  | "distributed";
 
 interface User {
   id: string;
@@ -46,7 +51,7 @@ const statusDots: Record<StatusKey, string> = {
   AgentNotFound: "#dc3545",
 };
 
-/* ===== Self-contained styles ===== */
+/* ===== Styles ===== */
 const styles = `
 .layout { display:grid; grid-template-columns: 260px 1fr; gap:24px; }
 @media (max-width: 992px){ .layout { grid-template-columns:1fr; } }
@@ -87,52 +92,44 @@ tbody tr:hover { background:#fcfcfd; }
 .actionbar { display:flex; gap:8px; align-items:center; }
 `;
 
-/* ===== Component ===== */
 export default function Conversations() {
   const navigate = useNavigate();
-const { connected, connecting, start, stop } = useSignalR();
-  // data
+
+  // подключаем SignalR-контекст
+  const { connected, connecting, start, stop } = useSignalR();
+
+  // данные обращений
   const [items, setItems] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // filters
+  // фильтры
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
 
-
-const authObj = useMemo(() => {
-  try {
-    const raw = localStorage.getItem("auth");
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}, []);
-
-const userRole = authObj?.user?.role;
-const isAdmin = (() => {
-  if (userRole === undefined || userRole === null) return false;
-
-  // Приводим к строке для универсальности
-  const roleStr = String(userRole).toLowerCase();
-
-  return (
-    roleStr === "0" || // если пришло число 0
-    roleStr === "administrator" ||
-    roleStr === "администратор"
-  );
-})();
-
-  // auth (читаем один раз)
-  const { accessToken, currentUser }: { accessToken: string | null; currentUser: User | null } = useMemo(() => {
+  /* ===== Auth ===== */
+  const authObj = useMemo(() => {
     try {
       const raw = localStorage.getItem("auth");
-      if (!raw) return { accessToken: null, currentUser: null };
-      const parsed = JSON.parse(raw) as AuthStorage;
-      return { accessToken: parsed?.accessToken ?? null, currentUser: parsed?.user ?? null };
+      return raw ? (JSON.parse(raw) as AuthStorage) : null;
     } catch {
-      return { accessToken: null, currentUser: null };
+      return null;
     }
   }, []);
+
+  const accessToken = authObj?.accessToken ?? null;
+  const currentUser = authObj?.user ?? null;
+
+  const userRole = currentUser?.role;
+  const isAdmin = (() => {
+    if (userRole === undefined || userRole === null) return false;
+    const roleStr = String(userRole).toLowerCase();
+    return (
+      roleStr === "0" ||
+      roleStr === "administrator" ||
+      roleStr === "администратор"
+    );
+  })();
 
   /* ===== Data load ===== */
   useEffect(() => {
@@ -140,14 +137,14 @@ const isAdmin = (() => {
       setLoading(true);
       setError("");
       try {
-        const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:56466";
+        const baseUrl =
+          import.meta.env.VITE_API_URL ?? "http://localhost:56466";
         if (!accessToken) {
           setError("Нет accessToken (ключ 'auth' в localStorage пустой)");
           setLoading(false);
           return;
         }
         const res = await fetch(`${baseUrl}/conversation/conversations`, {
-          method: "GET",
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${accessToken}`,
@@ -156,13 +153,14 @@ const isAdmin = (() => {
 
         if (res.status === 401) {
           localStorage.removeItem("auth");
-          navigate("/");
+          navigate("/login");
           return;
         }
         if (!res.ok) {
           const txt = await res.text();
           throw new Error(txt || `HTTP ${res.status}`);
         }
+
         const data: Conversation[] = await res.json();
         setItems(data);
       } catch (e: any) {
@@ -173,133 +171,154 @@ const isAdmin = (() => {
     })();
   }, [accessToken, navigate]);
 
-  /* ===== SignalR ===== */
-useEffect(() => {
-  const handler = async () => {
-    console.log("🔁 Обновляем обращения после события ConversationDistributed");
-    try {
-      const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:56466";
-      const res = await fetch(`${baseUrl}/conversation/conversations`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      if (res.ok) {
-        const data: Conversation[] = await res.json();
-        setItems(data);
+  /* ===== Обновление списка при событии от SignalR ===== */
+  useEffect(() => {
+    const handler = async () => {
+      console.log("🔁 Обновляем обращения после события ConversationDistributed");
+      try {
+        const baseUrl =
+          import.meta.env.VITE_API_URL ?? "http://localhost:56466";
+        const res = await fetch(`${baseUrl}/conversation/conversations`, {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (res.ok) {
+          const data: Conversation[] = await res.json();
+          setItems(data);
+        }
+      } catch (err) {
+        console.error("Ошибка обновления обращений:", err);
       }
-    } catch (err) {
-      console.error("Ошибка обновления обращений:", err);
-    }
-  };
+    };
 
-  window.addEventListener("conversation:update", handler);
-  return () => window.removeEventListener("conversation:update", handler);
-}, [accessToken]);
+    window.addEventListener("conversation:update", handler);
+    return () => window.removeEventListener("conversation:update", handler);
+  }, [accessToken]);
 
-  /* ===== Derived ===== */
-  const counts = useMemo(() => ({
-    all: items.length,
-    new: items.filter((c) => c.status === "New").length,
-    inWork: items.filter((c) => c.status === "InWork").length,
-    closed: items.filter((c) => c.status === "Closed").length,
-    distributed: items.filter((c) => c.status === "Distributed").length,
-    agentNotFound: items.filter((c) => c.status === "AgentNotFound").length,
-  }), [items]);
+  /* ===== Derived data ===== */
+  const counts = useMemo(
+    () => ({
+      all: items.length,
+      new: items.filter((c) => c.status === "New").length,
+      inWork: items.filter((c) => c.status === "InWork").length,
+      closed: items.filter((c) => c.status === "Closed").length,
+      distributed: items.filter((c) => c.status === "Distributed").length,
+      agentNotFound: items.filter((c) => c.status === "AgentNotFound").length,
+    }),
+    [items]
+  );
 
   const filtered = useMemo(() => {
     let list = items;
     switch (activeTab) {
-      case "new": list = list.filter((c) => c.status === "New"); break;
-      case "inWork": list = list.filter((c) => c.status === "InWork"); break;
-      case "closed": list = list.filter((c) => c.status === "Closed"); break;
-      case "distributed": list = list.filter((c) => c.status === "Distributed"); break;
-      case "agentNotFound": list = list.filter((c) => c.status === "AgentNotFound"); break;
-      default: break;
+      case "new":
+        list = list.filter((c) => c.status === "New");
+        break;
+      case "inWork":
+        list = list.filter((c) => c.status === "InWork");
+        break;
+      case "closed":
+        list = list.filter((c) => c.status === "Closed");
+        break;
+      case "distributed":
+        list = list.filter((c) => c.status === "Distributed");
+        break;
+      case "agentNotFound":
+        list = list.filter((c) => c.status === "AgentNotFound");
+        break;
+      default:
+        break;
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      list = list.filter((c) =>
-        (c.message || "").toLowerCase().includes(q) ||
-        (c.channel || "").toLowerCase().includes(q) ||
-        c.conversationId.toLowerCase().includes(q)
+      list = list.filter(
+        (c) =>
+          (c.message || "").toLowerCase().includes(q) ||
+          (c.channel || "").toLowerCase().includes(q) ||
+          c.conversationId.toLowerCase().includes(q)
       );
     }
     return list;
   }, [items, activeTab, search]);
 
-  const goDetail = (id: string) => navigate(`/conversation?id=${encodeURIComponent(id)}`);
+  const goDetail = (id: string) =>
+    navigate(`/conversation?id=${encodeURIComponent(id)}`);
 
-const handleLogout = async (e?: React.MouseEvent) => {
-  e?.preventDefault();
-  try { await connectionRef.current?.stop(); } catch {}
-  connectionRef.current = null;
+  /* ===== Logout ===== */
+  const handleLogout = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    try {
+      await stop(); // останавливаем глобальное соединение
+    } catch {}
 
-  localStorage.removeItem("auth");
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("user");
-  sessionStorage.removeItem("auth");
+    localStorage.removeItem("auth");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("auth");
 
-  // сразу на страницу логина
-  navigate("/login", { replace: true });
-
-  // если вдруг роутер/guard тупит — оставь страховку:
-  // setTimeout(() => (window.location.href = "/login"), 0);
-};
+    navigate("/login", { replace: true });
+  };
 
   /* ===== Render ===== */
   return (
     <div className="container py-4">
       <style>{styles}</style>
 
-      {/* Шапка + переключатель статуса */}
+      {/* Шапка + статус */}
       <div className="header">
         <div>
           <div className="title">Обращения</div>
           <div className="muted">
-            {connected ? "Статус: готов — распределение включено" : "Статус: неготов — распределение выключено"}
+            {connected
+              ? "Статус: готов — распределение включено"
+              : "Статус: неготов — распределение выключено"}
           </div>
         </div>
         <div className="actionbar">
-<div className="segmented" aria-label="Статус оператора">
-  <button
-    className={!connected ? "active" : ""}
-    onClick={stop}
-    disabled={!connected || connecting}
-    title="Сделать статус Неготов"
-  >
-    Не готов
-  </button>
-  <button
-    className={connected ? "active" : ""}
-    onClick={start}
-    disabled={connected || connecting}
-    title="Сделать статус Готов"
-  >
-    {connecting ? "Подключение…" : "Готов"}
-  </button>
-</div>
-  {isAdmin && (
-    <button
-      type="button"
-      className="btn"
-      onClick={() => navigate("/users/new")}
-    >
-      + Новый пользователь
-    </button>
-  )}
-{isAdmin && (
-  <button
-    type="button"
-    className="btn"
-    onClick={() => navigate("/channels")}
-    title="Настройки каналов"
-  >
-    ⚙️ Каналы
-  </button>
-)}
-          <button className="btn secondary" onClick={handleLogout}>Выйти</button>
+          <div className="segmented" aria-label="Статус оператора">
+            <button
+              className={!connected ? "active" : ""}
+              onClick={stop}
+              disabled={!connected || connecting}
+              title="Сделать статус Неготов"
+            >
+              Не готов
+            </button>
+            <button
+              className={connected ? "active" : ""}
+              onClick={start}
+              disabled={connected || connecting}
+              title="Сделать статус Готов"
+            >
+              {connecting ? "Подключение…" : "Готов"}
+            </button>
+          </div>
+
+          {isAdmin && (
+            <>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => navigate("/users/new")}
+              >
+                + Новый пользователь
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => navigate("/channels")}
+                title="Настройки каналов"
+              >
+                ⚙️ Каналы
+              </button>
+            </>
+          )}
+
+          <button className="btn secondary" onClick={handleLogout}>
+            Выйти
+          </button>
         </div>
       </div>
 
@@ -312,11 +331,10 @@ const handleLogout = async (e?: React.MouseEvent) => {
       </div>
 
       <div className="layout">
-        {/* LEFT: фильтры */}
+        {/* Sidebar */}
         <aside className="sidebar">
           <div className="card">
             <div className="section-title">Фильтр</div>
-
             <div className="search">
               <input
                 className="input"
@@ -327,29 +345,28 @@ const handleLogout = async (e?: React.MouseEvent) => {
             </div>
 
             <div className="nav-vert">
-              <div className={`nav-item ${activeTab === "all" ? "active" : ""}`} onClick={() => setActiveTab("all")}>
-                <span>Все</span><span className="nav-count">{counts.all}</span>
-              </div>
-              <div className={`nav-item ${activeTab === "new" ? "active" : ""}`} onClick={() => setActiveTab("new")}>
-                <span>Новые</span><span className="nav-count">{counts.new}</span>
-              </div>
-              <div className={`nav-item ${activeTab === "inWork" ? "active" : ""}`} onClick={() => setActiveTab("inWork")}>
-                <span>В работе</span><span className="nav-count">{counts.inWork}</span>
-              </div>
-              <div className={`nav-item ${activeTab === "distributed" ? "active" : ""}`} onClick={() => setActiveTab("distributed")}>
-                <span>Распределено</span><span className="nav-count">{counts.distributed}</span>
-              </div>
-              <div className={`nav-item ${activeTab === "closed" ? "active" : ""}`} onClick={() => setActiveTab("closed")}>
-                <span>Завершённые</span><span className="nav-count">{counts.closed}</span>
-              </div>
-              <div className={`nav-item ${activeTab === "agentNotFound" ? "active" : ""}`} onClick={() => setActiveTab("agentNotFound")}>
-                <span>Без агента</span><span className="nav-count">{counts.agentNotFound}</span>
-              </div>
+              {([
+                ["all", "Все"],
+                ["new", "Новые"],
+                ["inWork", "В работе"],
+                ["distributed", "Распределено"],
+                ["closed", "Завершённые"],
+                ["agentNotFound", "Без агента"],
+              ] as [TabKey, string][]).map(([key, label]) => (
+                <div
+                  key={key}
+                  className={`nav-item ${activeTab === key ? "active" : ""}`}
+                  onClick={() => setActiveTab(key)}
+                >
+                  <span>{label}</span>
+                  <span className="nav-count">{counts[key]}</span>
+                </div>
+              ))}
             </div>
           </div>
         </aside>
 
-        {/* RIGHT: таблица */}
+        {/* Table */}
         <section>
           <div className="card">
             <div className="table-wrap">
@@ -365,31 +382,66 @@ const handleLogout = async (e?: React.MouseEvent) => {
                 </thead>
                 <tbody>
                   {loading && (
-                    <tr><td colSpan={5}>Загрузка…</td></tr>
+                    <tr>
+                      <td colSpan={5}>Загрузка…</td>
+                    </tr>
                   )}
                   {error && !loading && (
-                    <tr><td colSpan={5} style={{ color: "#b91c1c" }}>{error}</td></tr>
-                  )}
-                  {!loading && !error && filtered.map((c) => (
-                    <tr key={c.conversationId} style={{ cursor: "pointer" }} onClick={() => goDetail(c.conversationId)}>
-                      <td className="mono">#{c.conversationId.slice(0, 8)}</td>
-                      <td>{new Date(c.createDate).toLocaleString()}</td>
-                      <td>{c.channel}</td>
-                      <td title={c.message} style={{ maxWidth: 520, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {c.message}
-                      </td>
-                      <td>
-                        <span className="status">
-                          <span className="dot" style={{ backgroundColor: statusDots[c.status] || "#6b7280" }} />
-                          {statusLabels[c.status] || c.status}
-                        </span>
+                    <tr>
+                      <td colSpan={5} style={{ color: "#b91c1c" }}>
+                        {error}
                       </td>
                     </tr>
-                  ))}
+                  )}
+                  {!loading &&
+                    !error &&
+                    filtered.map((c) => (
+                      <tr
+                        key={c.conversationId}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => goDetail(c.conversationId)}
+                      >
+                        <td className="mono">#{c.conversationId.slice(0, 8)}</td>
+                        <td>{new Date(c.createDate).toLocaleString()}</td>
+                        <td>{c.channel}</td>
+                        <td
+                          title={c.message}
+                          style={{
+                            maxWidth: 520,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {c.message}
+                        </td>
+                        <td>
+                          <span className="status">
+                            <span
+                              className="dot"
+                              style={{
+                                backgroundColor:
+                                  statusDots[c.status] || "#6b7280",
+                              }}
+                            />
+                            {statusLabels[c.status] || c.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
                   {!loading && !error && filtered.length === 0 && (
-                    <tr><td colSpan={5} style={{ color: "#6b7280", textAlign: "center", padding: "24px" }}>
-                      Нет записей по выбранному фильтру
-                    </td></tr>
+                    <tr>
+                      <td
+                        colSpan={5}
+                        style={{
+                          color: "#6b7280",
+                          textAlign: "center",
+                          padding: "24px",
+                        }}
+                      >
+                        Нет записей по выбранному фильтру
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
