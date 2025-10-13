@@ -142,5 +142,12 @@ public class ConversationService : IConversationService
         };
 
         await _bus.Publish(sendMessageEvent);
-    }
+
+		var agentAnsweredEvent = new AgentAnsweredEvent
+		{
+			Id = conversation.WorkerId
+		};
+
+		await _bus.Publish(agentAnsweredEvent);
+	}
 }

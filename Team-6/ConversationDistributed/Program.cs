@@ -11,8 +11,9 @@ builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<UserLoggedInConsumer>();
     x.AddConsumer<DefineOperatorForConversationConsumer>();
+	x.AddConsumer<AgentAnsweredConsumer>();
 
-    x.UsingRabbitMq((context, cfg) =>
+	x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host("localhost", "/", h =>
         {
@@ -30,7 +31,13 @@ builder.Services.AddMassTransit(x =>
             e.ConfigureConsumeTopology = true;
             e.ConfigureConsumer<DefineOperatorForConversationConsumer>(context);
         });
-    });
+
+		cfg.ReceiveEndpoint("agent-answered-event-queue", e =>
+		{
+			e.ConfigureConsumeTopology = true;
+			e.ConfigureConsumer<AgentAnsweredConsumer>(context);
+		});
+	});
 });
 
 var host = builder.Build();
