@@ -1,6 +1,5 @@
 ﻿using Infrastructure.Shared.Contracts;
 using Infrastructure.Shared.Enums;
-using System.Collections.Concurrent;
 
 namespace ConversationDistributed.Services
 {

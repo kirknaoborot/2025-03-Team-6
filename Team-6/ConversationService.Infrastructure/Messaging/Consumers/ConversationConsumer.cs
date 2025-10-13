@@ -43,6 +43,16 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 		{
 			await _service.CreateConversation(dto);
 
+			var sendMessageEvent = new SendMessageEvent
+			{
+				UserId = cmd.UserId,
+				MessageText = "Ваше обращение обрабатывается. Пожалуйста, дождитесь ответа оператора",
+				Channel = cmd.Channel,
+				ChannelSettingsId = cmd.ChannelSettingsId,
+			};
+
+			await _bus.Publish(sendMessageEvent);
+
 			var createConversationCommand = new ConversationEvent
 			{
 				ConversationId = cmd.ConversationId,
