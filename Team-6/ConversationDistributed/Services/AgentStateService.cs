@@ -25,9 +25,10 @@ namespace ConversationDistributed.Services
                 var agent = agents.FirstOrDefault(x => x.Id == agentInfo.AgentId);
 
                 if (agent is not null)
-                {
-                    agents.Remove(agent);
-                }
+				{
+					ReleaseConversationFromUser(agent.Id);
+					agents.Remove(agent);
+				}
 
                 Console.WriteLine($"Отключен агент: ========> {agentInfo.AgentId}");
             }
