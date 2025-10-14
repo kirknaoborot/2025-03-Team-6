@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../api/apiFetch";
 
-// ---- модели
 type TicketStatus = "New" | "Distributed" | "InWork" | "Closed" | "AgentNotFound";
 type Priority = "Low" | "Normal" | "High" | "Urgent";
 
@@ -26,10 +25,10 @@ interface TicketDetail {
   requester: { id?: string; name: string; email?: string; phone?: string };
   assignedAgent?: { id?: string; name?: string };
   history: HistoryItem[];
-    number: string; 
+  number: string;
+  answer?: string;
 }
 
-// ---- словари для статусов
 const statusLabels: Record<TicketStatus, string> = {
   New: "Новое",
   Distributed: "Распределено",
@@ -55,11 +54,9 @@ export default function ConversationDetail() {
   const [banner, setBanner] = useState<null | { type: "success" | "error"; text: string }>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // блок ответа
   const [resolution, setResolution] = useState("");
   const [sending, setSending] = useState(false);
 
-  // ---- стили (строгий минимализм)
   const styles = `
     .wrap { display:grid; grid-template-columns: 1.15fr 1fr; gap:24px; }
     @media (max-width: 992px){ .wrap{ grid-template-columns:1fr; } }
@@ -94,7 +91,7 @@ export default function ConversationDetail() {
     .btn:disabled { opacity:.6; cursor:not-allowed; }
   `;
 
-  // ---- загрузка обращения — сразу при заходе
+  // --- загрузка обращения
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -109,15 +106,11 @@ export default function ConversationDetail() {
       }
 
       try {
-        // через Ocelot: /conversation?id=...
-        const data = await apiFetch<any>(`/conversation/conversation?id=${encodeURIComponent(id)}`, {
-          method: "GET",
-        });
+        const data = await apiFetch<any>(`/conversation/conversation?id=${encodeURIComponent(id)}`);
 
-        // нормализация к модели UI (на случай несовпадения полей)
         const detail: TicketDetail = {
           conversationId: data.conversationId ?? id,
-		    number: data.number ?? `O-${id.slice(0, 8)}`,  // <-- вот здесь добавляем
+          number: data.number ?? `O-${id.slice(0, 8)}`,
           subject: data.subject ?? "Обращение пользователя",
           message: data.message ?? "",
           status: (data.status as TicketStatus) ?? "InWork",
@@ -134,7 +127,8 @@ export default function ConversationDetail() {
           },
           assignedAgent:
             data.assignedAgent ??
-            (data.workerId ? { id: data.workerId, name: data.workerName } : undefined),
+            (data.workerId ? { id: data.workerId, name: data.workerId } : undefined),
+          answer: data.answer ?? undefined,
           history: (data.history ?? data.messages ?? []).map((m: any, i: number) => ({
             id: m.id ?? i + 1,
             author: (m.author as "user" | "agent" | "system") ?? "user",
@@ -156,26 +150,23 @@ export default function ConversationDetail() {
     };
   }, [id]);
 
-  // ---- действия
-  const postJson = async (url: string, body: any) => {
-    return apiFetch(url, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-  };
+  const postJson = async (url: string, body: any) =>
+    apiFetch(url, { method: "POST", body: JSON.stringify(body) });
 
   const closeWithReply = async () => {
     if (!ticket || !resolution.trim()) return;
     setSending(true);
     setBanner(null);
     try {
-      await postJson(
-        `/conversation/reply-close?id=${encodeURIComponent(ticket.conversationId)}`,
-        { message: resolution }
-      );
-      setTicket({ ...ticket, status: "Closed", lastUpdate: new Date().toISOString() });
-      setResolution("");
+      await postJson(`/conversation/reply-close?id=${encodeURIComponent(ticket.conversationId)}`, {
+        message: resolution,
+      });
+
+      // показываем успех и сразу возвращаем в список
       setBanner({ type: "success", text: "Ответ отправлен. Обращение закрыто." });
+
+      // ждём чуть-чуть, чтобы пользователь успел увидеть сообщение
+      setTimeout(() => navigate("/conversations", { replace: true }), 800);
     } catch (e: any) {
       setBanner({ type: "error", text: e?.message || "Ошибка при отправке ответа" });
     } finally {
@@ -188,10 +179,9 @@ export default function ConversationDetail() {
     setSending(true);
     setBanner(null);
     try {
-      await postJson(
-        `/conversation/draft?id=${encodeURIComponent(ticket.conversationId)}`,
-        { message: resolution }
-      );
+      await postJson(`/conversation/draft?id=${encodeURIComponent(ticket.conversationId)}`, {
+        message: resolution,
+      });
       setBanner({ type: "success", text: "Черновик сохранён." });
     } catch (e: any) {
       setBanner({ type: "error", text: e?.message || "Ошибка при сохранении черновика" });
@@ -200,7 +190,6 @@ export default function ConversationDetail() {
     }
   };
 
-  // ---- UI helpers
   const dot = (st?: TicketStatus) => (
     <span className="dot" style={{ background: statusDots[st || "New"] }} />
   );
@@ -229,7 +218,7 @@ export default function ConversationDetail() {
       {error && <div className="banner error">{error}</div>}
 
       <div className="wrap">
-        {/* Левая колонка: карточка + история */}
+        {/* Левая колонка */}
         <div className="card">
           <div className="section">
             <div className="label">Основная информация</div>
@@ -262,12 +251,6 @@ export default function ConversationDetail() {
                     <div className="label">Приоритет</div>
                     <div className="value">{ticket.priority}</div>
                   </div>
-                  <div>
-                    <div className="label">Назначено</div>
-                    <div className="value">
-                      {ticket.assignedAgent?.name || ticket.assignedAgent?.id || "—"}
-                    </div>
-                  </div>
                 </div>
 
                 {ticket.tags?.length > 0 && (
@@ -296,6 +279,15 @@ export default function ConversationDetail() {
                     {ticket.message || "—"}
                   </div>
                 </div>
+
+                {ticket.answer && (
+                  <div style={{ marginTop: 16 }}>
+                    <div className="label">Ответ агента</div>
+                    <div className="value desc" style={{ marginTop: 4 }}>
+                      {ticket.answer}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -329,26 +321,25 @@ export default function ConversationDetail() {
           </div>
         </div>
 
-        {/* Правая колонка: ответ/закрытие */}
+        {/* Правая колонка */}
         <div className="card">
           <div className="section">
             <div className="label">Ответ на обращение</div>
             <div className="muted" style={{ marginTop: 4 }}>
-              Это не переписка. Ваш ответ будет отправлен клиенту и обращение будет закрыто
-              (если выберете соответствующую кнопку).
+              Ваш ответ будет отправлен клиенту, после чего обращение автоматически закроется.
             </div>
           </div>
 
           <div className="section editor">
             <textarea
-              placeholder="Кратко опишите решение: что сделано и что дальше делать клиенту."
+              placeholder="Кратко опишите решение..."
               value={resolution}
               onChange={(e) => setResolution(e.target.value)}
               disabled={sending || ticket?.status === "Closed"}
             />
             {ticket?.status === "Closed" && (
               <div className="muted" style={{ marginTop: 8 }}>
-                Обращение уже закрыто. Для повторного открытия нужен отдельный эндпоинт.
+                Обращение уже закрыто.
               </div>
             )}
           </div>

@@ -28,6 +28,7 @@ public class ConversationDto
     /// Идентификатор
     /// </summary>
     public Guid WorkerId { get; set; }
+
     
     /// <summary>
     /// Дата создания
