@@ -44,6 +44,7 @@ public class ConversationService : IConversationService
                 CreateDate = x.CreateDate,
                 Number = $"{x.PrefixNumber}{x.Number}"
             })
+            .OrderByDescending(x => x.CreateDate)
             .ToList();
         
         return result;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSignalR } from "../signalr/SignalRProvider"; // 👈 импорт контекста
+import { useSignalR } from "../signalr/SignalRProvider";
 
 /* ===== Types ===== */
 interface Conversation {
@@ -86,16 +86,17 @@ tbody tr:hover { background:#fcfcfd; }
 .status { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:#374151; }
 .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
 
-.btn { border:1px solid #d1d5db; background:#111827; color:#fff; border-radius:8px; padding:10px 14px; font-weight:600; }
+.btn { border:1px solid #d1d5db; background:#111827; color:#fff; border-radius:8px; padding:10px 14px; font-weight:600; cursor:pointer; }
 .btn.secondary { background:#fff; color:#111827; }
+.btn:disabled { opacity:0.6; cursor:not-allowed; }
 .helpbar { margin: 6px 0 16px; color:#6b7280; font-size:13px; }
 .actionbar { display:flex; gap:8px; align-items:center; }
+
+.pagination { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-top:1px solid #f3f4f6; }
 `;
 
 export default function Conversations() {
   const navigate = useNavigate();
-
-  // подключаем SignalR-контекст
   const { connected, connecting, start, stop } = useSignalR();
 
   // данные обращений
@@ -106,6 +107,10 @@ export default function Conversations() {
   // фильтры
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
+
+  // пагинация
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
 
   /* ===== Auth ===== */
   const authObj = useMemo(() => {
@@ -131,7 +136,7 @@ export default function Conversations() {
     );
   })();
 
-  /* ===== Data load ===== */
+  /* ===== Load data ===== */
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -156,6 +161,7 @@ export default function Conversations() {
           navigate("/login");
           return;
         }
+
         if (!res.ok) {
           const txt = await res.text();
           throw new Error(txt || `HTTP ${res.status}`);
@@ -171,7 +177,7 @@ export default function Conversations() {
     })();
   }, [accessToken, navigate]);
 
-  /* ===== Обновление списка при событии от SignalR ===== */
+  /* ===== Обновление при SignalR событии ===== */
   useEffect(() => {
     const handler = async () => {
       console.log("🔁 Обновляем обращения после события ConversationDistributed");
@@ -243,6 +249,18 @@ export default function Conversations() {
     return list;
   }, [items, activeTab, search]);
 
+  // сбрасываем страницу при фильтре
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, search]);
+
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paged = useMemo(() => {
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+    return filtered.slice(start, end);
+  }, [filtered, page, perPage]);
+
   const goDetail = (id: string) =>
     navigate(`/conversation?id=${encodeURIComponent(id)}`);
 
@@ -250,14 +268,9 @@ export default function Conversations() {
   const handleLogout = async (e?: React.MouseEvent) => {
     e?.preventDefault();
     try {
-      await stop(); // останавливаем глобальное соединение
+      await stop();
     } catch {}
-
     localStorage.removeItem("auth");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("auth");
-
     navigate("/login", { replace: true });
   };
 
@@ -266,7 +279,6 @@ export default function Conversations() {
     <div className="container py-4">
       <style>{styles}</style>
 
-      {/* Шапка + статус */}
       <div className="header">
         <div>
           <div className="title">Обращения</div>
@@ -282,7 +294,6 @@ export default function Conversations() {
               className={!connected ? "active" : ""}
               onClick={stop}
               disabled={!connected || connecting}
-              title="Сделать статус Неготов"
             >
               Не готов
             </button>
@@ -290,7 +301,6 @@ export default function Conversations() {
               className={connected ? "active" : ""}
               onClick={start}
               disabled={connected || connecting}
-              title="Сделать статус Готов"
             >
               {connecting ? "Подключение…" : "Готов"}
             </button>
@@ -309,7 +319,6 @@ export default function Conversations() {
                 type="button"
                 className="btn"
                 onClick={() => navigate("/channels")}
-                title="Настройки каналов"
               >
                 ⚙️ Каналы
               </button>
@@ -326,7 +335,7 @@ export default function Conversations() {
         {connecting
           ? "Выполняется переключение статуса…"
           : connected
-          ? "Вы получаете новые обращения. Переключите на «Неготов», чтобы остановить распределение."
+          ? "Вы получаете новые обращения."
           : "Нажмите «Готов», чтобы включить распределение обращений."}
       </div>
 
@@ -345,14 +354,7 @@ export default function Conversations() {
             </div>
 
             <div className="nav-vert">
-              {([
-                ["all", "Все"],
-                ["new", "Новые"],
-                ["inWork", "В работе"],
-                ["distributed", "Распределено"],
-                ["closed", "Завершённые"],
-                ["agentNotFound", "Без агента"],
-              ] as [TabKey, string][]).map(([key, label]) => (
+              {([["all", "Все"], ["new", "Новые"], ["inWork", "В работе"], ["distributed", "Распределено"], ["closed", "Завершённые"], ["agentNotFound", "Без агента"]] as [TabKey, string][]).map(([key, label]) => (
                 <div
                   key={key}
                   className={`nav-item ${activeTab === key ? "active" : ""}`}
@@ -395,7 +397,7 @@ export default function Conversations() {
                   )}
                   {!loading &&
                     !error &&
-                    filtered.map((c) => (
+                    paged.map((c) => (
                       <tr
                         key={c.conversationId}
                         style={{ cursor: "pointer" }}
@@ -429,22 +431,53 @@ export default function Conversations() {
                         </td>
                       </tr>
                     ))}
-                  {!loading && !error && filtered.length === 0 && (
+                  {!loading && !error && paged.length === 0 && (
                     <tr>
-                      <td
-                        colSpan={5}
-                        style={{
-                          color: "#6b7280",
-                          textAlign: "center",
-                          padding: "24px",
-                        }}
-                      >
+                      <td colSpan={5} style={{ color: "#6b7280", textAlign: "center", padding: "24px" }}>
                         Нет записей по выбранному фильтру
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="pagination">
+              <div>
+                Страница {page} из {totalPages || 1}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button
+                  className="btn secondary"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  ← Назад
+                </button>
+                <button
+                  className="btn secondary"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  Вперёд →
+                </button>
+                <select
+                  className="input"
+                  style={{ width: 80 }}
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                >
+                  {[5, 10, 20, 50].map((n) => (
+                    <option key={n} value={n}>
+                      {n}/стр
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </section>
