@@ -3,8 +3,6 @@ using Auth.Core.Dto;
 using Auth.Core.IRepositories;
 using Auth.Core.IServices;
 using Auth.Core.Services;
-using Infrastructure.Shared.Contracts;
-using MassTransit;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
@@ -58,7 +56,7 @@ public class AuthService : IAuthService
                 IsActive = user.IsActive
             }
         };
-
+        _logger.LogInformation($"В систему вошел пользователь: {user.FullName}");
         return result;
     }
 

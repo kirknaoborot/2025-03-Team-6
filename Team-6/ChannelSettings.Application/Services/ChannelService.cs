@@ -4,6 +4,7 @@ using ChannelSettings.Core.IRepositories;
 using ChannelSettings.Core.IServices;
 using ChannelSettings.Core.Models;
 using ChannelSettings.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace ChannelSettings.Application.Services
 {
@@ -11,11 +12,13 @@ namespace ChannelSettings.Application.Services
     {
         private readonly IMapper _mapper;
         private readonly IChannelRepository _channelRepository;
+        private readonly ILogger<ChannelService> _logger;
 
-        public ChannelService(IMapper mapper, IChannelRepository channelRepository)
+        public ChannelService(IMapper mapper, IChannelRepository channelRepository, ILogger<ChannelService> logger)
         {
             _mapper = mapper;
             _channelRepository = channelRepository;
+            _logger = logger;
         }
 
         public async Task<ChannelModel> GetByIdAsync(int id, CancellationToken cancellationToken)
@@ -52,6 +55,7 @@ namespace ChannelSettings.Application.Services
         public async Task<ICollection<ChannelModel>> GetAllAsync(CancellationToken cancellationToken)
         {
             ICollection<Channel> entities = await _channelRepository.GetAllAsync(cancellationToken);
+            _logger.LogInformation($"Получено каналов: {entities.Count}");
             return _mapper.Map<ICollection<Channel>, ICollection<ChannelModel>>(entities);
         }
     }

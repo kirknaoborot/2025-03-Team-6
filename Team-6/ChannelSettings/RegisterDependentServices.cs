@@ -15,30 +15,36 @@ namespace ChannelSettings
 {
     public static class RegisterDependentServices
     {
-          public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
-          {
+        public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
+        {
+            Log.Logger = new LoggerConfiguration()
+           .ReadFrom.Configuration(builder.Configuration)
+           .CreateLogger();
 
-              builder.Services.AddMemoryCache();
-              builder.Services.AddSerilog();
+            // Используем Serilog как основной логгер
+            builder.Host.UseSerilog();
 
-
-              builder.Services.AddDbContext<ApplicationDbContext>();
-
-
-              builder.Services.Configure<StorageStrings>(options =>
-              {
-                  options.ApplicationDbContext = builder.Configuration.GetValue<string>("StorageStrings:ApplicationDbContext")!;
-              });
-
-              builder.Services.AddSingleton<IStorageStrings>(options =>
-                 options.GetRequiredService<IOptions<StorageStrings>>().Value);
+            builder.Services.AddMemoryCache();
+            builder.Services.AddSerilog();
 
 
-              builder.Services.AddServices();
+            builder.Services.AddDbContext<ApplicationDbContext>();
 
-              return builder;
-          }
-   
+
+            builder.Services.Configure<StorageStrings>(options =>
+            {
+                options.ApplicationDbContext = builder.Configuration.GetValue<string>("StorageStrings:ApplicationDbContext")!;
+            });
+
+            builder.Services.AddSingleton<IStorageStrings>(options =>
+               options.GetRequiredService<IOptions<StorageStrings>>().Value);
+
+
+            builder.Services.AddServices();
+
+            return builder;
+        }
+
 
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
