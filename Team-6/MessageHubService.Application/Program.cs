@@ -8,12 +8,25 @@ using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+
+// Настройка Serilog ДО создания хоста
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", optional: true)
+    .AddEnvironmentVariables()
+    .Build();
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(configuration)
+    .CreateBootstrapLogger(); // для раннего логирования
 
 var host = CreateHostBuilder(args).Build();
 host.Run();
 
 static IHostBuilder CreateHostBuilder(string[] args) =>
        Host.CreateDefaultBuilder(args)
+       .UseSerilog() // подключает Serilog как провайдер ILogger<T>
             .ConfigureServices((hostContext, services) =>
             {
                 var rabbitConfig = hostContext.Configuration

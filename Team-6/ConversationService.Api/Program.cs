@@ -1,7 +1,16 @@
 using ConversationService.Infrastructure.Extensions;
 using Infrastructure.Shared.Middleware;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Настройка Serilog из конфигурации
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateBootstrapLogger(); // bootstrap для раннего логирования
+
+// Регистрация Serilog как провайдера логирования
+builder.Services.AddSerilog();
 
 // Add services to the container.
 

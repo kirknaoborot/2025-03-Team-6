@@ -1,10 +1,18 @@
+using MassTransit; // <-- обязательно для MassTransit
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using MassTransit; // <-- обязательно для MassTransit
 using OnlineStatusService;
 using OnlineStatusService.Consumers;
+using Serilog;
 
 var builder = Host.CreateDefaultBuilder(args)
+
+    //Подключаем Serilog к хосту
+    .UseSerilog((hostingContext, loggerConfiguration) =>
+    {
+        loggerConfiguration
+            .ReadFrom.Configuration(hostingContext.Configuration);
+    })
     .ConfigureServices((hostContext, services) =>
     {
         // Фоновый сервис

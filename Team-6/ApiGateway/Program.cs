@@ -1,10 +1,17 @@
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using System.Text;
+using Serilog;
 using System.IdentityModel.Tokens.Jwt; // <-- добавил
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Подключаем Serilog ДО любых других сервисов
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration.ReadFrom.Configuration(context.Configuration);
+});
 
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 builder.Services.AddOcelot(builder.Configuration);

@@ -1,8 +1,17 @@
 using ConversationDistributed.Consumers;
 using ConversationDistributed.Services;
 using MassTransit;
+using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// Настройка Serilog из конфигурации
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateBootstrapLogger(); // bootstrap для раннего логирования
+
+// Регистрация Serilog как провайдера логирования
+builder.Services.AddSerilog();
 
 // Сервис состояния пользователей
 builder.Services.AddSingleton<IAgentStateService, AgentStateService>();
