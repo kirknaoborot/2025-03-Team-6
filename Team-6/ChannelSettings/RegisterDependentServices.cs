@@ -18,7 +18,21 @@ namespace ChannelSettings
           public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
           {
 
-              builder.Services.AddMemoryCache();
+			builder.Services.AddMassTransit(x =>
+			{
+				x.UsingRabbitMq((context, cfg) =>
+				{
+					cfg.Host("localhost", "/", h =>
+					{
+						h.Username("guest");
+						h.Password("guest");
+					});
+
+					cfg.ConfigureEndpoints(context);
+				});
+			});
+
+			builder.Services.AddMemoryCache();
               builder.Services.AddSerilog();
 
 
@@ -46,7 +60,8 @@ namespace ChannelSettings
                     .InstallServices()
                     .InstallRepositories()
                     .InstallAutomapper()
-                    .AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
+					.InstallHostedServices()
+					.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
                     {
                         builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
                     }))
@@ -75,8 +90,8 @@ namespace ChannelSettings
 
         private static IServiceCollection InstallServices(this IServiceCollection serviceCollection)
         {
-            serviceCollection
-                .AddTransient<IChannelService, ChannelService>();
+			serviceCollection
+				.AddTransient<IChannelService, ChannelService>();
             return serviceCollection;
         }
 
@@ -86,5 +101,12 @@ namespace ChannelSettings
                 .AddTransient<IChannelRepository, ChannelRepository>();
             return serviceCollection;
         }
-    }
+
+		private static IServiceCollection InstallHostedServices(this IServiceCollection serviceCollection)
+		{
+			serviceCollection
+				.AddHostedService<Worker>();
+			return serviceCollection;
+		}
+	}
 }

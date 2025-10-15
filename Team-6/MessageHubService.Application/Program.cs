@@ -4,7 +4,6 @@ using MessageHubService.Application;
 using MessageHubService.Application.Interfaces;
 using MessageHubService.Application.Services;
 using MessageHubService.Application.Services.TelegramBot;
-using MessageHubService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,6 +22,7 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                 services.AddMassTransit(x =>
                 {
 					x.AddConsumer<SendMessageEventConsumer>();
+					x.AddConsumer<ChannelEventConsumer>();
 
 					x.UsingRabbitMq((context, cfg) =>
                     {
@@ -35,10 +35,14 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
 						{
 							e.ConfigureConsumer<SendMessageEventConsumer>(context);
 						});
+
+						cfg.ReceiveEndpoint("channel-command-queue", e =>
+						{
+							e.ConfigureConsumer<ChannelEventConsumer>(context);
+						});
 					});
                 });
 
 				services.AddScoped<IBotWork, TelegramBotService>();
-                services.Configure<TelegramBotOptionsList>(hostContext.Configuration.GetSection(nameof(TelegramBotOptionsList)));
                 services.AddHostedService<SendMessageService>();
             });

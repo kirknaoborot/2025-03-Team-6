@@ -12,39 +12,25 @@ namespace MessageHubService.Application.Services
     {
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, TelegramBotService> _telegramBots = new();
         private readonly ILogger<SendMessageService> _logger;
-        private readonly IConfiguration _configuration;
         private readonly IBus _bus;
 
         public SendMessageService(ILogger<SendMessageService> logger, IConfiguration configuration, IBus bus)
         {
             _logger = logger;
-            _configuration = configuration;
             _bus = bus;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation($"{nameof(SendMessageService)}.{nameof(ExecuteAsync)}() -> Background service is starting.");
-
-            var bots = _configuration.GetSection(nameof(TelegramBotOptionsList)).Get<List<TelegramBotOptions>>();
-
-            if (bots is null || bots.Count == 0)
-            {
-                _logger.LogWarning($"{nameof(SendMessageService)}.{nameof(ExecuteAsync)}() -> No bot configurations found.");
-                await StopAsync(stoppingToken);
-                return;
-            }
-
-            var startTasks = new List<Task>();
-            for (int index = 0; index < bots.Count; index++)
-            {
-                var cfg = bots[index];
-                var channelId = index + 1;
-                startTasks.Add(StartBotAsync(cfg, channelId, stoppingToken));
-            }
-
-            await Task.WhenAll(startTasks);
         }
+
+		public async Task AddBot(ChannelEvent channelEvent)
+		{
+			_logger.LogInformation($"{nameof(SendMessageService)}.{nameof(AddBot)}() -> channel event is null {channelEvent is null}");
+
+			await StartBotAsync(channelEvent);
+		}
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
@@ -63,32 +49,32 @@ namespace MessageHubService.Application.Services
             return ok;
 		}
 
-        private async Task StartBotAsync(TelegramBotOptions cfg, int channelId, CancellationToken ct)
+        private async Task StartBotAsync(ChannelEvent channelEvent)
         {
             try
             {
                 var telegramBot = new TelegramBotService();
-                telegramBot.ChannelId = channelId;
-                telegramBot.SetTokenAndName(cfg.Token, cfg.Name);
+                telegramBot.ChannelId = channelEvent.Id;
+                telegramBot.SetTokenAndName(channelEvent.Token, channelEvent.Name);
                 telegramBot.DefineTelegramBotClient();
 
                 telegramBot.OnIncomingMessage += (sender, args) =>
                 {
-                    _ = HandleIncomingMessageAsync(args, ct);
+                    _ = HandleIncomingMessageAsync(args);
                 };
 
-                _logger.LogInformation("Starting bot {BotName} (ChannelId {ChannelId})", telegramBot.Name, channelId);
+                _logger.LogInformation("Starting bot {BotName} (ChannelId {ChannelId})", telegramBot.Name, telegramBot.ChannelId);
 
-                _telegramBots[channelId] = telegramBot;
+                _telegramBots[telegramBot.ChannelId] = telegramBot;
                 await telegramBot.StartAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to start bot {ChannelId}", channelId);
+                _logger.LogError(ex, "Failed to start bot {ChannelId}", channelEvent.Id);
             }
         }
 
-        private async Task HandleIncomingMessageAsync(MessageEventArgs e, CancellationToken ct)
+        private async Task HandleIncomingMessageAsync(MessageEventArgs e)
         {
             try
             {
@@ -105,7 +91,7 @@ namespace MessageHubService.Application.Services
                     ChannelSettingsId = e.ChannelSettingId,
                 };
 
-                await _bus.Publish(newInMessage, ct);
+                await _bus.Publish(newInMessage);
             }
             catch (OperationCanceledException)
             {

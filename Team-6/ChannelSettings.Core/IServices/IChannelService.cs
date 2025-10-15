@@ -10,5 +10,5 @@ namespace ChannelSettings.Core.IServices
         Task<ICollection<ChannelModel>> GetAllAsync(CancellationToken cancellationToken);
         Task<ChannelModel> GetByIdAsync(int id, CancellationToken cancellationToken);
         Task UpdateAsync(int id, UpdatingChannel updatingChannel);
-    }
+	}
 }
