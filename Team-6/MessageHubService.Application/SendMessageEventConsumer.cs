@@ -23,7 +23,7 @@ public class SendMessageEventConsumer : IConsumer<SendMessageEvent>
 		_logger.LogInformation($"{nameof(SendMessageEventConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', message text '{context.Message.MessageText}', bot id '{context.Message.ChannelSettingsId}'");
 
 		using var scope = _serviceProvider.CreateScope();
-		var sendMessageService = scope.ServiceProvider.GetRequiredService<IBotService>();
+		var sendMessageService = scope.ServiceProvider.GetRequiredService<IBotManagerService>();
 
 		if (sendMessageService.TryGetTelegramBot(context.Message.ChannelSettingsId, out var telegramBot))
 		{

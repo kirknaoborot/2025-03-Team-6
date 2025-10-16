@@ -2,7 +2,6 @@
 using Infrastructure.Shared.Contracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using MessageHubService.Application.Services;
 using MessageHubService.Application.Interfaces;
 
 namespace MessageHubService.Application
@@ -23,7 +22,7 @@ namespace MessageHubService.Application
 			_logger.LogInformation($"{nameof(ChannelEventConsumer)}.{nameof(Consume)}() -> bot id '{context.Message.Id}', bot name '{context.Message.Name}', bot token '{context.Message.Token}', bot type '{context.Message.Type}', bot is deleted '{context.Message.IsDelered}'");
 
 			using var scope = _serviceProvider.CreateScope();
-			var sendMessageService = scope.ServiceProvider.GetRequiredService<IBotService>();
+			var sendMessageService = scope.ServiceProvider.GetRequiredService<IBotManagerService>();
 			await sendMessageService.AddBot(context.Message);
 		}
 	}
