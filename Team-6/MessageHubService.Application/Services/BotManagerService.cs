@@ -4,47 +4,95 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace MessageHubService.Application.Services
+namespace MessageHubService.Application.Services;
+
+public class BotManagerService : IBotManagerService
 {
-    public class BotManagerService : IBotManagerService
-    {
-        private readonly ILogger<BotManagerService> _logger;
-		private readonly IServiceScopeFactory _serviceScopeFactory;
-		private readonly IMemoryCache _cache;
+	private readonly ILogger<BotManagerService> _logger;
+	private readonly IServiceScopeFactory _serviceScopeFactory;
+	private readonly IMemoryCache _cache;
 
-		public BotManagerService(ILogger<BotManagerService> logger, IServiceScopeFactory serviceScopeFactory, IMemoryCache cache)
-        {
-            _logger = logger;
-			_serviceScopeFactory = serviceScopeFactory;
-			_cache = cache;
-        }
+	public BotManagerService(ILogger<BotManagerService> logger, IServiceScopeFactory serviceScopeFactory, IMemoryCache cache)
+	{
+		_logger = logger;
+		_serviceScopeFactory = serviceScopeFactory;
+		_cache = cache;
+	}
 
-		public async Task AddBot(ChannelEvent channelEvent)
+	public bool TryGetBot(int id, out IBot telegramBot)
+	{
+		return _cache.TryGetValue(id, out telegramBot);
+	}
+
+	public async Task CreateBotAsync(ChannelEvent channelEvent)
+	{
+		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(CreateBotAsync)}() -> channel event is null {channelEvent is null}");
+
+		try
 		{
-			_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(AddBot)}() -> channel event is null {channelEvent is null}");
+			using var scope = _serviceScopeFactory.CreateScope();
+			var bot = scope.ServiceProvider.GetRequiredService<IBot>();
 
-			await StartBotAsync(channelEvent);
+			await bot.CreateBotAsync(channelEvent);
+			await bot.StartAsync();
+			_cache.Set(bot.GetHashCode(), bot);
 		}
-
-        public bool TryGetTelegramBot(int id, out IBot telegramBot)
+		catch (Exception ex)
 		{
-            return _cache.TryGetValue(id, out telegramBot);
+			_logger.LogError(ex, "Failed to start bot {ChannelId}", channelEvent.Id);
 		}
+	}
 
-        private async Task StartBotAsync(ChannelEvent channelEvent)
-        {
-			try
+	public async Task UpdateBotAsync(ChannelEvent channelEvent)
+	{
+		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(UpdateBotAsync)}() -> channel event is null {channelEvent is null}");
+
+		try
+		{
+			using var scope = _serviceScopeFactory.CreateScope();
+			var bot = scope.ServiceProvider.GetRequiredService<IBot>();
+
+			if (_cache.TryGetValue<IBot>(channelEvent?.Id ?? 0, out var findedBot))
 			{
-				using var scope = _serviceScopeFactory.CreateScope();
-				var bot = scope.ServiceProvider.GetRequiredService<IBot>();
-				bot.CreateBot(channelEvent);
+				await findedBot.StopAsync();
+				findedBot.Dispose();
+				_cache.Remove(channelEvent.Id);
+				await bot.CreateBotAsync(channelEvent);
 				await bot.StartAsync();
 				_cache.Set(bot.GetHashCode(), bot);
 			}
-			catch (Exception ex)
+			else
 			{
-				_logger.LogError(ex, "Failed to start bot {ChannelId}", channelEvent.Id);
+				await bot.CreateBotAsync(channelEvent);
+				await bot.StartAsync();
+				_cache.Set(bot.GetHashCode(), bot);
 			}
 		}
-    }
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to start bot {ChannelId}", channelEvent.Id);
+		}
+	}
+
+	public async Task DeleteBotAsync(ChannelEvent channelEvent)
+	{
+		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(DeleteBotAsync)}() -> channel event is null {channelEvent is null}");
+
+		try
+		{
+			using var scope = _serviceScopeFactory.CreateScope();
+			var bot = scope.ServiceProvider.GetRequiredService<IBot>();
+
+			if (_cache.TryGetValue<IBot>(channelEvent?.Id ?? 0, out var findedBot))
+			{
+				await findedBot.StopAsync();
+				findedBot.Dispose();
+				_cache.Remove(channelEvent.Id);
+			}
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to start bot {ChannelId}", channelEvent.Id);
+		}
+	}
 }

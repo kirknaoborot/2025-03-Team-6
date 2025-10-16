@@ -61,8 +61,6 @@ public class TelegramBot : IMessageEvent, IBot
 		_bot.OnError += _handler.OnErrorAsync;
 		_bot.OnMessage += _handler.OnMessageAsync;
 		_bot.OnUpdate += _handler.OnUpdateAsync;
-
-		await _bot.GetMe();
 	}
 
 	public async Task StopAsync()
@@ -80,7 +78,7 @@ public class TelegramBot : IMessageEvent, IBot
 		await _bot.SendMessage(sendMessageDto.UserId, sendMessageDto.MessageText);
 	}
 
-	public void CreateBot(ChannelEvent channelEvent)
+	public async Task CreateBotAsync(ChannelEvent channelEvent)
 	{
 		_channelId = channelEvent.Id;
 		_cancellationToken = new CancellationTokenSource();
@@ -101,5 +99,14 @@ public class TelegramBot : IMessageEvent, IBot
 	public override int GetHashCode()
 	{
 		return _channelId;
+	}
+
+	public void Dispose()
+	{
+		_channelId = 0;
+		_bot = null;
+		_me = null;
+		_cancellationToken = null;
+		_handler = null;
 	}
 }

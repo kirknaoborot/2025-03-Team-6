@@ -8,5 +8,5 @@ public class ChannelEvent
 	public string Name { get; set; }
 	public string Token { get; set; }
 	public ChannelType Type { get; set; }
-	public bool IsDelered { get; set; }
+	public ChannelInfoAction Action { get; set; }
 }

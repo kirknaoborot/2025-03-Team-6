@@ -5,6 +5,7 @@ using ChannelSettings.Core.IServices;
 using ChannelSettings.Core.Models;
 using ChannelSettings.Domain.Entities;
 using Infrastructure.Shared.Contracts;
+using Infrastructure.Shared.Enums;
 using MassTransit;
 
 namespace ChannelSettings.Application.Services
@@ -33,6 +34,18 @@ namespace ChannelSettings.Application.Services
 			var channel = _mapper.Map<CreatingChannel, Channel>(creatingChannel);
 			var creating = await _channelRepository.AddAsync(channel);
 			await _channelRepository.SaveChangesAsync();
+
+			var channelInfo = new ChannelEvent
+			{
+				Id = channel.Id,
+				Name = channel.Name,
+				Token = channel.Token,
+				Type = channel.Type,
+				Action = ChannelInfoAction.Create,
+			};
+
+			await _bus.Publish(channelInfo);
+
 			return creating.Id;
 		}
 
@@ -43,7 +56,19 @@ namespace ChannelSettings.Application.Services
 			channel.Token = updatingChannel.Token;
 			channel.Type = updatingChannel.Type;
 			_channelRepository.Update(channel);
+
 			await _channelRepository.SaveChangesAsync();
+
+			var channelInfo = new ChannelEvent
+			{
+				Id = channel.Id,
+				Name = channel.Name,
+				Token = channel.Token,
+				Type = channel.Type,
+				Action = ChannelInfoAction.Update,
+			};
+
+			await _bus.Publish(channelInfo);
 		}
 
 		public async Task DeleteAsync(int id)
@@ -51,6 +76,17 @@ namespace ChannelSettings.Application.Services
 			var channel = await _channelRepository.GetAsync(id, CancellationToken.None) ?? throw new Exception($"Запись с ID {id} не найдена");
 			_channelRepository.Delete(channel);
 			await _channelRepository.SaveChangesAsync();
+
+			var channelInfo = new ChannelEvent
+			{
+				Id = channel.Id,
+				Name = channel.Name,
+				Token = channel.Token,
+				Type = channel.Type,
+				Action = ChannelInfoAction.Delete,
+			};
+
+			await _bus.Publish(channelInfo);
 		}
 
 		public async Task<ICollection<ChannelModel>> GetAllAsync(CancellationToken cancellationToken)

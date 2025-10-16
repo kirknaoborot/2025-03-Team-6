@@ -1,6 +1,7 @@
 ﻿using ChannelSettings.Core.IRepositories;
 using ChannelSettings.Core.IServices;
 using Infrastructure.Shared.Contracts;
+using Infrastructure.Shared.Enums;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -43,6 +44,7 @@ namespace ChannelSettings.Application.Services
 							Name = i.Name,
 							Token = i.Token,
 							Type = i.Type,
+							Action = ChannelInfoAction.Create,
 						};
 
 						await _bus.Publish(channelInfo);

@@ -1,11 +1,11 @@
 ﻿using Infrastructure.Shared.Contracts;
-using MessageHubService.Application.Services.TelegramBot;
 
-namespace MessageHubService.Application.Interfaces
+namespace MessageHubService.Application.Interfaces;
+
+public interface IBotManagerService
 {
-	public interface IBotManagerService
-	{
-		Task AddBot(ChannelEvent channelEvent);
-		bool TryGetTelegramBot(int id, out IBot telegramBot);
-	}
+	Task CreateBotAsync(ChannelEvent channelEvent);
+	Task UpdateBotAsync(ChannelEvent channelEvent);
+	Task DeleteBotAsync(ChannelEvent channelEvent);
+	bool TryGetBot(int id, out IBot telegramBot);
 }

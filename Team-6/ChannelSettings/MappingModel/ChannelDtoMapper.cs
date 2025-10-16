@@ -16,8 +16,8 @@ namespace ChannelSettings.MappingModel
             CreateMap<CreatingChannelDto, CreatingChannel>()
 				.ForMember(src => src.Type, opt => opt.MapFrom(x => x.Type));
 
-			CreateMap<UpdatingChannelDto, UpdatingChannel>();
-
-        }
+			CreateMap<UpdatingChannelDto, UpdatingChannel>()
+				.ForMember(src => src.Type, opt => opt.MapFrom(x => x.Type));
+		}
     }
 }

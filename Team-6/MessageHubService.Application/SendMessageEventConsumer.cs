@@ -25,7 +25,7 @@ public class SendMessageEventConsumer : IConsumer<SendMessageEvent>
 		using var scope = _serviceProvider.CreateScope();
 		var sendMessageService = scope.ServiceProvider.GetRequiredService<IBotManagerService>();
 
-		if (sendMessageService.TryGetTelegramBot(context.Message.ChannelSettingsId, out var telegramBot))
+		if (sendMessageService.TryGetBot(context.Message.ChannelSettingsId, out var telegramBot))
 		{
 			var sendMessageDto = new SendMessageDto(context.Message.UserId, context.Message.MessageText);
 			await telegramBot.SentMessageToClientAsync(sendMessageDto);
