@@ -6,6 +6,6 @@ namespace ChannelSettings.DTO
     {
         public string Name { get; set; }
         public string Token { get; set; }
-        public ChannelType Type { get; set; }
+        public string Type { get; set; }
     }
 }
