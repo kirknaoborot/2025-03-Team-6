@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var host = CreateHostBuilder(args).Build();
+BusProvider.Initialize(host.Services.GetRequiredService<IBus>());
 host.Run();
 
 static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -44,5 +45,5 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                 });
 
 				services.AddScoped<IBotWork, TelegramBotService>();
-                services.AddHostedService<SendMessageService>();
+				services.AddScoped<IBotService, SendMessageService>();
             });

@@ -34,12 +34,6 @@ public class DefineAgentConsumer : IConsumer<DefineAgentEvent>
 			Answer = context.Message.Answer,
 		};
 
-		var notifyCommand = new NotifySendCommand
-		{
-			AgentId = context.Message.WorkerId
-		};
-
 		await _bus.Publish(updateConversationCommand);
-		await _bus.Publish(notifyCommand);
 	}
 }

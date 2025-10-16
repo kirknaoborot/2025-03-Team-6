@@ -42,5 +42,5 @@ builder.Services.AddMassTransit(x =>
 
 var host = builder.Build();
 var convState = host.Services.GetRequiredService<ConvState>();
-await convState.ExecuteAsync(CancellationToken.None);
+convState.ExecuteAsync(CancellationToken.None);
 await host.RunAsync();

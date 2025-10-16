@@ -1,4 +1,5 @@
 ﻿using ChannelSettings.Core.IRepositories;
+using ChannelSettings.Core.IServices;
 using Infrastructure.Shared.Contracts;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,9 +25,7 @@ namespace ChannelSettings.Application.Services
 			_logger.LogInformation($"{nameof(Worker)}.{nameof(ExecuteAsync)}() -> начало работы в {DateTimeOffset.Now}");
 
 			using var scope = _serviceProvider.CreateScope();
-			var channelService = scope.ServiceProvider.GetRequiredService<ChannelService>();
-
-			var channelService1 = _serviceProvider.GetService<ChannelService>();
+			var channelService = scope.ServiceProvider.GetRequiredService<IChannelService>();
 
 			if (channelService != null)
 			{
@@ -48,6 +47,8 @@ namespace ChannelSettings.Application.Services
 
 						await _bus.Publish(channelInfo);
 					}
+
+					return;
 				}
 			}
 		}
