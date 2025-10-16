@@ -76,7 +76,9 @@ public class ConvState
 				WorkerId = freeOperator.Id,
 				MessageText = pending.Command.MessageText,
 				CreateDate = pending.Command.CreateDate,
-				Channel = pending.Command.Channel
+				Channel = pending.Command.Channel,
+				ChannelSettingsId= pending.Command.ChannelSettingsId,
+				UserId = pending.Command.UserId
 			});
 
 			// Удаляем из очереди

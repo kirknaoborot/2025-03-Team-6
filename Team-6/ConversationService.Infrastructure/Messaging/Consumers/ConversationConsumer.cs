@@ -39,51 +39,67 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 			ChannelSettingsId = cmd.ChannelSettingsId
 		};
 
-		if (cmd.Status == StatusType.New)
+		switch (cmd.Status)
 		{
-			await _service.CreateConversation(dto);
+			case StatusType.New:
+				{
+					await _service.CreateConversation(dto);
 
-			var sendMessageEvent = new SendMessageEvent
-			{
-				UserId = cmd.UserId,
-				MessageText = "Ваше обращение обрабатывается. Пожалуйста, дождитесь ответа оператора",
-				Channel = cmd.Channel,
-				ChannelSettingsId = cmd.ChannelSettingsId,
-			};
+					var sendMessageEvent = new SendMessageEvent
+					{
+						UserId = cmd.UserId,
+						MessageText = "Ваше обращение обрабатывается. Пожалуйста, дождитесь ответа оператора",
+						Channel = cmd.Channel,
+						ChannelSettingsId = cmd.ChannelSettingsId,
+					};
 
-			await _bus.Publish(sendMessageEvent);
+					await _bus.Publish(sendMessageEvent);
 
-			var createConversationCommand = new ConversationEvent
-			{
-				ConversationId = cmd.ConversationId,
-				UserId = cmd.UserId,
-				Message = cmd.Message,
-				Channel = cmd.Channel,
-				Status = cmd.Status,
-				WorkerId = cmd.WorkerId,
-				CreateDate = cmd.CreateDate,
-                ChannelSettingsId = cmd.ChannelSettingsId,
-			};
+					var createConversationCommand = new ConversationEvent
+					{
+						ConversationId = cmd.ConversationId,
+						UserId = cmd.UserId,
+						Message = cmd.Message,
+						Channel = cmd.Channel,
+						Status = cmd.Status,
+						WorkerId = cmd.WorkerId,
+						CreateDate = cmd.CreateDate,
+						ChannelSettingsId = cmd.ChannelSettingsId,
+					};
 
-			await _bus.Publish(createConversationCommand);
-		}
-		else if (cmd.Status == StatusType.AgentNotFound)
-		{
-			await _service.UpdateConversation(dto);
+					await _bus.Publish(createConversationCommand);
 
-			var sendMessageEvent = new SendMessageEvent
-			{
-				UserId = cmd.UserId,
-				MessageText = cmd.Answer,
-				Channel = cmd.Channel,
-                ChannelSettingsId = cmd.ChannelSettingsId,
-			};
+					break;
+				}
+			case StatusType.AgentNotFound:
+				{
+					await _service.UpdateConversation(dto);
 
-			await _bus.Publish(sendMessageEvent);
-		}
-		else
-		{
-			await _service.UpdateConversation(dto);
+					var sendMessageEvent = new SendMessageEvent
+					{
+						UserId = cmd.UserId,
+						MessageText = cmd.Answer,
+						Channel = cmd.Channel,
+						ChannelSettingsId = cmd.ChannelSettingsId,
+					};
+
+					await _bus.Publish(sendMessageEvent);
+
+					break;
+				}
+			case StatusType.Distributed:
+				{
+					await _service.UpdateConversation(dto);
+
+					var notifyCommand = new NotifySendCommand
+					{
+						AgentId = context.Message.WorkerId
+					};
+
+					await _bus.Publish(notifyCommand);
+
+					break;
+				}
 		}
 	}
 }

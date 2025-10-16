@@ -11,13 +11,12 @@ namespace ChannelSettings.MappingModel
         public ChannelDtoMapper()
         {
             CreateMap<ChannelModel, ChannelDto>()
-                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
+				.ForMember(src => src.Type, opt => opt.MapFrom(x => x.Type.GetDisplayName()));
 
             CreateMap<CreatingChannelDto, CreatingChannel>()
-                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => Enum.Parse<ChannelType>(src.Type)));
+				.ForMember(src => src.Type, opt => opt.MapFrom(x => x.Type));
 
-            CreateMap<UpdatingChannelDto, UpdatingChannel>()
-                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => Enum.Parse<ChannelType>(src.Type)));
+			CreateMap<UpdatingChannelDto, UpdatingChannel>();
 
         }
     }

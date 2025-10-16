@@ -8,20 +8,26 @@ namespace ChannelSettings.DataAccess.Configuration
     {
         public void Configure(EntityTypeBuilder<Channel> builder)
         {
-            builder.HasKey(e => e.Id);            
-            
-            builder.ToTable("channel", "public");
+			builder.ToTable("channels", "channel");
 
-            builder.Property(e => e.Name)
-                .IsRequired()
-                .HasMaxLength(100);
+			builder.HasKey(e => e.Id);
 
-            builder.Property(e => e.Token)
-                .IsRequired();
+			builder.Property(e => e.Id)
+			.HasColumnName("id")
+			.IsRequired();
 
-            builder.Property(e => e.Type)
-                .IsRequired()
-                .HasConversion<string>(); // сохранение enum как строки
+			builder.Property(e => e.Name)
+			.HasColumnName("name")
+			.IsRequired();
+			
+			builder.Property(e => e.Token)
+			.HasColumnName("token")
+			.IsRequired();
+			
+			builder.Property(e => e.Type)
+			.HasColumnName("type")
+			.HasConversion<string>() // сохранение enum как строки
+			.IsRequired();
         }
     }
 }
