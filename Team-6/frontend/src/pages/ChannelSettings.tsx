@@ -13,7 +13,7 @@ interface ChannelDto {
 interface CreatingChannelDto {
   name: string;
   token: string;
-  type: string;
+  type: string; // ChannelType enum name (e.g., "Telegram", "Vk", "Email")
 }
 
 interface UpdatingChannelDto extends CreatingChannelDto {}
@@ -23,6 +23,13 @@ function isAdminRole(role: RoleLike): boolean {
   const s = String(role).toLowerCase();
   return s === "0" || s === "administrator" || s === "администратор";
 }
+
+// ChannelType enum values and display names
+const CHANNEL_TYPES = [
+  { value: "Telegram", label: "Телеграмм" },
+  { value: "Vk", label: "VK" },
+  { value: "Email", label: "EMAIL" },
+] as const;
 
 const styles = `
 .wrap { max-width: 1100px; margin:0 auto; }
@@ -88,7 +95,7 @@ export default function ChannelSettings() {
   const [form, setForm] = useState<CreatingChannelDto>({
     name: "",
     token: "",
-    type: "",
+    type: "Telegram", // Default to Telegram
   });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -136,7 +143,7 @@ export default function ChannelSettings() {
     };
 
   const resetForm = () => {
-    setForm({ name: "", token: "", type: "" });
+    setForm({ name: "", token: "", type: "Telegram" });
     setEditingId(null);
     setError("");
     setOk("");
@@ -147,13 +154,13 @@ export default function ChannelSettings() {
     setForm({
       name: c.name ?? "",
       token: c.token ?? "",
-      type: c.type ?? "",
+      type: c.type ?? "Telegram",
     });
   };
 
   const validate = () => {
     if (!form.name.trim()) return "Укажите название";
-    if (!form.type.trim()) return "Укажите тип";
+    if (!form.type.trim()) return "Укажите тип канала";
     if (!form.token.trim()) return "Укажите токен";
     return "";
   };
@@ -175,7 +182,7 @@ export default function ChannelSettings() {
       const payload: CreatingChannelDto | UpdatingChannelDto = {
         name: form.name.trim(),
         token: form.token.trim(),
-        type: form.type.trim(),
+        type: form.type.trim(), // String enum value
       };
 
       let url = `${BASE}${ITEM_PATH}`;
@@ -269,12 +276,17 @@ export default function ChannelSettings() {
               </div>
               <div>
                 <div className="label">Тип *</div>
-                <input
-                  className="input"
+                <select
+                  className="select"
                   value={form.type}
                   onChange={setField("type")}
-                  placeholder="Напр. telegram / whatsapp / email"
-                />
+                >
+                  {CHANNEL_TYPES.map((channelType) => (
+                    <option key={channelType.value} value={channelType.value}>
+                      {channelType.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <div className="label">Токен *</div>
@@ -325,14 +337,18 @@ export default function ChannelSettings() {
                 {error && !loading && (
                   <tr><td colSpan={5} style={{ color: "#b91c1c" }}>{error}</td></tr>
                 )}
-                {!loading && !error && items.map((c) => (
-                  <tr key={c.id}>
-                    <td>{c.id}</td>
-                    <td>{c.name}</td>
-                    <td>{c.type}</td>
-                    <td className="code" title={c.token}>
-                      {c.token?.length > 24 ? c.token.slice(0, 24) + "…" : c.token || "—"}
-                    </td>
+                {!loading && !error && items.map((c) => {
+                  // Convert type to display name
+                  const typeDisplay = CHANNEL_TYPES.find(t => t.value === c.type)?.label ?? c.type;
+                  
+                  return (
+                    <tr key={c.id}>
+                      <td>{c.id}</td>
+                      <td>{c.name}</td>
+                      <td>{typeDisplay}</td>
+                      <td className="code" title={c.token}>
+                        {c.token?.length > 24 ? c.token.slice(0, 24) + "…" : c.token || "—"}
+                      </td>
                     <td>
                       <div className="cell-actions">
                         <button className="btn sm ghost" type="button" onClick={() => startEdit(c)}>
@@ -344,7 +360,8 @@ export default function ChannelSettings() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {!loading && !error && items.length === 0 && (
                   <tr><td colSpan={5} style={{ color: "#6b7280", textAlign: "center", padding: "24px" }}>
                     Каналов нет

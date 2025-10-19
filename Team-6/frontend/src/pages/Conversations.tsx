@@ -10,6 +10,7 @@ interface Conversation {
   channel: string;
   message: string;
   workerId: string;
+  number: string;
 }
 type StatusKey = "New" | "Distributed" | "InWork" | "Closed" | "AgentNotFound";
 type TabKey =
@@ -403,7 +404,7 @@ export default function Conversations() {
                         style={{ cursor: "pointer" }}
                         onClick={() => goDetail(c.conversationId)}
                       >
-                        <td className="mono">#{c.conversationId.slice(0, 8)}</td>
+                        <td className="mono">#{c.number}</td>
                         <td>{new Date(c.createDate).toLocaleString()}</td>
                         <td>{c.channel}</td>
                         <td

@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-dev
+    environment:
+      POSTGRES_DB: atmccdb
+      POSTGRES_USER: neondb_owner
+      POSTGRES_PASSWORD: npg_1Axu8qSTmypF
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_dev_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+
+  # Logging
+  seq:
+    image: datalust/seq:latest
+    container_name: seq-dev
+    ports:
+      - "5341:80"
+    environment:
+      ACCEPT_EULA: Y
+    volumes:
+      - seq_dev_data:/data
+    networks:
+      - app-network
+
+volumes:
+  postgres_dev_data:
+  rabbitmq_dev_data:
+  seq_dev_data:
+
+networks:
+  app-network:
+    driver: bridge

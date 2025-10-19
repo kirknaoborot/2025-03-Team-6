@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: atmccdb
+      POSTGRES_USER: neondb_owner
+      POSTGRES_PASSWORD: npg_1Axu8qSTmypF
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # Message Broker
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -10,3 +26,138 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+
+  # Logging
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - "5341:80"
+    environment:
+      ACCEPT_EULA: Y
+    volumes:
+      - seq_data:/data
+    networks:
+      - app-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "5003:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__ApplicationDbContext=Host=postgres;Port=5432;Database=atmccdb;Username=neondb_owner;Password=npg_1Axu8qSTmypF
+    depends_on:
+      - postgres
+      - auth-service
+      - conversation-service
+      - channel-settings
+    networks:
+      - app-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: AuthService/Dockerfile
+    container_name: auth-service
+    ports:
+      - "56468:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__ApplicationDbContext=Host=postgres;Port=5432;Database=atmccdb;Username=neondb_owner;Password=npg_1Axu8qSTmypF
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=admin
+      - RabbitMQ__Password=admin
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app-network
+
+  # Conversation Service
+  conversation-service:
+    build:
+      context: .
+      dockerfile: ConversationService.Api/Dockerfile
+    container_name: conversation-service
+    ports:
+      - "55822:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Conversation=Host=postgres;Port=5432;Database=atmccdb;Username=neondb_owner;Password=npg_1Axu8qSTmypF
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=admin
+      - RabbitMQ__Password=admin
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app-network
+
+  # Channel Settings Service
+  channel-settings:
+    build:
+      context: .
+      dockerfile: ChannelSettings/Dockerfile
+    container_name: channel-settings
+    ports:
+      - "7220:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=atmccdb;Username=neondb_owner;Password=npg_1Axu8qSTmypF
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  # Conversation Distributed Service
+  conversation-distributed:
+    build:
+      context: .
+      dockerfile: ConversationDistributed/Dockerfile
+    container_name: conversation-distributed
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=admin
+      - RabbitMQ__Password=admin
+    depends_on:
+      - rabbitmq
+    networks:
+      - app-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://localhost:5003
+    depends_on:
+      - api-gateway
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  seq_data:
+
+networks:
+  app-network:
+    driver: bridge
