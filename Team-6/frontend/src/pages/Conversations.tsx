@@ -314,14 +314,21 @@ export default function Conversations() {
                 className="btn"
                 onClick={() => navigate("/users/new")}
               >
-                + Новый пользователь
+                Пользователи
               </button>
               <button
                 type="button"
                 className="btn"
                 onClick={() => navigate("/channels")}
               >
-                ⚙️ Каналы
+                Каналы
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => navigate("/statistics")}
+              >
+                Отчетность
               </button>
             </>
           )}

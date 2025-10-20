@@ -5,6 +5,7 @@ import ConversationDetail from './pages/ConversationDetail'
 import { loadAuth } from './auth/tokenStore'
 import RegisterUser from './pages/RegisterUser'
 import ChannelSettings from './pages/ChannelSettings';
+import Statistics from './pages/Statistics';
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
   const { accessToken } = loadAuth()
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
 	<Route path="/users/new" element={<PrivateRoute><RegisterUser /></PrivateRoute>} />
 	<Route path="/channels" element={<PrivateRoute><ChannelSettings /></PrivateRoute>} />
+        <Route path="/statistics" element={<PrivateRoute><Statistics /></PrivateRoute>} />
 
       </Routes>
     </BrowserRouter>

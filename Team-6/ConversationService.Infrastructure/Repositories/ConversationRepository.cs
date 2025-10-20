@@ -2,6 +2,7 @@ using ConversationService.Application.DTO;
 using ConversationService.Application.Interfaces;
 using ConversationService.Domain.Entities;
 using ConversationService.Infrastructure.DbContext;
+using Infrastructure.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConversationService.Infrastructure.Repositories;
@@ -65,4 +66,19 @@ public class ConversationRepository : IConversationRepository
 		_context.Conversations.Update(conversation);
 		await _context.SaveChangesAsync();
 	}
+
+        /// <summary>
+        /// Возвращает агрегированные статистические показатели по обращениям
+        /// </summary>
+        public async Task<(int total, int answered, int inWork, int withoutAnswer)> GetStatistics()
+        {
+            var query = _context.Conversations.AsNoTracking();
+
+            var total = await query.CountAsync();
+            var answered = await query.CountAsync(x => x.Status == StatusType.Closed);
+            var inWork = await query.CountAsync(x => x.Status == StatusType.InWork || x.Status == StatusType.Distributed);
+            var withoutAnswer = await query.CountAsync(x => x.Status == StatusType.New || x.Status == StatusType.AgentNotFound);
+
+            return (total, answered, inWork, withoutAnswer);
+        }
 }

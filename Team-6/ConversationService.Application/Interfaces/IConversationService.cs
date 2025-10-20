@@ -10,4 +10,5 @@ public interface IConversationService
     Task CreateConversation(ConversationDto dto);
 	Task UpdateConversation(ConversationDto dto);
     Task ReplyConversation(Guid conversationId, string messageAnswer);
+    Task<StatisticsDto> GetStatistics();
 }

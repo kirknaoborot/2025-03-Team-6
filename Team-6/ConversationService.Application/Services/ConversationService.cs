@@ -151,4 +151,16 @@ public class ConversationService : IConversationService
 
 		await _bus.Publish(agentAnsweredEvent);
 	}
+
+    public async Task<StatisticsDto> GetStatistics()
+    {
+        var (total, answered, inWork, withoutAnswer) = await _conversationRepository.GetStatistics();
+        return new StatisticsDto
+        {
+            Total = total,
+            Answered = answered,
+            InWork = inWork,
+            WithoutAnswer = withoutAnswer
+        };
+    }
 }
