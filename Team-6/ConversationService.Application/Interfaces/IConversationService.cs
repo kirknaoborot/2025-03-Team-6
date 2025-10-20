@@ -11,4 +11,5 @@ public interface IConversationService
 	Task UpdateConversation(ConversationDto dto);
     Task ReplyConversation(Guid conversationId, string messageAnswer);
     Task<StatisticsDto> GetStatistics();
+    Task<IReadOnlyCollection<DailyStatDto>> GetDailyStatistics(DateOnly from, DateOnly to);
 }

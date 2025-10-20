@@ -163,4 +163,12 @@ public class ConversationService : IConversationService
             WithoutAnswer = withoutAnswer
         };
     }
+
+    public async Task<IReadOnlyCollection<DailyStatDto>> GetDailyStatistics(DateOnly from, DateOnly to)
+    {
+        var raw = await _conversationRepository.GetDailyStatistics(from, to);
+        return raw
+            .Select(x => new DailyStatDto { Date = x.date, Total = x.total })
+            .ToList();
+    }
 }

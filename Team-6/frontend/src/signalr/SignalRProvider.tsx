@@ -78,6 +78,17 @@ export const SignalRProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Создание соединения (единожды при монтировании приложения)
   useEffect(() => {
+    // если администратор — вообще не поднимаем SignalR
+    try {
+      const raw = localStorage.getItem("auth");
+      const auth = raw ? JSON.parse(raw) : null;
+      const role = String(auth?.user?.role ?? "").toLowerCase();
+      const isAdmin = role === "0" || role === "administrator" || role === "администратор";
+      if (isAdmin) {
+        return; // не создаём соединение
+      }
+    } catch {}
+
     const conn = new signalR.HubConnectionBuilder()
       .withUrl("http://localhost:54000/onlinestatus", {
         withCredentials: true,

@@ -1,6 +1,7 @@
 using ConversationService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ConversationService.Infrastructure.Configurations;
 
@@ -30,12 +31,19 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
         entity.Property(e => e.WorkerId)
             .HasColumnName("worker_id");
 
+        var dtoUtcConverter = new ValueConverter<DateTimeOffset, DateTime>(
+            v => v.UtcDateTime,
+            v => new DateTimeOffset(DateTime.SpecifyKind(v, DateTimeKind.Utc))
+        );
+
         entity.Property(e => e.CreateDate)
             .HasColumnName("create_date")
+            .HasConversion(dtoUtcConverter)
             .IsRequired();
 
         entity.Property(e => e.UpdateDate)
             .HasColumnName("update_date")
+            .HasConversion(dtoUtcConverter)
             .IsRequired();
 
         entity.Property(e => e.Answer)

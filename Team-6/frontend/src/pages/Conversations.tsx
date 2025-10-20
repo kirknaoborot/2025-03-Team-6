@@ -284,28 +284,32 @@ export default function Conversations() {
         <div>
           <div className="title">Обращения</div>
           <div className="muted">
-            {connected
+            {isAdmin
+              ? "Режим администратора"
+              : connected
               ? "Статус: готов — распределение включено"
               : "Статус: неготов — распределение выключено"}
           </div>
         </div>
         <div className="actionbar">
-          <div className="segmented" aria-label="Статус оператора">
-            <button
-              className={!connected ? "active" : ""}
-              onClick={stop}
-              disabled={!connected || connecting}
-            >
-              Не готов
-            </button>
-            <button
-              className={connected ? "active" : ""}
-              onClick={start}
-              disabled={connected || connecting}
-            >
-              {connecting ? "Подключение…" : "Готов"}
-            </button>
-          </div>
+          {!isAdmin && (
+            <div className="segmented" aria-label="Статус оператора">
+              <button
+                className={!connected ? "active" : ""}
+                onClick={stop}
+                disabled={!connected || connecting}
+              >
+                Не готов
+              </button>
+              <button
+                className={connected ? "active" : ""}
+                onClick={start}
+                disabled={connected || connecting}
+              >
+                {connecting ? "Подключение…" : "Готов"}
+              </button>
+            </div>
+          )}
 
           {isAdmin && (
             <>
@@ -339,13 +343,15 @@ export default function Conversations() {
         </div>
       </div>
 
-      <div className="helpbar">
-        {connecting
-          ? "Выполняется переключение статуса…"
-          : connected
-          ? "Вы получаете новые обращения."
-          : "Нажмите «Готов», чтобы включить распределение обращений."}
-      </div>
+      {!isAdmin && (
+        <div className="helpbar">
+          {connecting
+            ? "Выполняется переключение статуса…"
+            : connected
+            ? "Вы получаете новые обращения."
+            : "Нажмите «Готов», чтобы включить распределение обращений."}
+        </div>
+      )}
 
       <div className="layout">
         {/* Sidebar */}

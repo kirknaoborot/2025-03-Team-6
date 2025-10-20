@@ -18,6 +18,27 @@
     },
     {
       "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamPathTemplate": "/conversation/statistics/daily",
+      "DownstreamPathTemplate": "/api/statistics/daily",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 55822
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "JwtAuth",
+        "AllowedScopes": []
+      },
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[id] > value",
+        "X-User-Email": "Claims[email] > value",
+        "X-User-Role": "Claims[role] > value"
+      }
+    },
+    {
+      "UpstreamHttpMethod": [ "GET" ],
       "UpstreamPathTemplate": "/conversation/statistics",
       "DownstreamPathTemplate": "/api/statistics",
       "DownstreamScheme": "https",

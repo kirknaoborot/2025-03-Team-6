@@ -9,4 +9,5 @@ public interface IConversationRepository
     Task CreateConversation(Conversation conversation);
 	Task UpdateConversation(Conversation conversation);
     Task<(int total, int answered, int inWork, int withoutAnswer)> GetStatistics();
+    Task<IReadOnlyCollection<(DateOnly date, int total)>> GetDailyStatistics(DateOnly from, DateOnly to);
 }

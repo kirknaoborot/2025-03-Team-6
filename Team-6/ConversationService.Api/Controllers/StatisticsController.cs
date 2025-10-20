@@ -26,6 +26,17 @@ public class StatisticsController : ControllerBase
         var stats = await _conversationService.GetStatistics();
         return Ok(stats);
     }
+
+    /// <summary>
+    /// Статистика по дням (включительно).
+    /// </summary>
+    [HttpGet("daily")]
+    public async Task<ActionResult<IReadOnlyCollection<DailyStatDto>>> GetDaily([FromQuery] DateOnly from, [FromQuery] DateOnly to)
+    {
+        if (to < from) return BadRequest("to must be >= from");
+        var items = await _conversationService.GetDailyStatistics(from, to);
+        return Ok(items);
+    }
 }
 
 
