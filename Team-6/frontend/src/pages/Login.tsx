@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Logo from '../../assets/sila-otchima.svg'
 import { useNavigate } from 'react-router-dom'
 import { login as loginApi } from '../auth/authApi'
 
@@ -37,6 +38,7 @@ export default function Login() {
 
       <div className="card login-card">
         <div className="header">
+          <img src={Logo} alt="Логотип" style={{ width: 160, height: 160, marginBottom: 0 }} />
           <div className="title">Вход в систему</div>
           <div className="subtitle">Введите учётные данные</div>
         </div>
