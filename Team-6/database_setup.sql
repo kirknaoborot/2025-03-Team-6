@@ -30,28 +30,25 @@ CREATE TABLE auth.users (
     full_name VARCHAR(100) NOT NULL,
     login VARCHAR(255) NOT NULL UNIQUE,
     passwords_hash TEXT NOT NULL,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('Administrator', 'Worker')),
+    role int not null,
     is_active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tokens table (for JWT token management)
-CREATE TABLE auth.tokens (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    token_hash TEXT NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    is_revoked BOOLEAN NOT NULL DEFAULT false,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS auth.refresh_tokens
+(
+    id UUID PRIMARY KEY,                    -- Идентификатор записи
+    token TEXT NOT NULL,                    -- Токен доступа
+    expires TIMESTAMP WITHOUT TIME ZONE NOT NULL,  -- Период доступа
+    user_id UUID NOT NULL,                  -- Идентификатор пользователя
+    is_used BOOLEAN NOT NULL DEFAULT FALSE  -- Флаг "отозван ли токен"
 );
 
 -- Indexes for auth schema
 CREATE INDEX idx_users_login ON auth.users(login);
 CREATE INDEX idx_users_role ON auth.users(role);
 CREATE INDEX idx_users_active ON auth.users(is_active);
-CREATE INDEX idx_tokens_user_id ON auth.tokens(user_id);
-CREATE INDEX idx_tokens_expires_at ON auth.tokens(expires_at);
 
 -- ==============================================
 -- 4. CONVERSATION SCHEMA TABLES
@@ -72,14 +69,6 @@ CREATE TABLE conversation.conversations (
     user_id BIGINT,
     channel_settings_id INTEGER NOT NULL
 );
-
--- Indexes for conversation schema
-CREATE INDEX idx_conversations_status ON conversation.conversations(status);
-CREATE INDEX idx_conversations_worker_id ON conversation.conversations(worker_id);
-CREATE INDEX idx_conversations_create_date ON conversation.conversations(create_date);
-CREATE INDEX idx_conversations_channel ON conversation.conversations(channel);
-CREATE INDEX idx_conversations_number ON conversation.conversations(number);
-CREATE INDEX idx_conversations_channel_settings_id ON conversation.conversations(channel_settings_id);
 
 -- ==============================================
 -- 5. PROFILE SCHEMA TABLES
@@ -120,12 +109,6 @@ CREATE TABLE profile.client_channels (
     edit_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for profile schema
-CREATE INDEX idx_users_login_profile ON profile.users(login);
-CREATE INDEX idx_user_profiles_user_id ON profile.user_profiles(user_id);
-CREATE INDEX idx_client_channels_client_id ON profile.client_channels(client_id);
-CREATE INDEX idx_client_channels_external_type ON profile.client_channels(external_channel_type);
-
 -- ==============================================
 -- 6. CHANNEL SCHEMA TABLES
 -- ==============================================
@@ -137,10 +120,6 @@ CREATE TABLE channel.channels (
     token TEXT NOT NULL,
     type VARCHAR(50) NOT NULL CHECK (type IN ('Telegram', 'Vk', 'Email'))
 );
-
--- Indexes for channel schema
-CREATE INDEX idx_channels_type ON channel.channels(type);
-CREATE INDEX idx_channels_name ON channel.channels(name);
 
 -- ==============================================
 -- 7. SAMPLE DATA INSERTION

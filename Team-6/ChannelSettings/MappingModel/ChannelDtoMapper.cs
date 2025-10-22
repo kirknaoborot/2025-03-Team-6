@@ -11,7 +11,7 @@ namespace ChannelSettings.MappingModel
         public ChannelDtoMapper()
         {
             CreateMap<ChannelModel, ChannelDto>()
-				.ForMember(src => src.Type, opt => opt.MapFrom(x => x.Type.GetDisplayName()));
+				.ForMember(src => src.Type, opt => opt.MapFrom(x => x.Type.ToString()));
 
             CreateMap<CreatingChannelDto, CreatingChannel>()
 				.ForMember(src => src.Type, opt => opt.MapFrom(x => x.Type));

@@ -7,7 +7,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Создаём логгер на основе конфигурации
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
@@ -16,13 +16,12 @@ public class Program
 
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
-            .CreateBootstrapLogger(); //  bootstrap-логгер для старта
+            .CreateBootstrapLogger(); //  bootstrap-пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
         var host = CreateHostBuilder(args).Build();
         using (var scope = host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContexts>();
-            db.Database.EnsureCreated();
             db.SaveChanges();
 
         }

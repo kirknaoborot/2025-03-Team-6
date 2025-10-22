@@ -70,6 +70,7 @@ namespace Auth.Application.Services
             // Сохраняем refresh token в БД
             await _context.RefreshTokens.AddAsync(new RefreshToken
             {
+                Id = Guid.NewGuid(),
                 Token = refreshToken,
                 UserId = user.Id,
                 Expires = refreshTokenExpiry,
