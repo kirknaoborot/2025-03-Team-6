@@ -70,18 +70,24 @@ builder.Services
         {
             OnAuthenticationFailed = ctx =>
             {
-                Console.WriteLine("[JwtAuth] Failed: " + ctx.Exception.Message);
+                Log.Warning("[JwtAuth] Failed: " + ctx.Exception.Message);
                 return Task.CompletedTask;
             },
             OnTokenValidated = ctx =>
             {
-                Console.WriteLine("[JwtAuth] OK: " + ctx.Principal?.Identity?.Name);
+                Log.Warning("[JwtAuth] OK: " + ctx.Principal?.Identity?.Name);
                 return Task.CompletedTask;
             }
         };
     });
 
 var app = builder.Build();
+
+// Получаем конфигурацию и логируем старт
+var configuration = app.Services.GetRequiredService<IConfiguration>();
+var applicationName = configuration["Serilog:Properties:Application"] ?? "Unknown Service";
+Log.Information("Starting up {@ApplicationName}", applicationName);
+
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
