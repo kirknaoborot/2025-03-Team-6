@@ -30,6 +30,7 @@ public class AuthService : IAuthService
 
         if (user is null)
         {
+            _logger.LogError($"Пользователь {loginRequestDto.Login} не найден");
             throw new UnauthorizedAccessException("User not found");
         }
 
@@ -37,6 +38,7 @@ public class AuthService : IAuthService
 
         if (!checkPassword)
         {
+            _logger.LogError("Неверный логин или пароль");
             throw new UnauthorizedAccessException("Invalid password");
         }
 
@@ -66,6 +68,7 @@ public class AuthService : IAuthService
 
         if (principals is null)
         {
+            _logger.LogError("Ошибка при получении токена");
             throw new UnauthorizedAccessException();
         }
         
@@ -75,12 +78,14 @@ public class AuthService : IAuthService
 
         if (tokenModel is null)
         {
+            _logger.LogError("Ошибка при получении токена");
             throw new UnauthorizedAccessException();
         }
 
         if (tokenModel.IsUsed == false || !string.Equals(tokenModel.Token, refreshTokenRequestDto.RefreshToken) ||
             tokenModel.Expires < DateTime.UtcNow)
         {
+            _logger.LogError("Ошибка при получении токена");
             throw new UnauthorizedAccessException();
         }
         
@@ -101,7 +106,7 @@ public class AuthService : IAuthService
                 IsActive = user.IsActive
             }
         };
-        
+        _logger.LogInformation("Получен новый токен");
         return result;
     }
 }

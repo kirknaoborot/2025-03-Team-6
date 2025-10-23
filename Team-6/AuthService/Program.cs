@@ -7,7 +7,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // ������ ������ �� ������ ������������
+        // Создаём конфигурацию
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
@@ -16,16 +16,32 @@ public class Program
 
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
-            .CreateBootstrapLogger(); //  bootstrap-������ ��� ������
+            .CreateBootstrapLogger(); //  bootstrap-логгер для старта
 
-        var host = CreateHostBuilder(args).Build();
-        using (var scope = host.Services.CreateScope())
+        try
         {
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContexts>();
-            db.SaveChanges();
+            var applicationName = configuration["Serilog:Properties:Application"] ?? "Unknown Service";
+            Log.Information("Starting up {@ApplicationName}", applicationName);
 
+            var host = CreateHostBuilder(args).Build();
+            using (var scope = host.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContexts>();
+
+                db.Database.EnsureCreated();
+                db.SaveChanges();
+            }
+
+            host.Run();
         }
-        host.Run();
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Host terminated unexpectedly");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 
 

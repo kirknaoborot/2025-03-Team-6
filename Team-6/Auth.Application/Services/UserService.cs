@@ -1,18 +1,21 @@
 ﻿using Auth.Application.Helpers;
 using Auth.Core.Dto;
+using Auth.Core.IRepositories;
 using Auth.Core.IServices;
 using Auth.Domain.Entities;
-using Auth.Core.IRepositories;
+using Microsoft.Extensions.Logging;
 
 namespace Auth.Application.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, ILogger<UserService> logger)
         {
             _userRepository = userRepository;
+            _logger = logger;
         }
         
 
@@ -30,7 +33,7 @@ namespace Auth.Application.Services
                     IsActive = x.IsActive,
                 })
                 .ToList();
-            
+            _logger.LogInformation($"Найдено пользователей: {users.Count}");
             return result;
         }
 
@@ -46,13 +49,14 @@ namespace Auth.Application.Services
                 Role = user.Role,
                 IsActive = user.IsActive,
             };
-
+            _logger.LogInformation($"Найден пользователь: {user.FullName}");
             return result;
         }
 
         public async Task Delete(Guid id)
         {
             await _userRepository.Delete(id);
+            _logger.LogInformation($"Пользователь с ID: {id} удален");
         }
 
         public async Task Create(RegistrationRequestDto registrationRequestDto)
@@ -68,6 +72,7 @@ namespace Auth.Application.Services
             };
             
             await _userRepository.Create(user);
+            _logger.LogInformation($"Зарегистрирован новый пользователь: {registrationRequestDto.FullName}");
         }
     }
 }
