@@ -16,6 +16,9 @@ Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(configuration)
     .CreateBootstrapLogger(); // для раннего логирования
 
+var applicationName = configuration["Serilog:Properties:Application"] ?? "Unknown Service";
+Log.Information("Starting up {@ApplicationName}", applicationName);
+
 var host = CreateHostBuilder(args).Build();
 host.Run();
 

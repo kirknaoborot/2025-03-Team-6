@@ -1,4 +1,5 @@
-﻿using ProfileService.Application.DTO;
+﻿using Microsoft.Extensions.Logging;
+using ProfileService.Application.DTO;
 using ProfileService.Application.Interfaces;
 
 namespace ProfileService.Application.Services
@@ -6,10 +7,12 @@ namespace ProfileService.Application.Services
     internal class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, ILogger<UserService> logger)
         {
             _userRepository = userRepository;
+            _logger = logger;
         }
 
         /// <summary>
@@ -31,7 +34,7 @@ namespace ProfileService.Application.Services
                     MiddleName = x.UserProfile.MiddleName
                 })
                 .ToList();
-
+            _logger.LogInformation($"Получено пользователей: {users.Count}");
             return result;
         }
 
@@ -53,7 +56,7 @@ namespace ProfileService.Application.Services
                 LastName = user.UserProfile.LastName,
                 MiddleName = user.UserProfile.MiddleName
             };
-
+            _logger.LogInformation($"Найден пользователь: {user.UserProfile.FirstName}, {user.UserProfile.LastName}, {user.UserProfile.MiddleName}");
             return result;
         }
     }
