@@ -38,3 +38,4 @@ namespace Auth.Domain.Entities
         [Column("is_used")]
         public bool IsUsed { get; set; }
     }
+}
