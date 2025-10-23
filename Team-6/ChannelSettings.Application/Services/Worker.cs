@@ -1,8 +1,8 @@
-﻿using ChannelSettings.Core.IRepositories;
-using ChannelSettings.Core.IServices;
+﻿using ChannelSettings.Core.IServices;
 using Infrastructure.Shared.Contracts;
 using Infrastructure.Shared.Enums;
 using MassTransit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,15 +13,23 @@ namespace ChannelSettings.Application.Services
 		private readonly ILogger<Worker> _logger;
 		private readonly IBus _bus;
 		private readonly IServiceProvider _serviceProvider;
+        private readonly IConfiguration _configuration;
 
-		public Worker(ILogger<Worker> logger, IBus bus, IServiceProvider serviceProvider)
-		{
-			_logger = logger;
-			_bus = bus;
-			_serviceProvider = serviceProvider;
-		}
+        public Worker(ILogger<Worker> logger, IBus bus, IServiceProvider serviceProvider, IConfiguration configuration)
+        {
+            _logger = logger;
+            _bus = bus;
+            _serviceProvider = serviceProvider;
+            _configuration = configuration;
+        }
+        public override async Task StartAsync(CancellationToken cancellationToken)
+        {
+            var appName = _configuration["Serilog:Properties:Application"] ?? "Unknown Service";
+            _logger.LogInformation("Starting up {@ApplicationName}", appName);
+            await base.StartAsync(cancellationToken);
+        }
 
-		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
 			_logger.LogInformation($"{nameof(Worker)}.{nameof(ExecuteAsync)}() -> начало работы в {DateTimeOffset.Now}");
 

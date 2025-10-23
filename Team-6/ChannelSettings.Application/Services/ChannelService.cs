@@ -7,6 +7,7 @@ using ChannelSettings.Domain.Entities;
 using Infrastructure.Shared.Contracts;
 using Infrastructure.Shared.Enums;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 
 namespace ChannelSettings.Application.Services
 {
@@ -15,18 +16,21 @@ namespace ChannelSettings.Application.Services
 		private readonly IMapper _mapper;
 		private readonly IChannelRepository _channelRepository;
 		private readonly IBus _bus;
+        private readonly ILogger<ChannelService> _logger;
 
-		public ChannelService(IMapper mapper, IChannelRepository channelRepository, IBus bus)
+        public ChannelService(IMapper mapper, IChannelRepository channelRepository, IBus bus, ILogger<ChannelService> logger)
 		{
 			_mapper = mapper;
 			_channelRepository = channelRepository;
 			_bus = bus;
-		}
+            _logger = logger;
+        }
 
 		public async Task<ChannelModel> GetByIdAsync(int id, CancellationToken cancellationToken)
 		{
 			var channel = await _channelRepository.GetAsync(id, CancellationToken.None);
-			return _mapper.Map<Channel, ChannelModel>(channel);
+            _logger.LogInformation($"Найден канал: {channel.Name}");
+            return _mapper.Map<Channel, ChannelModel>(channel);
 		}
 
 		public async Task<int> CreateAsync(CreatingChannel creatingChannel)
@@ -45,8 +49,8 @@ namespace ChannelSettings.Application.Services
 			};
 
 			await _bus.Publish(channelInfo);
-
-			return creating.Id;
+            _logger.LogInformation($"Создан новый канал: {channel.Name}");
+            return creating.Id;
 		}
 
 		public async Task UpdateAsync(int id, UpdatingChannel updatingChannel)
@@ -58,8 +62,9 @@ namespace ChannelSettings.Application.Services
 			_channelRepository.Update(channel);
 
 			await _channelRepository.SaveChangesAsync();
+            _logger.LogInformation($"Обновлен канал: {channel.Id}");
 
-			var channelInfo = new ChannelEvent
+            var channelInfo = new ChannelEvent
 			{
 				Id = channel.Id,
 				Name = channel.Name,
@@ -76,8 +81,9 @@ namespace ChannelSettings.Application.Services
 			var channel = await _channelRepository.GetAsync(id, CancellationToken.None) ?? throw new Exception($"Запись с ID {id} не найдена");
 			_channelRepository.Delete(channel);
 			await _channelRepository.SaveChangesAsync();
+            _logger.LogInformation($"Удален канал: {channel.Name}");
 
-			var channelInfo = new ChannelEvent
+            var channelInfo = new ChannelEvent
 			{
 				Id = channel.Id,
 				Name = channel.Name,
@@ -92,7 +98,8 @@ namespace ChannelSettings.Application.Services
 		public async Task<ICollection<ChannelModel>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			ICollection<Channel> entities = await _channelRepository.GetAllAsync(cancellationToken);
-			return _mapper.Map<ICollection<Channel>, ICollection<ChannelModel>>(entities);
+            _logger.LogInformation($"Получено каналов: {entities.Count}");
+            return _mapper.Map<ICollection<Channel>, ICollection<ChannelModel>>(entities);
 		}
 	}
 }

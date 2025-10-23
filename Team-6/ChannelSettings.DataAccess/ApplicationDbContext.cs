@@ -2,7 +2,6 @@
 using Infrastructure.Shared.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 
 namespace ChannelSettings.DataAccess
@@ -22,16 +21,7 @@ namespace ChannelSettings.DataAccess
         {
             optionsBuilder
                 .UseNpgsql(ConnectionStringEncryption.Decrypt(_configuration.GetConnectionString("ApplicationDbContext")))
-                .UseLoggerFactory(CreateLoggerFactory())
-                .UseLazyLoadingProxies()
-                .EnableSensitiveDataLogging();
-        }
-
-
-
-        public ILoggerFactory CreateLoggerFactory()
-        {
-            return LoggerFactory.Create(builder => builder.AddConsole());
+                .UseLazyLoadingProxies();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

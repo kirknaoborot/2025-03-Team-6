@@ -15,44 +15,48 @@ namespace ChannelSettings
 {
     public static class RegisterDependentServices
     {
-          public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
-          {
+        public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
+        {
+            builder.Host.UseSerilog((context, configuration) =>
+            {
+                configuration.ReadFrom.Configuration(context.Configuration);
+            });
 
-			builder.Services.AddMassTransit(x =>
-			{
-				x.UsingRabbitMq((context, cfg) =>
-				{
-					cfg.Host("localhost", "/", h =>
-					{
-						h.Username("guest");
-						h.Password("guest");
-					});
+            builder.Services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("localhost", "/", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
 
-					cfg.ConfigureEndpoints(context);
-				});
-			});
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
 
-			builder.Services.AddMemoryCache();
-              builder.Services.AddSerilog();
-
-
-              builder.Services.AddDbContext<ApplicationDbContext>();
-
-
-              builder.Services.Configure<StorageStrings>(options =>
-              {
-                  options.ApplicationDbContext = builder.Configuration.GetValue<string>("StorageStrings:ApplicationDbContext")!;
-              });
-
-              builder.Services.AddSingleton<IStorageStrings>(options =>
-                 options.GetRequiredService<IOptions<StorageStrings>>().Value);
+            builder.Services.AddMemoryCache();
 
 
-              builder.Services.AddServices();
 
-              return builder;
-          }
-   
+            builder.Services.AddDbContext<ApplicationDbContext>();
+
+
+            builder.Services.Configure<StorageStrings>(options =>
+            {
+                options.ApplicationDbContext = builder.Configuration.GetValue<string>("StorageStrings:ApplicationDbContext")!;
+            });
+
+            builder.Services.AddSingleton<IStorageStrings>(options =>
+               options.GetRequiredService<IOptions<StorageStrings>>().Value);
+
+
+            builder.Services.AddServices();
+
+            return builder;
+        }
+
 
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
@@ -60,8 +64,8 @@ namespace ChannelSettings
                     .InstallServices()
                     .InstallRepositories()
                     .InstallAutomapper()
-					.InstallHostedServices()
-					.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
+                    .InstallHostedServices()
+                    .AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
                     {
                         builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
                     }))
@@ -90,8 +94,8 @@ namespace ChannelSettings
 
         private static IServiceCollection InstallServices(this IServiceCollection serviceCollection)
         {
-			serviceCollection
-				.AddTransient<IChannelService, ChannelService>();
+            serviceCollection
+                .AddTransient<IChannelService, ChannelService>();
             return serviceCollection;
         }
 
@@ -102,11 +106,11 @@ namespace ChannelSettings
             return serviceCollection;
         }
 
-		private static IServiceCollection InstallHostedServices(this IServiceCollection serviceCollection)
-		{
-			serviceCollection
-				.AddHostedService<Worker>();
-			return serviceCollection;
-		}
-	}
+        private static IServiceCollection InstallHostedServices(this IServiceCollection serviceCollection)
+        {
+            serviceCollection
+                .AddHostedService<Worker>();
+            return serviceCollection;
+        }
+    }
 }
