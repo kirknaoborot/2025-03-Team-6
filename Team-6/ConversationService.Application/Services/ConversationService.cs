@@ -4,6 +4,7 @@ using ConversationService.Domain.Entities;
 using Infrastructure.Shared.Contracts;
 using Infrastructure.Shared.Enums;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 
 namespace ConversationService.Application.Services;
 
@@ -11,11 +12,13 @@ public class ConversationService : IConversationService
 {
     private readonly IConversationRepository _conversationRepository;
     private readonly IBus _bus;
+    private readonly ILogger<ConversationService> _logger;
 
-    public ConversationService(IConversationRepository conversationRepository, IBus bus)
+    public ConversationService(IConversationRepository conversationRepository, IBus bus, ILogger<ConversationService> logger)
     {
         _conversationRepository = conversationRepository;
         _bus = bus;
+        _logger = logger;
     }
 
     /// <summary>
@@ -46,7 +49,7 @@ public class ConversationService : IConversationService
             })
             .OrderByDescending(x => x.CreateDate)
             .ToList();
-        
+        _logger.LogInformation($"Получено обращений: {conversations.Count}");
         return result;
     }
 
@@ -74,7 +77,7 @@ public class ConversationService : IConversationService
                 UserId = conversation.UserId ?? 0,
                 ChannelSettingsId = conversation.ChannelSettingsId
             };
-        
+        _logger.LogInformation($"Получено обращение: {conversation.ConversationId}");
         return result;
     }
 
@@ -93,6 +96,7 @@ public class ConversationService : IConversationService
         };
         
         await _conversationRepository.CreateConversation(conversation);
+        _logger.LogInformation($"Создано новое обращение: {conversation.ConversationId}");
     }
 
 	public async Task UpdateConversation(ConversationDto dto)
@@ -111,7 +115,8 @@ public class ConversationService : IConversationService
         };
 
 		await _conversationRepository.UpdateConversation(conversation);
-	}
+        _logger.LogInformation($"Обновлено обращение: {conversation.ConversationId}");
+    }
 
     public async Task UpdateConversation(Conversation conversation)
     {
@@ -120,6 +125,7 @@ public class ConversationService : IConversationService
 
     public async Task ReplyConversation(Guid conversationId, string messageAnswer)
     {
+        _logger.LogInformation("Начата обработка ответа на обращение {ConversationId}", conversationId);
         var conversation = await GetConversation(conversationId);
 
         conversation.WorkerId = conversation.WorkerId;
@@ -143,14 +149,16 @@ public class ConversationService : IConversationService
         };
 
         await _bus.Publish(sendMessageEvent);
+        _logger.LogDebug("Опубликовано событие SendMessageEvent для пользователя {UserId} в канале {Channel}", conversation.UserId, conversation.Channel);
 
-		var agentAnsweredEvent = new AgentAnsweredEvent
+        var agentAnsweredEvent = new AgentAnsweredEvent
 		{
 			Id = conversation.WorkerId
 		};
 
 		await _bus.Publish(agentAnsweredEvent);
-	}
+        _logger.LogDebug("Опубликовано событие AgentAnsweredEvent для оператора {AgentId}", conversation.WorkerId);
+    }
 
     public async Task<StatisticsDto> GetStatistics()
     {

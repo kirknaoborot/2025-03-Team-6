@@ -30,6 +30,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+var applicationName = builder.Configuration["Serilog:Properties:Application"] ?? "Unknown Service";
+Log.Information("Starting up {@ApplicationName}", applicationName);
+
 var app = builder.Build();
 
 

@@ -6,6 +6,11 @@ namespace ConversationDistributed.Services
     public class AgentStateService : IAgentStateService
     {
         private List<Agent> agents = new();
+        private readonly ILogger<AgentStateService> _logger;
+        public AgentStateService(ILogger<AgentStateService> logger)
+        {
+            _logger = logger;
+        }
 
         public void UserUpdateState(AgentStatusEvent agentInfo)
         {
@@ -18,7 +23,7 @@ namespace ConversationDistributed.Services
                     IsFreeForConversation = true
                 });
 
-                Console.WriteLine($"Добавлен агент: ========> {agentInfo.AgentId}");
+                _logger.LogInformation("Добавлен агент: {@AgentId}", agentInfo.AgentId);
             }
             else if (agentInfo.Status == AgentStatusType.Disconnect)
             {
@@ -30,10 +35,10 @@ namespace ConversationDistributed.Services
 					agents.Remove(agent);
 				}
 
-                Console.WriteLine($"Отключен агент: ========> {agentInfo.AgentId}");
+                _logger.LogInformation("Отключен агент: {@AgentId}", agentInfo.AgentId);
             }
 
-            Console.WriteLine($"Кол-во активных агентов: ========> {agents.Count}");
+            _logger.LogInformation("Количество активных агентов: {AgentCount}", agents.Count);
         }
 
         public void AssignConversationToUser(Guid userId, Guid conversationId)
@@ -59,7 +64,7 @@ namespace ConversationDistributed.Services
 
 		public Agent GetFirstFreeOperator()
 		{
-            Console.WriteLine($"agents GetFirstFreeOperator: ========> {agents.Count}");
+            _logger.LogInformation($"agents GetFirstFreeOperator: ========> {agents.Count}");
             return agents.FirstOrDefault(x => x.IsFreeForConversation);
 		}
 	}
