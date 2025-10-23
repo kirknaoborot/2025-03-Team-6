@@ -4,6 +4,7 @@ using Auth.Core.Services;
 using Auth.DataAccess;
 using Auth.Domain.Entities;
 using AuthService.Settings;
+using Infrastructure.Shared.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +26,15 @@ namespace AuthService
         {
             Configuration = configuration;
             Configuration.GetSection(ConnectionOptions.Section).Bind(ConnectionStrings);
+            // Расшифровываем строку подключения
+            ConnectionStrings.ApplicationDbContext = ConnectionStringEncryption.Decrypt(Configuration.GetConnectionString("ApplicationDbContext"));
             Configuration.GetSection($"{ConnectionOptions.Section}:{RmqSettings.Section}").Bind(ConnectionStrings.RmqSettings);
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContexts>(options =>
-                    options.UseNpgsql(Configuration.GetConnectionString("ApplicationDbContext")));
+                    options.UseNpgsql(ConnectionStringEncryption.Decrypt(Configuration.GetConnectionString("ApplicationDbContext"))));
 
 
             services.AddSignalR();

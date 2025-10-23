@@ -3,6 +3,7 @@ using ConversationService.Infrastructure.DbContext;
 using ConversationService.Infrastructure.Messaging;
 using ConversationService.Infrastructure.Messaging.Consumers;
 using ConversationService.Infrastructure.Repositories;
+using Infrastructure.Shared.Services;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +15,7 @@ public static class ApplicationServiceExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionSting = configuration.GetConnectionString("Conversation");
+        var connectionSting = ConnectionStringEncryption.Decrypt(configuration.GetConnectionString("Conversation"));
 
         services.AddDbContext<ConversationServiceContext>(options => options.UseNpgsql(connectionSting));
 

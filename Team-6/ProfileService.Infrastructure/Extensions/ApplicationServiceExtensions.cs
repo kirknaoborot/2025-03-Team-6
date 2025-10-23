@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Infrastructure.Shared.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProfileService.Application.Interfaces;
@@ -11,7 +12,7 @@ namespace ProfileService.Infrastructure.Extensions
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionSting = configuration.GetConnectionString("Profile");
+            var connectionSting = ConnectionStringEncryption.Decrypt(configuration.GetConnectionString("Profile"));
 
             services.AddDbContext<ProfileServiceContext>(options => options.UseNpgsql(connectionSting));
 

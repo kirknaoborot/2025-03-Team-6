@@ -1,4 +1,5 @@
 ﻿using ChannelSettings.Domain.Entities;
+using Infrastructure.Shared.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ namespace ChannelSettings.DataAccess
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder
-                .UseNpgsql(_configuration.GetConnectionString("ApplicationDbContext"))
+                .UseNpgsql(ConnectionStringEncryption.Decrypt(_configuration.GetConnectionString("ApplicationDbContext")))
                 .UseLoggerFactory(CreateLoggerFactory())
                 .UseLazyLoadingProxies()
                 .EnableSensitiveDataLogging();
