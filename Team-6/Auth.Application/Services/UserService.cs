@@ -33,7 +33,7 @@ namespace Auth.Application.Services
                     IsActive = x.IsActive,
                 })
                 .ToList();
-            _logger.LogInformation($"Найдено пользователей: {users.Count}");
+            _logger.LogInformation($"{nameof(UserService)}.{nameof(GetUsers)}() -> Users found: {users.Count}");
             return result;
         }
 
@@ -49,14 +49,14 @@ namespace Auth.Application.Services
                 Role = user.Role,
                 IsActive = user.IsActive,
             };
-            _logger.LogInformation($"Найден пользователь: {user.FullName}");
+            _logger.LogInformation($"{nameof(UserService)}.{nameof(GetUser)}() -> User found: {user.FullName}");
             return result;
         }
 
         public async Task Delete(Guid id)
         {
             await _userRepository.Delete(id);
-            _logger.LogInformation($"Пользователь с ID: {id} удален");
+            _logger.LogInformation($"{nameof(UserService)}.{nameof(Delete)}() -> User with ID: {id} has been deleted");
         }
 
         public async Task Create(RegistrationRequestDto registrationRequestDto)
@@ -72,7 +72,7 @@ namespace Auth.Application.Services
             };
             
             await _userRepository.Create(user);
-            _logger.LogInformation($"Зарегистрирован новый пользователь: {registrationRequestDto.FullName}");
+            _logger.LogInformation($"{nameof(UserService)}.{nameof(Create)}() -> New user registered: {registrationRequestDto.FullName}");
         }
     }
 }

@@ -22,8 +22,7 @@ namespace ConversationDistributed.Services
                     Id = agentInfo.AgentId,
                     IsFreeForConversation = true
                 });
-
-                _logger.LogInformation("Добавлен агент: {@AgentId}", agentInfo.AgentId);
+                _logger.LogInformation($"{nameof(AgentStateService)}.{nameof(UserUpdateState)}() -> Added agent: {agentInfo.AgentId}");
             }
             else if (agentInfo.Status == AgentStatusType.Disconnect)
             {
@@ -34,11 +33,9 @@ namespace ConversationDistributed.Services
 					ReleaseConversationFromUser(agent.Id);
 					agents.Remove(agent);
 				}
-
-                _logger.LogInformation("Отключен агент: {@AgentId}", agentInfo.AgentId);
+                _logger.LogInformation($"{nameof(AgentStateService)}.{nameof(UserUpdateState)}() -> Agent disabled: {agentInfo.AgentId}");
             }
-
-            _logger.LogInformation("Количество активных агентов: {AgentCount}", agents.Count);
+            _logger.LogInformation($"{nameof(AgentStateService)}.{nameof(UserUpdateState)}() -> Number of active agents: {agents.Count}");
         }
 
         public void AssignConversationToUser(Guid userId, Guid conversationId)
@@ -63,8 +60,8 @@ namespace ConversationDistributed.Services
         }
 
 		public Agent GetFirstFreeOperator()
-		{
-            _logger.LogInformation($"agents GetFirstFreeOperator: ========> {agents.Count}");
+        {
+            _logger.LogInformation($"{nameof(AgentStateService)}.{nameof(GetFirstFreeOperator)}() -> Number of free operators: {agents.Count}");
             return agents.FirstOrDefault(x => x.IsFreeForConversation);
 		}
 	}

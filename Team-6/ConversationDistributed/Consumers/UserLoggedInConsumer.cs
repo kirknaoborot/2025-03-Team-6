@@ -19,7 +19,7 @@ namespace ConversationDistributed.Consumers
         {
             var msg = context.Message;
             _userState.UserUpdateState(msg);
-            _logger.LogInformation($"Пользователь вошёл: {msg.AgentId})");
+            _logger.LogInformation($"{nameof(UserLoggedInConsumer)}.{nameof(Consume)}() -> User logged in: {msg.AgentId}");
 
             return Task.CompletedTask;
         }

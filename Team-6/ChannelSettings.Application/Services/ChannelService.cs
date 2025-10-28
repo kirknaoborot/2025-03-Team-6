@@ -29,7 +29,7 @@ namespace ChannelSettings.Application.Services
 		public async Task<ChannelModel> GetByIdAsync(int id, CancellationToken cancellationToken)
 		{
 			var channel = await _channelRepository.GetAsync(id, CancellationToken.None);
-            _logger.LogInformation($"Найден канал: {channel.Name}");
+            _logger.LogInformation($"{nameof(ChannelService)}.{nameof(GetByIdAsync)}() -> Channel found: {channel.Name}");
             return _mapper.Map<Channel, ChannelModel>(channel);
 		}
 
@@ -49,7 +49,7 @@ namespace ChannelSettings.Application.Services
 			};
 
 			await _bus.Publish(channelInfo);
-            _logger.LogInformation($"Создан новый канал: {channel.Name}");
+            _logger.LogInformation($"{nameof(ChannelService)}.{nameof(CreateAsync)}() -> New channel created: {channel.Name}");
             return creating.Id;
 		}
 
@@ -62,7 +62,7 @@ namespace ChannelSettings.Application.Services
 			_channelRepository.Update(channel);
 
 			await _channelRepository.SaveChangesAsync();
-            _logger.LogInformation($"Обновлен канал: {channel.Id}");
+            _logger.LogInformation($"{nameof(ChannelService)}.{nameof(UpdateAsync)}() -> Channel updated: {channel.Id}");
 
             var channelInfo = new ChannelEvent
 			{
@@ -81,7 +81,7 @@ namespace ChannelSettings.Application.Services
 			var channel = await _channelRepository.GetAsync(id, CancellationToken.None) ?? throw new Exception($"Запись с ID {id} не найдена");
 			_channelRepository.Delete(channel);
 			await _channelRepository.SaveChangesAsync();
-            _logger.LogInformation($"Удален канал: {channel.Name}");
+            _logger.LogInformation($"{nameof(ChannelService)}.{nameof(DeleteAsync)}() -> Channel deleted: {channel.Name}");
 
             var channelInfo = new ChannelEvent
 			{
@@ -98,7 +98,7 @@ namespace ChannelSettings.Application.Services
 		public async Task<ICollection<ChannelModel>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			ICollection<Channel> entities = await _channelRepository.GetAllAsync(cancellationToken);
-            _logger.LogInformation($"Получено каналов: {entities.Count}");
+            _logger.LogInformation($"{nameof(ChannelService)}.{nameof(GetAllAsync)}() -> Channels received: {entities.Count}");
             return _mapper.Map<ICollection<Channel>, ICollection<ChannelModel>>(entities);
 		}
 	}

@@ -31,11 +31,11 @@ public class ConvState
 
 		if (_pendingConversations.TryAdd(command.ConversationId, conversation))
 		{
-			_logger.LogInformation("Обращение {ConversationId} добавлено в очередь ожидания.", command.ConversationId);
+            _logger.LogInformation($"{nameof(ConvState)}.{nameof(AddConversationAsync)}() -> The request has been added to the waiting queue: {command.ConversationId}");
 		}
 		else
-		{
-			_logger.LogWarning("Обращение {ConversationId} уже находится в очереди.", command.ConversationId);
+        {
+            _logger.LogInformation($"{nameof(ConvState)}.{nameof(AddConversationAsync)}() -> The request is already in the queue: {command.ConversationId}");
 		}
 	}
 
@@ -58,7 +58,7 @@ public class ConvState
 				UserId = pending.Command.UserId,
 				Answer = "На данный момент нет свободного агента. Пожалуйста, обратитесь позже."
 			});
-			_logger.LogWarning("Обращение {ConversationId} отменено по таймауту.", conversationId);
+            _logger.LogWarning($"{nameof(ConvState)}.{nameof(TryAssignOperatorAsync)}() -> Conversation {conversationId} timed out");
 			_pendingConversations.TryRemove(conversationId, out _);
 			return true;
 		}
@@ -83,8 +83,7 @@ public class ConvState
 
 			// Удаляем из очереди
 			_pendingConversations.TryRemove(conversationId, out _);
-
-			_logger.LogInformation("Обращение {ConversationId} назначено оператору {WorkerId}.", conversationId, freeOperator.Id);
+            _logger.LogInformation($"{nameof(ConvState)}.{nameof(TryAssignOperatorAsync)}() -> Conversation {conversationId} assigned to worker {freeOperator.Id}");
 			return true;
 		}
 
@@ -97,7 +96,7 @@ public class ConvState
 		{
 			try
 			{
-				_logger.LogInformation($"Количество необработанных обращений {_pendingConversations?.Count}.");
+                _logger.LogInformation($"{nameof(ConvState)}.{nameof(ExecuteAsync)}() -> Number of unprocessed requests: {_pendingConversations?.Count}");
 				var tasks = _pendingConversations.Keys
 						.Select(TryAssignOperatorAsync)
 						.ToArray();
@@ -106,7 +105,7 @@ public class ConvState
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Ошибка при обработке очереди ожидания обращений.");
+                _logger.LogError(ex, $"{nameof(ConvState)}.{nameof(ExecuteAsync)}() -> Error processing request queue");
 			}
 
 			await Task.Delay(1000, stoppingToken); // раз в секунду

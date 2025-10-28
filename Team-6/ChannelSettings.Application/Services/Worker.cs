@@ -31,7 +31,7 @@ namespace ChannelSettings.Application.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			_logger.LogInformation($"{nameof(Worker)}.{nameof(ExecuteAsync)}() -> начало работы в {DateTimeOffset.Now}");
+            _logger.LogInformation($"{nameof(Worker)}.{nameof(ExecuteAsync)}() -> Getting Started at {DateTimeOffset.Now}");
 
 			using var scope = _serviceProvider.CreateScope();
 			var channelService = scope.ServiceProvider.GetRequiredService<IChannelService>();
@@ -40,7 +40,7 @@ namespace ChannelSettings.Application.Services
 			{
 				var channels = await channelService.GetAllAsync(CancellationToken.None);
 
-				_logger.LogInformation($"{nameof(Worker)}.{nameof(ExecuteAsync)}() -> количество каналов {channels.Count()}");
+                _logger.LogInformation($"{nameof(Worker)}.{nameof(ExecuteAsync)}() -> Number of channels {channels.Count()}");
 
 				if (channels != null)
 				{

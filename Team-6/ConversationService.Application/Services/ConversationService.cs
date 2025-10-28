@@ -5,6 +5,7 @@ using Infrastructure.Shared.Contracts;
 using Infrastructure.Shared.Enums;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 
 namespace ConversationService.Application.Services;
 
@@ -49,7 +50,7 @@ public class ConversationService : IConversationService
             })
             .OrderByDescending(x => x.CreateDate)
             .ToList();
-        _logger.LogInformation($"Получено обращений: {conversations.Count}");
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(GetAllConversations)}() -> Requests received: {conversations.Count}");
         return result;
     }
 
@@ -77,7 +78,7 @@ public class ConversationService : IConversationService
                 UserId = conversation.UserId ?? 0,
                 ChannelSettingsId = conversation.ChannelSettingsId
             };
-        _logger.LogInformation($"Получено обращение: {conversation.ConversationId}");
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(GetConversation)}() -> Request received: {conversation.ConversationId}");
         return result;
     }
 
@@ -96,7 +97,7 @@ public class ConversationService : IConversationService
         };
         
         await _conversationRepository.CreateConversation(conversation);
-        _logger.LogInformation($"Создано новое обращение: {conversation.ConversationId}");
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(CreateConversation)}() -> A new request has been created: {conversation.ConversationId}");
     }
 
 	public async Task UpdateConversation(ConversationDto dto)
@@ -115,7 +116,7 @@ public class ConversationService : IConversationService
         };
 
 		await _conversationRepository.UpdateConversation(conversation);
-        _logger.LogInformation($"Обновлено обращение: {conversation.ConversationId}");
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(UpdateConversation)}() -> Appeal updated: {conversation.ConversationId}");
     }
 
     public async Task UpdateConversation(Conversation conversation)
@@ -125,7 +126,7 @@ public class ConversationService : IConversationService
 
     public async Task ReplyConversation(Guid conversationId, string messageAnswer)
     {
-        _logger.LogInformation("Начата обработка ответа на обращение {ConversationId}", conversationId);
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(ReplyConversation)}() -> Processing of response to request {conversationId} has begun");
         var conversation = await GetConversation(conversationId);
 
         conversation.WorkerId = conversation.WorkerId;
@@ -149,7 +150,7 @@ public class ConversationService : IConversationService
         };
 
         await _bus.Publish(sendMessageEvent);
-        _logger.LogDebug("Опубликовано событие SendMessageEvent для пользователя {UserId} в канале {Channel}", conversation.UserId, conversation.Channel);
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(ReplyConversation)}() -> A SendMessageEvent was published for user {conversation.UserId} in channel {conversation.Channel}");
 
         var agentAnsweredEvent = new AgentAnsweredEvent
 		{
@@ -157,12 +158,14 @@ public class ConversationService : IConversationService
 		};
 
 		await _bus.Publish(agentAnsweredEvent);
-        _logger.LogDebug("Опубликовано событие AgentAnsweredEvent для оператора {AgentId}", conversation.WorkerId);
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(ReplyConversation)}() -> An AgentAnsweredEvent was posted for the agent {conversation.WorkerId}");
     }
 
     public async Task<StatisticsDto> GetStatistics()
     {
         var (total, answered, inWork, withoutAnswer) = await _conversationRepository.GetStatistics();
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(GetStatistics)}() -> Retrieved conversation statistics: Total={total}, Answered={answered}, InWork={inWork}, WithoutAnswer={withoutAnswer}");
+
         return new StatisticsDto
         {
             Total = total,
@@ -175,6 +178,8 @@ public class ConversationService : IConversationService
     public async Task<IReadOnlyCollection<DailyStatDto>> GetDailyStatistics(DateOnly from, DateOnly to)
     {
         var raw = await _conversationRepository.GetDailyStatistics(from, to);
+        _logger.LogInformation($"{nameof(ConversationService)}.{nameof(GetDailyStatistics)}() -> Retrieved daily conversation statistics for period From: {from}, To:{to}, Total days: {raw.Count}");
+
         return raw
             .Select(x => new DailyStatDto { Date = x.date, Total = x.total })
             .ToList();

@@ -30,7 +30,7 @@ public class AuthService : IAuthService
 
         if (user is null)
         {
-            _logger.LogError($"Пользователь {loginRequestDto.Login} не найден");
+            _logger.LogError($"{nameof(AuthService)}.{nameof(Login)}() -> User {loginRequestDto.Login} not found");
             throw new UnauthorizedAccessException("User not found");
         }
 
@@ -38,7 +38,7 @@ public class AuthService : IAuthService
 
         if (!checkPassword)
         {
-            _logger.LogError("Неверный логин или пароль");
+            _logger.LogError($"{nameof(AuthService)}.{nameof(Login)}() -> Incorrect login or password");
             throw new UnauthorizedAccessException("Invalid password");
         }
 
@@ -58,7 +58,7 @@ public class AuthService : IAuthService
                 IsActive = user.IsActive
             }
         };
-        _logger.LogInformation($"В систему вошел пользователь: {user.FullName}");
+        _logger.LogInformation($"{nameof(AuthService)}.{nameof(Login)}() -> The user logged in was: {user.FullName}");
         return result;
     }
 
@@ -68,7 +68,7 @@ public class AuthService : IAuthService
 
         if (principals is null)
         {
-            _logger.LogError("Ошибка при получении токена");
+            _logger.LogError($"{nameof(AuthService)}.{nameof(RefreshToken)}() -> Error getting token");
             throw new UnauthorizedAccessException();
         }
         
@@ -78,14 +78,14 @@ public class AuthService : IAuthService
 
         if (tokenModel is null)
         {
-            _logger.LogError("Ошибка при получении токена");
+            _logger.LogError($"{nameof(AuthService)}.{nameof(RefreshToken)}() -> Error getting token");
             throw new UnauthorizedAccessException();
         }
 
         if (tokenModel.IsUsed == false || !string.Equals(tokenModel.Token, refreshTokenRequestDto.RefreshToken) ||
             tokenModel.Expires < DateTime.UtcNow)
         {
-            _logger.LogError("Ошибка при получении токена");
+            _logger.LogError($"{nameof(AuthService)}.{nameof(RefreshToken)}() -> Error getting token");
             throw new UnauthorizedAccessException();
         }
         
@@ -106,7 +106,7 @@ public class AuthService : IAuthService
                 IsActive = user.IsActive
             }
         };
-        _logger.LogInformation("Получен новый токен");
+        _logger.LogInformation($"{nameof(AuthService)}.{nameof(RefreshToken)}() -> New token received");
         return result;
     }
 }

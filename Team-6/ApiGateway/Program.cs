@@ -70,12 +70,12 @@ builder.Services
         {
             OnAuthenticationFailed = ctx =>
             {
-                Log.Warning("[JwtAuth] Failed: " + ctx.Exception.Message);
+                Log.Warning($"{nameof(Program)}() -> [JwtAuth] Failed: {ctx.Exception.Message}");
                 return Task.CompletedTask;
             },
             OnTokenValidated = ctx =>
             {
-                Log.Warning("[JwtAuth] OK: " + ctx.Principal?.Identity?.Name);
+                Log.Warning($"{nameof(Program)}() -> [JwtAuth] OK: {ctx.Principal?.Identity?.Name}");
                 return Task.CompletedTask;
             }
         };
