@@ -7,17 +7,18 @@ namespace OnlineStatusService.Consumers
     public class NotifySendConsumer : IConsumer<NotifySendCommand>
     {
         private readonly IHubContext<OnlineStatusHub> _hubContext;
+        private readonly ILogger<NotifySendConsumer> _logger;
 
-        public NotifySendConsumer(IHubContext<OnlineStatusHub> hubContext)
+        public NotifySendConsumer(IHubContext<OnlineStatusHub> hubContext, ILogger<NotifySendConsumer> logger)
         {
             _hubContext = hubContext;
+            _logger = logger;
         }
 
         public async Task Consume(ConsumeContext<NotifySendCommand> context)
         {
             var msg = context.Message;
-
-            Console.WriteLine($"Обращение распределено на оператора {msg.AgentId}");
+            _logger.LogInformation($"{nameof(NotifySendConsumer)}.{nameof(Consume)}() -> The request has been assigned to the operator {msg.AgentId}");
 
             await _hubContext.Clients.All.SendAsync("ConversationDistributed", $"Распределено обращение: {msg.AgentId}");
         }

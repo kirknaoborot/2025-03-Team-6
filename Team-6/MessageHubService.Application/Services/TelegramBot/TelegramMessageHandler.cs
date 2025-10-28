@@ -1,4 +1,5 @@
 using MessageHubService.Domain.Entities;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -12,29 +13,32 @@ namespace MessageHubService.Application.Services.TelegramBot
         private readonly Task<User> _me;
         private readonly Func<int> _getChannelId;
         private readonly Action<MessageEventArgs> _onIncomingMessage;
+        private readonly ILogger<TelegramMessageHandler> _logger;
 
         public TelegramMessageHandler(
             TelegramBotClient bot,
             Task<User> me,
             Func<int> getChannelId,
+            ILogger<TelegramMessageHandler> logger,
             Action<MessageEventArgs> onIncomingMessage)
         {
             _bot = bot;
             _me = me;
             _getChannelId = getChannelId;
             _onIncomingMessage = onIncomingMessage;
+            _logger = logger;
         }
 
         public async Task OnErrorAsync(Exception exception, HandleErrorSource source)
         {
-            Console.WriteLine(exception);
+            _logger.LogError($"{nameof(TelegramMessageHandler)}.{nameof(OnErrorAsync)}() -> {exception}");
         }
 
         public async Task OnMessageAsync(Message msg, UpdateType type)
         {
             if (msg.Text is not { } text)
             {
-                Console.WriteLine($"Received a message of type {msg.Type}");
+                _logger.LogInformation($"{nameof(TelegramMessageHandler)}.{nameof(OnMessageAsync)}() -> Received a message of type {msg.Type}");
             }
             else if (text.StartsWith('/'))
             {
@@ -53,7 +57,7 @@ namespace MessageHubService.Application.Services.TelegramBot
 
         public async Task OnTextMessageAsync(Message msg)
         {
-            Console.WriteLine($"Received text '{msg.Text}' in {msg.Chat}");
+            _logger.LogInformation($"{nameof(TelegramMessageHandler)}.{nameof(OnTextMessageAsync)}() -> Received text {msg.Text} in {msg.Chat}");
 
             var message = new MessageEventArgs
             {
@@ -76,7 +80,7 @@ namespace MessageHubService.Application.Services.TelegramBot
             {
                 case { CallbackQuery: { } callbackQuery }: await OnCallbackQueryAsync(callbackQuery); break;
                 case { PollAnswer: { } pollAnswer }: await OnPollAnswerAsync(pollAnswer); break;
-                default: Console.WriteLine($"Received unhandled update {update.Type}"); break;
+                default: _logger.LogInformation($"{nameof(TelegramMessageHandler)}.{nameof(OnUpdateAsync)}() -> Received unhandled update {update.Type}"); break;
             };
         }
 

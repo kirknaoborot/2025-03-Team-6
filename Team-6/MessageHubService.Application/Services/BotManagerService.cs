@@ -26,7 +26,7 @@ public class BotManagerService : IBotManagerService
 
 	public async Task CreateBotAsync(ChannelEvent channelEvent)
 	{
-		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(CreateBotAsync)}() -> channel event is null {channelEvent is null}");
+		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(CreateBotAsync)}() -> Channel event is null {channelEvent is null}");
 
 		try
 		{
@@ -39,13 +39,13 @@ public class BotManagerService : IBotManagerService
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Failed to start bot {ChannelId}", channelEvent.Id);
+            _logger.LogError(ex, $"{nameof(BotManagerService)}.{nameof(CreateBotAsync)}() -> Failed to start bot {channelEvent.Id}");
 		}
 	}
 
 	public async Task UpdateBotAsync(ChannelEvent channelEvent)
 	{
-		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(UpdateBotAsync)}() -> channel event is null {channelEvent is null}");
+		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(UpdateBotAsync)}() -> Channel event is null {channelEvent is null}");
 
 		try
 		{
@@ -70,13 +70,13 @@ public class BotManagerService : IBotManagerService
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Failed to start bot {ChannelId}", channelEvent.Id);
+            _logger.LogError(ex, $"{nameof(BotManagerService)}.{nameof(UpdateBotAsync)}() -> Failed to start bot {channelEvent.Id}");
 		}
 	}
 
 	public async Task DeleteBotAsync(ChannelEvent channelEvent)
 	{
-		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(DeleteBotAsync)}() -> channel event is null {channelEvent is null}");
+		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(DeleteBotAsync)}() -> Channel event is null {channelEvent is null}");
 
 		try
 		{
@@ -92,7 +92,7 @@ public class BotManagerService : IBotManagerService
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Failed to start bot {ChannelId}", channelEvent.Id);
+            _logger.LogError(ex, $"{nameof(BotManagerService)}.{nameof(DeleteBotAsync)}() -> Failed to start bot {channelEvent.Id}");
 		}
 	}
 }

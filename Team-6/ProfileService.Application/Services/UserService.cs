@@ -34,7 +34,7 @@ namespace ProfileService.Application.Services
                     MiddleName = x.UserProfile.MiddleName
                 })
                 .ToList();
-            _logger.LogInformation($"Получено пользователей: {users.Count}");
+            _logger.LogInformation($"{nameof(UserService)}.{nameof(GetAllUsers)}() -> Users received: {users.Count}");
             return result;
         }
 
@@ -56,7 +56,7 @@ namespace ProfileService.Application.Services
                 LastName = user.UserProfile.LastName,
                 MiddleName = user.UserProfile.MiddleName
             };
-            _logger.LogInformation($"Найден пользователь: {user.UserProfile.FirstName}, {user.UserProfile.LastName}, {user.UserProfile.MiddleName}");
+            _logger.LogInformation($"{nameof(UserService)}.{nameof(GetUserById)}() -> User found: {user.UserProfile.FirstName}, {user.UserProfile.LastName}, {user.UserProfile.MiddleName}");
             return result;
         }
     }

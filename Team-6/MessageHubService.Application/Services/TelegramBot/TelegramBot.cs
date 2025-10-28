@@ -13,8 +13,9 @@ public class TelegramBot : IMessageEvent, IBot
 {
 	private readonly IBus _bus;
 	private readonly ILogger<TelegramBot> _logger;
+    private readonly ILogger<TelegramMessageHandler> _handlerLogger;
 
-	private int _channelId;
+    private int _channelId;
 	private TelegramBotClient _bot;
 	private Task<User> _me;
 	private CancellationTokenSource _cancellationToken;
@@ -23,11 +24,12 @@ public class TelegramBot : IMessageEvent, IBot
 	public event EventHandler<MessageEventArgs>? OnIncomingMessage;
 	public event EventHandler<MessageEventArgs>? OnOutgoingMessage;
 
-	public TelegramBot(IBus bus, ILogger<TelegramBot> logger)
+	public TelegramBot(IBus bus, ILogger<TelegramBot> logger, ILogger<TelegramMessageHandler> handlerLogger)
 	{
 		_bus = bus;
 		_logger = logger;
-	}
+        _handlerLogger = handlerLogger;
+    }
 
 	private async Task HandleIncomingMessageAsync(MessageEventArgs e)
 	{
@@ -52,7 +54,7 @@ public class TelegramBot : IMessageEvent, IBot
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError("Failed to publish incoming message {MessageId}", e.Id);
+            _logger.LogError($"{nameof(TelegramBot)}.{nameof(HandleIncomingMessageAsync)}() -> Failed to publish incoming message {e.Id}");
 		}
 	}
 
@@ -90,7 +92,7 @@ public class TelegramBot : IMessageEvent, IBot
 			_ = HandleIncomingMessageAsync(args);
 		};
 
-		_handler = new TelegramMessageHandler(_bot, _me, () => _channelId, message =>
+		_handler = new TelegramMessageHandler(_bot, _me, () => _channelId, _handlerLogger, message =>
 		{
 			OnIncomingMessage?.Invoke(this, message);
 		});

@@ -22,8 +22,7 @@ public class AgentStatusNotifier : IAgentStatusNotifier
             Date = DateTime.UtcNow,
             Status = status
         };
-
-        _logger.LogInformation($"[SignalR] Publish {status} for {agentId}");
+        _logger.LogInformation($"{nameof(AgentStatusNotifier)}.{nameof(PublishStatusAsync)}() -> [SignalR] Publish {status} for {agentId}");
         await _bus.Publish(evt);
     }
 }
