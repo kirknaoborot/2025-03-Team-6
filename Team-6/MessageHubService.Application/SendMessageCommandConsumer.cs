@@ -7,20 +7,20 @@ using Microsoft.Extensions.Logging;
 
 namespace MessageHubService.Application;
 
-public class SendMessageEventConsumer : IConsumer<SendMessageEvent>
+public class SendMessageCommandConsumer : IConsumer<SendMessageCommand>
 {
-	private readonly ILogger<SendMessageEventConsumer> _logger;
+	private readonly ILogger<SendMessageCommandConsumer> _logger;
 	private readonly IServiceProvider _serviceProvider;
 
-	public SendMessageEventConsumer(ILogger<SendMessageEventConsumer> logger , IServiceProvider serviceProvider)
+	public SendMessageCommandConsumer(ILogger<SendMessageCommandConsumer> logger , IServiceProvider serviceProvider)
 	{
 		_logger = logger;
 		_serviceProvider = serviceProvider;
 	}
 
-	public async Task Consume(ConsumeContext<SendMessageEvent> context)
+	public async Task Consume(ConsumeContext<SendMessageCommand> context)
 	{
-		_logger.LogInformation($"{nameof(SendMessageEventConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', message text '{context.Message.MessageText}', bot id '{context.Message.ChannelSettingsId}'");
+		_logger.LogInformation($"{nameof(SendMessageCommandConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', message text '{context.Message.MessageText}', bot id '{context.Message.ChannelSettingsId}'");
 
 		using var scope = _serviceProvider.CreateScope();
 		var sendMessageService = scope.ServiceProvider.GetRequiredService<IBotManagerService>();

@@ -37,7 +37,7 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
 
 			services.AddMassTransit(x =>
 			{
-				x.AddConsumer<SendMessageEventConsumer>();
+				x.AddConsumer<SendMessageCommandConsumer>();
 				x.AddConsumer<ChannelEventConsumer>();
 
 				x.UsingRabbitMq((context, cfg) =>
@@ -47,9 +47,9 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
 						h.Password(rabbitConfig.Password);
 					});
 
-					cfg.ReceiveEndpoint("send-message-event-queue", e =>
+					cfg.ReceiveEndpoint("send-message-command-queue", e =>
 					{
-						e.ConfigureConsumer<SendMessageEventConsumer>(context);
+						e.ConfigureConsumer<SendMessageCommandConsumer>(context);
 					});
 
 					cfg.ReceiveEndpoint("channel-command-queue", e =>

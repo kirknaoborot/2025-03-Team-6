@@ -36,8 +36,9 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
              x.SetSnakeCaseEndpointNameFormatter();
              x.AddConsumer<ClientMessageEventConsumer>();
 			 x.AddConsumer<ConversationEventConsumer>();
-			 x.AddConsumer<DefineAgentConsumer>();
-             x.UsingRabbitMq((IBusRegistrationContext context, IRabbitMqBusFactoryConfigurator cfg) =>
+			 x.AddConsumer<DefineAgentEventConsumer>();
+			 x.AddConsumer<SendMessageEventConsumer>();
+			 x.UsingRabbitMq((IBusRegistrationContext context, IRabbitMqBusFactoryConfigurator cfg) =>
              {
                  cfg.Host(rabbitConfig.Host, "/", h => {
                      h.Username(rabbitConfig.Username);
@@ -51,9 +52,13 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
 				 {
 					 e.ConfigureConsumer<ConversationEventConsumer>(context);
 				 });
-				 cfg.ReceiveEndpoint(rabbitConfig.DefineAgentEvent, e =>
+				 cfg.ReceiveEndpoint(rabbitConfig.DefineAgentEventQueue, e =>
 				 {
-					 e.ConfigureConsumer<DefineAgentConsumer>(context);
+					 e.ConfigureConsumer<DefineAgentEventConsumer>(context);
+				 });
+				 cfg.ReceiveEndpoint(rabbitConfig.SendMessageEventQueue, e =>
+				 {
+					 e.ConfigureConsumer<SendMessageEventConsumer>(context);
 				 });
 			 });
          });

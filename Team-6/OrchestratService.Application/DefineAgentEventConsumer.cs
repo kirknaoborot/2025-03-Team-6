@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace OrchestratService.Application;
 
-public class DefineAgentConsumer : IConsumer<DefineAgentEvent>
+public class DefineAgentEventConsumer : IConsumer<DefineAgentEvent>
 {
 	private readonly IBus _bus;
-	private readonly ILogger<DefineAgentConsumer> _logger;
+	private readonly ILogger<DefineAgentEventConsumer> _logger;
 
-	public DefineAgentConsumer(IBus bus, ILogger<DefineAgentConsumer> logger)
+	public DefineAgentEventConsumer(IBus bus, ILogger<DefineAgentEventConsumer> logger)
 	{
 		_bus = bus;
 		_logger = logger;
@@ -19,7 +19,7 @@ public class DefineAgentConsumer : IConsumer<DefineAgentEvent>
 	{
 		var status = context.Message.WorkerId == Guid.Empty ? Infrastructure.Shared.Enums.StatusType.AgentNotFound : Infrastructure.Shared.Enums.StatusType.Distributed;
 
-		_logger.LogInformation($"{nameof(DefineAgentConsumer)}.{nameof(Consume)}() -> status '{status}'");
+		_logger.LogInformation($"{nameof(DefineAgentEventConsumer)}.{nameof(Consume)}() -> status '{status}'");
 
 		var updateConversationCommand = new ConversationCommand()
 		{

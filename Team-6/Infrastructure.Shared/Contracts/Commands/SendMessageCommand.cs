@@ -2,7 +2,7 @@
 
 namespace Infrastructure.Shared.Contracts
 {
-	public class SendMessageEvent
+	public class SendMessageCommand
 	{
 		public long UserId { get; set; }
 		public string MessageText { get; set; }

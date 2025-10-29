@@ -16,7 +16,8 @@
 		/// </summary>
 		public string ConversationEventQueue { get; set; }
 
-		public string DefineAgentEvent { get; set; }
+		public string DefineAgentEventQueue { get; set; }
 
+		public string SendMessageEventQueue { get; set; }
 	}
 }
