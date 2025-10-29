@@ -38,6 +38,7 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
 			 x.AddConsumer<ConversationEventConsumer>();
 			 x.AddConsumer<DefineAgentEventConsumer>();
 			 x.AddConsumer<SendMessageEventConsumer>();
+			 x.AddConsumer<NotifySendEventConsumer>();
 			 x.UsingRabbitMq((IBusRegistrationContext context, IRabbitMqBusFactoryConfigurator cfg) =>
              {
                  cfg.Host(rabbitConfig.Host, "/", h => {
@@ -59,6 +60,10 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
 				 cfg.ReceiveEndpoint(rabbitConfig.SendMessageEventQueue, e =>
 				 {
 					 e.ConfigureConsumer<SendMessageEventConsumer>(context);
+				 });
+				 cfg.ReceiveEndpoint(rabbitConfig.NotifySendEventQueue, e =>
+				 {
+					 e.ConfigureConsumer<NotifySendEventConsumer>(context);
 				 });
 			 });
          });

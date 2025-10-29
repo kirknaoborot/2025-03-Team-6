@@ -19,5 +19,7 @@
 		public string DefineAgentEventQueue { get; set; }
 
 		public string SendMessageEventQueue { get; set; }
+
+		public string NotifySendEventQueue { get; set; }
 	}
 }

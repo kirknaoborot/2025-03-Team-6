@@ -91,7 +91,7 @@ public class ConversationConsumer : IConsumer<ConversationCommand>
 				{
 					await _service.UpdateConversation(dto);
 
-					var notifyCommand = new NotifySendCommand
+					var notifyCommand = new NotifySendEvent
 					{
 						AgentId = context.Message.WorkerId
 					};

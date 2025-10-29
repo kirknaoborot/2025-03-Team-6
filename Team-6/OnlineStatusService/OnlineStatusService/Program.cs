@@ -34,7 +34,7 @@ var builder = Host.CreateDefaultBuilder(args)
                     h.Username("guest");
                     h.Password("guest");
                 });
-                cfg.ReceiveEndpoint("notify-send-event-queue", e =>
+                cfg.ReceiveEndpoint("notify-send-command-queue", e =>
                 {
                     e.ConfigureConsumeTopology = true;
                     e.ConfigureConsumer<NotifySendConsumer>(context);
