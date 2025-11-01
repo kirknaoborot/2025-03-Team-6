@@ -19,7 +19,7 @@ public class BotManagerService : IBotManagerService
 		_cache = cache;
 	}
 
-	public bool TryGetBot(int id, out IBot telegramBot)
+	public bool TryGetBot(int id, out IBot? telegramBot)
 	{
 		return _cache.TryGetValue(id, out telegramBot);
 	}
@@ -30,16 +30,19 @@ public class BotManagerService : IBotManagerService
 
 		try
 		{
-			using var scope = _serviceScopeFactory.CreateScope();
-			var bot = scope.ServiceProvider.GetRequiredService<IBot>();
+			if (channelEvent != null)
+			{
+				using var scope = _serviceScopeFactory.CreateScope();
+				var bot = scope.ServiceProvider.GetRequiredService<IBot>();
 
-			await bot.CreateBotAsync(channelEvent);
-			await bot.StartAsync();
-			_cache.Set(bot.GetHashCode(), bot);
+				await bot.CreateBotAsync(channelEvent);
+				await bot.StartAsync();
+				_cache.Set(bot.GetHashCode(), bot);
+			}
 		}
 		catch (Exception ex)
 		{
-            _logger.LogError(ex, $"{nameof(BotManagerService)}.{nameof(CreateBotAsync)}() -> Failed to start bot {channelEvent.Id}");
+            _logger.LogError(ex, $"{nameof(BotManagerService)}.{nameof(CreateBotAsync)}() -> Failed to start bot {channelEvent?.Id}");
 		}
 	}
 
@@ -52,25 +55,31 @@ public class BotManagerService : IBotManagerService
 			using var scope = _serviceScopeFactory.CreateScope();
 			var bot = scope.ServiceProvider.GetRequiredService<IBot>();
 
-			if (_cache.TryGetValue<IBot>(channelEvent?.Id ?? 0, out var findedBot))
+			if (channelEvent != null)
 			{
-				await findedBot.StopAsync();
-				findedBot.Dispose();
-				_cache.Remove(channelEvent.Id);
-				await bot.CreateBotAsync(channelEvent);
-				await bot.StartAsync();
-				_cache.Set(bot.GetHashCode(), bot);
-			}
-			else
-			{
-				await bot.CreateBotAsync(channelEvent);
-				await bot.StartAsync();
-				_cache.Set(bot.GetHashCode(), bot);
+				if (_cache.TryGetValue<IBot>(channelEvent.Id, out var findedBot))
+				{
+					if (findedBot != null)
+					{
+						await findedBot.StopAsync();
+						findedBot.Dispose();
+						_cache.Remove(channelEvent.Id);
+						await bot.CreateBotAsync(channelEvent);
+						await bot.StartAsync();
+						_cache.Set(bot.GetHashCode(), bot);
+					}
+				}
+				else
+				{
+					await bot.CreateBotAsync(channelEvent);
+					await bot.StartAsync();
+					_cache.Set(bot.GetHashCode(), bot);
+				}
 			}
 		}
 		catch (Exception ex)
 		{
-            _logger.LogError(ex, $"{nameof(BotManagerService)}.{nameof(UpdateBotAsync)}() -> Failed to start bot {channelEvent.Id}");
+            _logger.LogError(ex, $"{nameof(BotManagerService)}.{nameof(UpdateBotAsync)}() -> Failed to start bot {channelEvent?.Id}");
 		}
 	}
 
@@ -80,14 +89,20 @@ public class BotManagerService : IBotManagerService
 
 		try
 		{
-			using var scope = _serviceScopeFactory.CreateScope();
-			var bot = scope.ServiceProvider.GetRequiredService<IBot>();
-
-			if (_cache.TryGetValue<IBot>(channelEvent?.Id ?? 0, out var findedBot))
+			if (channelEvent != null)
 			{
-				await findedBot.StopAsync();
-				findedBot.Dispose();
-				_cache.Remove(channelEvent.Id);
+				using var scope = _serviceScopeFactory.CreateScope();
+				var bot = scope.ServiceProvider.GetRequiredService<IBot>();
+
+				if (_cache.TryGetValue<IBot>(channelEvent.Id, out var findedBot))
+				{
+					if (findedBot != null)
+					{
+						await findedBot.StopAsync();
+						findedBot.Dispose();
+						_cache.Remove(channelEvent.Id);
+					}
+				}
 			}
 		}
 		catch (Exception ex)

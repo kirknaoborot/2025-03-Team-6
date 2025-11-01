@@ -48,13 +48,13 @@ public class TelegramBot : IMessageEvent, IBot
 
 			await _bus.Publish(newInMessage);
 		}
-		catch (OperationCanceledException)
+		catch (OperationCanceledException oce)
 		{
-			// ignore on shutdown
+			_logger.LogError($"{nameof(TelegramBot)}.{nameof(HandleIncomingMessageAsync)}() -> Failed to publish incoming message '{e.Id}', exception message '{oce.Message}', stack trace '{oce.StackTrace}'");
 		}
 		catch (Exception ex)
 		{
-            _logger.LogError($"{nameof(TelegramBot)}.{nameof(HandleIncomingMessageAsync)}() -> Failed to publish incoming message {e.Id}");
+            _logger.LogError($"{nameof(TelegramBot)}.{nameof(HandleIncomingMessageAsync)}() -> Failed to publish incoming message '{e.Id}', exception message '{ex.Message}', stack trace '{ex.StackTrace}'");
 		}
 	}
 
@@ -107,7 +107,9 @@ public class TelegramBot : IMessageEvent, IBot
 	{
 		_channelId = 0;
 		_bot = null;
+		_me?.Dispose();
 		_me = null;
+		_cancellationToken?.Dispose();
 		_cancellationToken = null;
 		_handler = null;
 	}
