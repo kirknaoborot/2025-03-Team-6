@@ -26,7 +26,8 @@ builder.Services.AddCors(options =>
         policy
             .AllowAnyOrigin()
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .WithExposedHeaders("X-Pagination");
     });
 });
 
@@ -41,6 +42,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+app.UseRouting();
+app.UseSerilogRequestLogging();
 
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();

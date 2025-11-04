@@ -1,4 +1,5 @@
 ﻿using ChannelSettings.DataAccess;
+using Serilog;
 
 
 namespace ChannelSettings
@@ -20,6 +21,7 @@ namespace ChannelSettings
             app.UseStaticFiles();
             app.UseCors("ApiCorsPolicy");
             app.UseRouting();
+            app.UseSerilogRequestLogging();
 
             app.UseAuthentication();
             app.UseAuthorization();         

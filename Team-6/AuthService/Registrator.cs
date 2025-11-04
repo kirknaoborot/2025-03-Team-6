@@ -14,6 +14,7 @@ namespace AuthService
         public static IServiceCollection AddServices(this IServiceCollection services, ConnectionOptions connectionSettings, IConfiguration configuration)
         {
             services
+                .AddHttpContextAccessor()
                 .InstallServices()
                 .ConfigureContext(connectionSettings.ApplicationDbContext)
                 .InstallRepositories();

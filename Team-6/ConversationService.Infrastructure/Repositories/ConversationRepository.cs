@@ -51,6 +51,9 @@ public class ConversationRepository : IConversationRepository
     /// <param name="conversation"></param>
     public async Task CreateConversation(Conversation conversation)
     {
+        if (conversation == null)
+            throw new ArgumentNullException(nameof(conversation));
+
         // enforce UTC timestamps
         conversation.CreateDate = conversation.CreateDate == default
             ? DateTimeOffset.UtcNow
@@ -67,6 +70,9 @@ public class ConversationRepository : IConversationRepository
 	/// <param name="conversation"></param>
 	public async Task UpdateConversation(Conversation conversation)
 	{
+        if (conversation == null)
+            throw new ArgumentNullException(nameof(conversation));
+
         // enforce UTC timestamps
         conversation.CreateDate = conversation.CreateDate.ToUniversalTime();
         conversation.UpdateDate = DateTimeOffset.UtcNow;

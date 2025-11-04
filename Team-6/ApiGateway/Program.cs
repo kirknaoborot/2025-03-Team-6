@@ -22,7 +22,8 @@ builder.Services.AddCors(options =>
         policy
             .AllowAnyOrigin()
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .WithExposedHeaders("X-Pagination");
     });
 });
 
@@ -89,6 +90,7 @@ var applicationName = configuration["Serilog:Properties:Application"] ?? "Unknow
 Log.Information("Starting up {@ApplicationName}", applicationName);
 
 app.UseCors("AllowFrontend");
+app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
 await app.UseOcelot();

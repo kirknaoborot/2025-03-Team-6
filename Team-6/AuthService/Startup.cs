@@ -61,7 +61,8 @@ namespace AuthService
                     policy
                         .AllowAnyOrigin()
                         .AllowAnyMethod()
-                        .AllowAnyHeader();
+                        .AllowAnyHeader()
+                        .WithExposedHeaders("X-Pagination");
                 });
             });
 
@@ -152,6 +153,7 @@ namespace AuthService
             app.UseCors("AllowFrontend");
             
             app.UseRouting();
+            app.UseSerilogRequestLogging();
 
             app.UseAuthentication();
             app.UseAuthorization();

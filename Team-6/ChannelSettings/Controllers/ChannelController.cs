@@ -10,13 +10,11 @@ namespace ChannelSettings.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ChannelController(IChannelService channelService, IMapper mapper,
-        ILogger<ChannelController> logger) : ControllerBase
+    public class ChannelController(IChannelService channelService, IMapper mapper) : ControllerBase
     {
 
         private readonly IChannelService _service = channelService;
         private readonly IMapper _mapper = mapper;
-        private readonly ILogger<ChannelController> _logger = logger;
 
         [HttpGet("channels")]
         [AllowAnonymous]

@@ -67,7 +67,9 @@ namespace ChannelSettings
                     .InstallHostedServices()
                     .AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
                     {
-                        builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
+                        builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader()
+                        .AllowCredentials()
+                        .WithExposedHeaders("X-Pagination");
                     }))
                     .AddSwaggerGen()
                     .AddControllers();
