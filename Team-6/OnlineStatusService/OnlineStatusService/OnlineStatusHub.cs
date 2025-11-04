@@ -8,14 +8,22 @@ public class OnlineStatusHub : Hub
 {
     private readonly IAgentStatusNotifier _notifier;
     private static readonly ConcurrentDictionary<string, Guid> Connections = new();
+    private readonly ILogger<OnlineStatusHub> _logger;
 
-    public OnlineStatusHub(IAgentStatusNotifier notifier)
+    public OnlineStatusHub(IAgentStatusNotifier notifier, ILogger<OnlineStatusHub> logger)
     {
         _notifier = notifier;
+        _logger = logger;
     }
 
     public async Task UserOnline(string userId)
     {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            _logger.LogError($"ConnectionID: {Context.ConnectionId}; UserId не найден");
+            return;
+        }
+
         var obj = JObject.Parse(userId);
         var id = obj["id"]?.Value<string>();
         var agentId = Guid.TryParse(id, out var g) ? g : Guid.Empty;

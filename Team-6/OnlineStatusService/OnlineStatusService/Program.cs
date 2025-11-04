@@ -52,7 +52,8 @@ var builder = Host.CreateDefaultBuilder(args)
                     .WithOrigins("http://localhost:5173")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials();
+                    .AllowCredentials()
+                    .WithExposedHeaders("X-Pagination");
             });
         });
     })
