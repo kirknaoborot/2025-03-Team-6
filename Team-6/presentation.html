@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сервис обработки обращений граждан</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            display: none;
+            padding: 60px 80px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Титульные слайды */
+        .slide.title-slide {
+            background: linear-gradient(135deg, #2D1B4E 0%, #3D2A5E 100%);
+            color: white;
+            justify-content: space-between;
+        }
+
+        /* Контентные слайды */
+        .slide.content-slide {
+            background: white;
+            color: #000;
+        }
+
+        .logo {
+            position: absolute;
+            top: 40px;
+            right: 80px;
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .main-title {
+            font-size: 72px;
+            font-weight: bold;
+            line-height: 1.2;
+            margin-top: 150px;
+            max-width: 900px;
+        }
+
+        .subtitle-box {
+            background: rgba(45, 27, 78, 0.8);
+            padding: 20px 30px;
+            border-radius: 12px;
+            font-size: 24px;
+            display: inline-block;
+            margin-bottom: 40px;
+        }
+
+        .arrow-icon {
+            position: absolute;
+            bottom: 60px;
+            right: 80px;
+            font-size: 120px;
+            transform: rotate(-45deg);
+            opacity: 0.9;
+        }
+
+        .slide-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 50px;
+            color: #000;
+        }
+
+        .title-slide .slide-title {
+            color: white;
+        }
+
+        .yellow-bubble {
+            background: #FFC107;
+            padding: 30px 40px;
+            border-radius: 20px;
+            font-size: 20px;
+            line-height: 1.6;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            max-width: 500px;
+        }
+
+        .yellow-bubble::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 30px;
+            width: 0;
+            height: 0;
+            border-right: 15px solid #FFC107;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .content-grid {
+            display: flex;
+            gap: 60px;
+            flex: 1;
+        }
+
+        .content-left {
+            flex: 1;
+        }
+
+        .content-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .numbered-list {
+            list-style: none;
+            font-size: 24px;
+            line-height: 2;
+        }
+
+        .numbered-list li {
+            margin-bottom: 20px;
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .numbered-list li::before {
+            content: counter(item) ".";
+            counter-increment: item;
+            position: absolute;
+            left: 0;
+            color: #6B4DC4;
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .numbered-list {
+            counter-reset: item;
+        }
+
+        .tech-description {
+            font-size: 18px;
+            color: #555;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .service-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #6B4DC4;
+        }
+
+        .title-slide .service-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .service-title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .service-desc {
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        .title-slide .service-desc {
+            opacity: 0.9;
+        }
+
+        .architecture-diagram {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 2.2;
+            background: #f5f5f5;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        .arch-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+            gap: 20px;
+        }
+
+        .arch-box {
+            background: white;
+            border: 2px solid #6B4DC4;
+            border-radius: 8px;
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .arch-box.highlight {
+            background: #6B4DC4;
+            color: white;
+        }
+
+        .arch-box.telegram {
+            background: #0088cc;
+            color: white;
+            border-color: #0088cc;
+        }
+
+        .arch-box.db {
+            background: #336791;
+            color: white;
+            border-color: #336791;
+        }
+
+        .arch-box.rabbitmq {
+            background: #FF6600;
+            color: white;
+            border-color: #FF6600;
+        }
+
+        .arch-arrow {
+            font-size: 28px;
+            color: #6B4DC4;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .feature-desc {
+            font-size: 20px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+
+        .tech-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .tech-column h3 {
+            font-size: 28px;
+            color: #6B4DC4;
+            margin-bottom: 20px;
+        }
+
+        .tech-column ul {
+            list-style: none;
+            font-size: 20px;
+            line-height: 1.8;
+        }
+
+        .tech-column ul li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .tech-column ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #6B4DC4;
+        }
+
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+
+        .big-emoji {
+            font-size: 100px;
+            margin-top: 40px;
+        }
+
+        .question-text {
+            font-size: 36px;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        /* Навигация */
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(107, 77, 196, 0.8);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(107, 77, 196, 1);
+            transform: scale(1.05);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* Адаптация для печати */
+        @media print {
+            .slide {
+                display: flex !important;
+                page-break-after: always;
+                position: relative;
+            }
+            .nav-controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- Слайд 1: Титульный -->
+        <div class="slide title-slide active">
+            <div class="logo">otus</div>
+            <div class="main-title">Сервис обработки обращений граждан</div>
+            <div class="arrow-icon">↗</div>
+        </div>
+
+        <!-- Слайд 2: О проекте -->
+        <div class="slide content-slide">
+            <h1 class="slide-title">О проекте</h1>
+            <div class="content-grid">
+                <div class="content-left">
+                    <ol class="numbered-list">
+                        <li>8 микросервисов</li>
+                        <li>Прием обращений через Telegram</li>
+                        <li>Асинхронная обработка через RabbitMQ</li>
+                        <li>Распределение операторам</li>
+                    </ol>
+                </div>
+                <div class="content-right">
+                    <div class="yellow-bubble">
+                        Система для обработки обращений граждан через Telegram-бота с автоматическим распределением обращений между операторами
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 3: Архитектура -->
+        <div class="slide content-slide">
+            <h1 class="slide-title">Архитектура системы</h1>
+            <div class="architecture-diagram">
+                <!-- Уровень 1: Telegram -->
+                <div class="arch-row">
+                    <div class="arch-box telegram">📱 Telegram Bot<br><small>MessageHub Service</small></div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow">↓</div>
+                </div>
+                
+                <!-- Уровень 2: RabbitMQ -->
+                <div class="arch-row">
+                    <div class="arch-box rabbitmq">📨 RabbitMQ<br><small>Message Broker</small></div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow">↓ ↓ ↓</div>
+                </div>
+                
+                <!-- Уровень 3: API Gateway -->
+                <div class="arch-row">
+                    <div class="arch-box highlight">🌐 API Gateway (Ocelot)</div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow">↓ ↓ ↓</div>
+                </div>
+                
+                <!-- Уровень 4: Микросервисы -->
+                <div class="arch-row">
+                    <div class="arch-box">🔐 Auth</div>
+                    <div class="arch-box">💬 Conversation</div>
+                    <div class="arch-box">👤 Profile</div>
+                </div>
+                <div class="arch-row" style="margin-top: 10px;">
+                    <div class="arch-box">⚙️ Channel Settings</div>
+                    <div class="arch-box">📊 Operator Status</div>
+                    <div class="arch-box">🔄 Distributed</div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow">↓</div>
+                </div>
+                
+                <!-- Уровень 5: База данных -->
+                <div class="arch-row">
+                    <div class="arch-box db">💾 PostgreSQL</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <div class="yellow-bubble" style="display: inline-block;">
+                    Все коммуникации через RabbitMQ
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 4: Технологический стек -->
+        <div class="slide content-slide">
+            <h1 class="slide-title">Технологический стек</h1>
+            <div style="margin-bottom: 30px;">
+                <div class="yellow-bubble" style="max-width: 600px;">
+                    Современные технологии для асинхронной распределенной системы
+                </div>
+            </div>
+            <div class="tech-columns">
+                <div class="tech-column">
+                    <h3>🔧 BACKEND</h3>
+                    <ul>
+                        <li>.NET 9.0 / ASP.NET Core</li>
+                        <li>PostgreSQL + EF Core</li>
+                        <li>RabbitMQ + MassTransit</li>
+                        <li>Ocelot (API Gateway)</li>
+                        <li>JWT Authentication</li>
+                        <li>Telegram Bot API</li>
+                    </ul>
+                </div>
+                <div class="tech-column">
+                    <h3>💻 FRONTEND</h3>
+                    <ul>
+                        <li>React 18 + TypeScript</li>
+                        <li>TailwindCSS + Bootstrap</li>
+                        <li>Vite</li>
+                    </ul>
+                    <h3 style="margin-top: 30px;">🏗️ АРХИТЕКТУРА</h3>
+                    <ul>
+                        <li>Microservices</li>
+                        <li>Clean Architecture</li>
+                        <li>Event-Driven</li>
+                    </ul>
+                </div>
+                <div class="tech-column">
+                    <h3>🐳 INFRASTRUCTURE</h3>
+                    <ul>
+                        <li>Docker + Docker Compose</li>
+                        <li>Serilog + Seq</li>
+                        <li>Nginx</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 5: Микросервисы -->
+        <div class="slide content-slide">
+            <h1 class="slide-title">Микросервисы системы</h1>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-title">📱 MessageHub Service</div>
+                    <div class="service-desc">Telegram-бот для приема обращений граждан</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-title">🔐 Auth Service</div>
+                    <div class="service-desc">Аутентификация и авторизация операторов</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-title">💬 Conversation Service</div>
+                    <div class="service-desc">Управление диалогами и сообщениями</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-title">⚙️ Channel Settings</div>
+                    <div class="service-desc">Настройка каналов коммуникации (Telegram)</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-title">👤 Profile Service</div>
+                    <div class="service-desc">Профили операторов и граждан</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-title">📊 Operator Status</div>
+                    <div class="service-desc">Отслеживание статусов операторов</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-title">🔄 Conversation Distributed</div>
+                    <div class="service-desc">Распределение обращений между операторами</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-title">🌐 API Gateway (Ocelot)</div>
+                    <div class="service-desc">Единая точка входа для всех сервисов</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 6: Ключевые возможности -->
+        <div class="slide title-slide">
+            <div class="logo">otus</div>
+            <h1 class="slide-title">Ключевые возможности</h1>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Telegram интеграция</div>
+                    <div class="feature-desc">Прием обращений через популярный мессенджер, доступный всем гражданам</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📨</div>
+                    <div class="feature-title">Асинхронная обработка</div>
+                    <div class="feature-desc">RabbitMQ для надежной доставки сообщений между микросервисами</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-title">Автораспределение</div>
+                    <div class="feature-desc">Автоматическое распределение обращений между свободными операторами</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Мониторинг и логирование</div>
+                    <div class="feature-desc">Централизованное логирование через Serilog + Seq для всей системы</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 7: Заключительный -->
+        <div class="slide title-slide">
+            <div class="logo">otus</div>
+            <div class="center-content">
+                <div class="main-title" style="margin-top: 0;">Спасибо за внимание!</div>
+                <div class="question-text">Вопросы?</div>
+                <div class="big-emoji">🏆</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Назад</button>
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">7</span>
+        </div>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Вперёд →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            
+            // Управление кнопками
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Клавиатурная навигация
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        // Инициализация
+        showSlide(0);
+    </script>
+</body>
+</html>
