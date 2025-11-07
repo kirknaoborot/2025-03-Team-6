@@ -51,19 +51,19 @@ if not defined RABBIT_EXISTS (
 echo.
 
 REM --- Helper to start executable in a new window --------------
-call :StartService "ApiGateway" "%REPO_ROOT%\ApiGateway\bin\Release\net9.0\ApiGateway.exe"
-call :StartService "Authorization.Api" "%REPO_ROOT%\AuthService\bin\Release\net9.0\Authorization.Api.exe"
-call :StartService "ConversationService.Api" "%REPO_ROOT%\ConversationService.Api\bin\Release\net9.0\ConversationService.Api.exe"
+call :StartService "ApiGateway" "%REPO_ROOT%\ApiGateway\bin\Release\net9.0\ApiGateway.exe" "ASPNETCORE_URLS=http://localhost:56466"
+call :StartService "Authorization.Api" "%REPO_ROOT%\AuthService\bin\Release\net9.0\Authorization.Api.exe" "ASPNETCORE_URLS=http://localhost:56468"
+call :StartService "ConversationService.Api" "%REPO_ROOT%\ConversationService.Api\bin\Release\net9.0\ConversationService.Api.exe" "ASPNETCORE_URLS=http://localhost:55822"
 call :StartService "OrchestratService.Application" "%REPO_ROOT%\OrchestratService.Application\bin\Release\net9.0\OrchestratService.Application.exe"
 call :StartService "OnlineStatusService" "%REPO_ROOT%\OnlineStatusService\OnlineStatusService\bin\Release\net9.0\OnlineStatusService.exe"
 call :StartService "ConversationDistributed" "%REPO_ROOT%\ConversationDistributed\bin\Release\net9.0\ConversationDistributed.exe"
 call :StartService "MessageHubService.Application" "%REPO_ROOT%\MessageHubService.Application\bin\Release\net9.0\MessageHubService.Application.exe"
-call :StartService "ChannelSettings" "%REPO_ROOT%\ChannelSettings\bin\Release\net9.0\ChannelSettings.exe"
+call :StartService "ChannelSettings" "%REPO_ROOT%\ChannelSettings\bin\Release\net9.0\ChannelSettings.exe" "ASPNETCORE_URLS=http://localhost:5014"
 
 REM --- Frontend ------------------------------------------------
 if exist "%REPO_ROOT%\frontend" (
     echo Starting frontend (npm run dev)...
-    start "Frontend" cmd /k "cd /d %REPO_ROOT%\frontend && npm install && npm run dev"
+    start "Frontend" cmd /k "cd /d %REPO_ROOT%\frontend && call npm.cmd run dev"
 ) else (
     echo Frontend directory not found, skipping frontend startup.
 )
@@ -81,6 +81,7 @@ exit /b 0
 :StartService
 set "SERVICE_NAME=%~1"
 set "EXEC_PATH=%~2"
+set "SERVICE_ENV=%~3"
 
 if not exist "%EXEC_PATH%" (
     echo WARNING: %SERVICE_NAME% executable not found at %EXEC_PATH%
@@ -88,7 +89,13 @@ if not exist "%EXEC_PATH%" (
 )
 
 set "SERVICE_DIR=%~dp2"
+set "EXEC_FILE=%~nx2"
 echo Starting %SERVICE_NAME%...
-start "Service - %SERVICE_NAME%" /D "%SERVICE_DIR%" "%EXEC_PATH%"
+
+if defined SERVICE_ENV (
+    start "Service - %SERVICE_NAME%" cmd /k "cd /d %SERVICE_DIR% && set %SERVICE_ENV% && %EXEC_FILE%"
+) else (
+    start "Service - %SERVICE_NAME%" cmd /k "cd /d %SERVICE_DIR% && %EXEC_FILE%"
+)
 goto :EOF
 
