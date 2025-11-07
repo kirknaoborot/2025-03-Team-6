@@ -29,7 +29,6 @@ namespace ChannelSettings
             using (var scope = app.Services.CreateScope())
             {
                 ApplicationDbContext db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                var created = db.Database.EnsureCreated();
             }
 
             app.UseEndpoints(endpoints =>
