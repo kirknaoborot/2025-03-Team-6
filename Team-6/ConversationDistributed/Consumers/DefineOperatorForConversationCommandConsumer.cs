@@ -4,14 +4,14 @@ using MassTransit;
 
 namespace ConversationDistributed.Consumers;
 
-public class DefineOperatorForConversationConsumer : IConsumer<DefineOperatorForConversationCommand>
+public class DefineOperatorForConversationCommandConsumer : IConsumer<DefineOperatorForConversationCommand>
 {
 	private readonly IBus _bus;
 	private readonly IAgentStateService _IUserStateService;
-	private readonly ILogger<DefineOperatorForConversationConsumer> _logger;
+	private readonly ILogger<DefineOperatorForConversationCommandConsumer> _logger;
 	private readonly ConvState _convState;
 
-	public DefineOperatorForConversationConsumer(IAgentStateService userStateService, IBus bus, ILogger<DefineOperatorForConversationConsumer> logger, ConvState convState)
+	public DefineOperatorForConversationCommandConsumer(IAgentStateService userStateService, IBus bus, ILogger<DefineOperatorForConversationCommandConsumer> logger, ConvState convState)
 	{
 		_IUserStateService = userStateService;
 		_bus = bus;
@@ -23,7 +23,7 @@ public class DefineOperatorForConversationConsumer : IConsumer<DefineOperatorFor
 	{
 		var user = _IUserStateService.GetFirstFreeOperator();
 
-		_logger.LogInformation($"{nameof(DefineOperatorForConversationConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', conversation id '{context.Message.ConversationId}', channel '{context.Message.Channel}', user is finded '{user != null}'");
+		_logger.LogInformation($"{nameof(DefineOperatorForConversationCommandConsumer)}.{nameof(Consume)}() -> user id '{context.Message.UserId}', conversation id '{context.Message.ConversationId}', channel '{context.Message.Channel}', user is finded '{user != null}'");
 
 		if (user != null)
 		{

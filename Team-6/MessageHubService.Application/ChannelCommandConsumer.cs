@@ -7,20 +7,20 @@ using Infrastructure.Shared.Enums;
 
 namespace MessageHubService.Application
 {
-	public class ChannelEventConsumer : IConsumer<ChannelEvent>
+	public class ChannelCommandConsumer : IConsumer<ChannelCommand>
 	{
-		private readonly ILogger<ChannelEventConsumer> _logger;
+		private readonly ILogger<ChannelCommandConsumer> _logger;
 		private readonly IServiceProvider _serviceProvider;
 
-		public ChannelEventConsumer(ILogger<ChannelEventConsumer> logger, IServiceProvider serviceProvider)
+		public ChannelCommandConsumer(ILogger<ChannelCommandConsumer> logger, IServiceProvider serviceProvider)
 		{
 			_logger = logger;
 			_serviceProvider = serviceProvider;
 		}
 
-		public async Task Consume(ConsumeContext<ChannelEvent> context)
+		public async Task Consume(ConsumeContext<ChannelCommand> context)
 		{
-			_logger.LogInformation($"{nameof(ChannelEventConsumer)}.{nameof(Consume)}() -> bot id '{context.Message.Id}', bot name '{context.Message.Name}', bot token '{context.Message.Token}', bot type '{context.Message.Type}', action '{context.Message.Action}'");
+			_logger.LogInformation($"{nameof(ChannelCommandConsumer)}.{nameof(Consume)}() -> bot id '{context.Message.Id}', bot name '{context.Message.Name}', bot token '{context.Message.Token}', bot type '{context.Message.Type}', action '{context.Message.Action}'");
 
 			using var scope = _serviceProvider.CreateScope();
 			var sendMessageService = scope.ServiceProvider.GetRequiredService<IBotManagerService>();

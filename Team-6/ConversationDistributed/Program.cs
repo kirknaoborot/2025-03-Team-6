@@ -21,9 +21,9 @@ builder.Services.AddSingleton<IAgentStateService, AgentStateService>();
 builder.Services.AddSingleton<ConvState>();
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<UserLoggedInConsumer>();
-    x.AddConsumer<DefineOperatorForConversationConsumer>();
-	x.AddConsumer<AgentAnsweredConsumer>();
+    x.AddConsumer<AgentStatusCommandConsumer>();
+    x.AddConsumer<DefineOperatorForConversationCommandConsumer>();
+	x.AddConsumer<AgentAnsweredCommandConsumer>();
 
 	x.UsingRabbitMq((context, cfg) =>
     {
@@ -32,22 +32,22 @@ builder.Services.AddMassTransit(x =>
             h.Username("guest");
             h.Password("guest");
         });
-        cfg.ReceiveEndpoint("user-login-event-queue", e =>
+        cfg.ReceiveEndpoint("user-command-queue", e =>
         {
             e.ConfigureConsumeTopology = true;
-            e.ConfigureConsumer<UserLoggedInConsumer>(context);
+            e.ConfigureConsumer<AgentStatusCommandConsumer>(context);
         });
 
         cfg.ReceiveEndpoint("define-operator-for-conversation-command-queue", e =>
         {
             e.ConfigureConsumeTopology = true;
-            e.ConfigureConsumer<DefineOperatorForConversationConsumer>(context);
+            e.ConfigureConsumer<DefineOperatorForConversationCommandConsumer>(context);
         });
 
-		cfg.ReceiveEndpoint("agent-answered-event-queue", e =>
+		cfg.ReceiveEndpoint("agent-answered-command-queue", e =>
 		{
 			e.ConfigureConsumeTopology = true;
-			e.ConfigureConsumer<AgentAnsweredConsumer>(context);
+			e.ConfigureConsumer<AgentAnsweredCommandConsumer>(context);
 		});
 	});
 });

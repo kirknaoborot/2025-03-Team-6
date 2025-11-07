@@ -4,8 +4,8 @@ namespace MessageHubService.Application.Interfaces;
 
 public interface IBotManagerService
 {
-	Task CreateBotAsync(ChannelEvent channelEvent);
-	Task UpdateBotAsync(ChannelEvent channelEvent);
-	Task DeleteBotAsync(ChannelEvent channelEvent);
+	Task CreateBotAsync(ChannelCommand channelEvent);
+	Task UpdateBotAsync(ChannelCommand channelEvent);
+	Task DeleteBotAsync(ChannelCommand channelEvent);
 	bool TryGetBot(int id, out IBot? telegramBot);
 }

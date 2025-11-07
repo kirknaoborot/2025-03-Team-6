@@ -24,7 +24,7 @@ public class BotManagerService : IBotManagerService
 		return _cache.TryGetValue(id, out telegramBot);
 	}
 
-	public async Task CreateBotAsync(ChannelEvent channelEvent)
+	public async Task CreateBotAsync(ChannelCommand channelEvent)
 	{
 		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(CreateBotAsync)}() -> Channel event is null {channelEvent is null}");
 
@@ -46,7 +46,7 @@ public class BotManagerService : IBotManagerService
 		}
 	}
 
-	public async Task UpdateBotAsync(ChannelEvent channelEvent)
+	public async Task UpdateBotAsync(ChannelCommand channelEvent)
 	{
 		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(UpdateBotAsync)}() -> Channel event is null {channelEvent is null}");
 
@@ -83,7 +83,7 @@ public class BotManagerService : IBotManagerService
 		}
 	}
 
-	public async Task DeleteBotAsync(ChannelEvent channelEvent)
+	public async Task DeleteBotAsync(ChannelCommand channelEvent)
 	{
 		_logger.LogInformation($"{nameof(BotManagerService)}.{nameof(DeleteBotAsync)}() -> Channel event is null {channelEvent is null}");
 

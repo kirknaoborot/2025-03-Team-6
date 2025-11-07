@@ -8,6 +8,6 @@ namespace ConversationDistributed.Services
         void AssignConversationToUser(Guid userId, Guid conversationId);
 		Agent GetFirstFreeOperator();
         void ReleaseConversationFromUser(Guid userId);
-        void UserUpdateState(AgentStatusEvent userInfo);
+        void UserUpdateState(AgentStatusCommand userInfo);
     }
 }

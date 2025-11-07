@@ -1,11 +1,9 @@
-﻿using Auth.Application.Consumer;
-using Auth.Application.Services;
+﻿using Auth.Application.Services;
 using Auth.Core.Services;
 using Auth.DataAccess;
 using Auth.Domain.Entities;
 using AuthService.Settings;
 using Infrastructure.Shared.Services;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

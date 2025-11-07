@@ -80,7 +80,7 @@ public class TelegramBot : IMessageEvent, IBot
 		await _bot.SendMessage(sendMessageDto.UserId, sendMessageDto.MessageText);
 	}
 
-	public async Task CreateBotAsync(ChannelEvent channelEvent)
+	public async Task CreateBotAsync(ChannelCommand channelEvent)
 	{
 		_channelId = channelEvent.Id;
 		_cancellationToken = new CancellationTokenSource();

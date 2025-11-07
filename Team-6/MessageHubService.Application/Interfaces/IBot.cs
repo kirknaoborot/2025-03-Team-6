@@ -5,7 +5,7 @@ namespace MessageHubService.Application.Interfaces
 {
 	public interface IBot
 	{
-		Task CreateBotAsync(ChannelEvent channelEvent);
+		Task CreateBotAsync(ChannelCommand channelEvent);
 		Task StartAsync();
 		Task StopAsync();
 		Task SentMessageToClientAsync(SendMessageDto sendMessageDto);

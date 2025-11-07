@@ -21,5 +21,9 @@
 		public string SendMessageEventQueue { get; set; }
 
 		public string NotifySendEventQueue { get; set; }
+
+		public string ChannelEventQueue { get; set; }
+		public string AgentStatusEventConsumer { get; set; }
+		public string AgentAnsweredEventConsumer { get;set; }
 	}
 }

@@ -12,7 +12,7 @@ namespace ConversationDistributed.Services
             _logger = logger;
         }
 
-        public void UserUpdateState(AgentStatusEvent agentInfo)
+        public void UserUpdateState(AgentStatusCommand agentInfo)
         {
 
             if (agentInfo.Status == AgentStatusType.Connect)
